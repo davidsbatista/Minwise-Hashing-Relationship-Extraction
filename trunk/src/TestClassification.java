@@ -3,13 +3,11 @@ import java.util.*;
 
 public class TestClassification {
 
-  private static int knn = 25;
-  private static int signature = 200;
-  private static int bands = 25;
+  private static int knn = 7;
+  private static int signature = 400;
+  private static int bands = 50;
   
   private static LocalitySentitiveHashing dataIndex;
-  
-  private static boolean printResults = false;
 
   public static void readTrainData ( String file ) throws Exception {
     readTrainData(file,-1);
@@ -40,9 +38,7 @@ public class TestClassification {
 	if ( number > 0 ) readTrainData(file,number); 	
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;    
-	
 	LinkedList<Pair<String,String>> results = new LinkedList<Pair<String,String>>();
-	
     while ( ( aux = input.readLine() ) != null ) {
 	  if ( number-- > 0) continue;
       HashSet<String> set = new HashSet<String>();
@@ -56,44 +52,31 @@ public class TestClassification {
   }
 
   public static double[] evaluateResults(LinkedList<Pair<String,String>> results, String class_relation){
-
 	  double numInstancesOfClass = 0;
 	  double numCorrectClassified = 0;
 	  double numClassified = 0;	  
 	  double numCorrect = 0;
-	  
-	  for (Pair<String, String> pair : results) {
-		  
-		  if (pair.getFirst().equalsIgnoreCase(class_relation)){
+	  for (Pair<String, String> pair : results) {	  
+		  if (pair.getFirst().equalsIgnoreCase(class_relation)) {
 			  numInstancesOfClass++;
+			  if (pair.getFirst().equalsIgnoreCase(pair.getSecond()) ) numCorrectClassified++;
 		  }
-		  
-		  if (pair.getFirst().equalsIgnoreCase(pair.getSecond()) && pair.getSecond().equalsIgnoreCase(class_relation)) {
-			  numCorrectClassified++;
-		  }
-		
 		  if (pair.getSecond().equalsIgnoreCase(class_relation)) {
 			  numClassified++;
 		  }
-		  
 		  if (pair.getFirst().equalsIgnoreCase(pair.getSecond())) {
 			  numCorrect++;
 		  } 
 	  }
-		  
 	  double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
 	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
-
+	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));
 	  System.out.println("Results for class \"" + class_relation + "\" ...");
 	  System.out.println("Precision : " + precision );
 	  System.out.println("Recall : " + recall );
-	  System.out.println("F1 : " + (2.0*((precision*recall)/(precision+recall))) );
-	  
+	  System.out.println("F1 : " + f1 );
 	  double accuracy = numCorrect / (float) results.size(); 
-	  
-	  return new double[]{
-		accuracy, precision, recall, 2.0*((precision*recall)/(precision+recall)) 
-	};
+	  return new double[]{ accuracy, precision, recall, f1 };
   }
     
   public static void main ( String args[] ) throws Exception {
@@ -120,7 +103,7 @@ public class TestClassification {
     		  "Instrument-Agency(e1,e2)","Instrument-Agency(e2,e1)",
     		  "Member-Collection(e1,e2)","Member-Collection(e2,e1)",
     		  "Message-Topic(e1,e2)","Message-Topic(e2,e1)",
-    		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)","Other"};	  
+    		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)"};	  
       
       for ( String c : classes  ) {		  
     	  System.out.println();		  		  
@@ -142,7 +125,7 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3]);
   	  
 
-	  /*
+  	  /*
 	  // TESTING WITH Wikipedia English
 	  //
   	  System.out.println();

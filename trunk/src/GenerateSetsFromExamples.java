@@ -4,87 +4,7 @@ import java.util.regex.*;
 
 public class GenerateSetsFromExamples {
 
- public static String generateNGrams(String source, String prefix, int n, int weight, int casing ) {
-	//String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
-	//source = EnglishNLP.adornText(source,3);	
-	if ( casing == 1 ) source = source.toLowerCase();
-    String aux[] = source.split(" +");
-/*    for ( int i = 0 ; i < aux.length ; i++ ) {
-		if ( aux[i].matches("^[0-9][0-9]0-9][0-9]+$")) aux[i] = "N"; //NUMBER
-		if ( aux[i].matches("^[0-9][0-9]0-9][0-9]$")) aux[i] = "Y"; //4DIG
-		if ( aux[i].matches("^[0-9][0-9]$")) aux[i] = "M"; //2DIG
-    } */
-    Set<String> set = new HashSet<String>();    
-	if ( casing == 2 ) for ( String s : generateNGrams(source,prefix,n,weight,1).split(" ") ) set.add(s);	
-	// word unigrams
-    if ( n == 1 ) for ( String tok : aux ) for ( int i = 1; i <= weight; i++) set.add(tok + "_" + prefix + "_" + i);
-    // word bigrams
-    if ( n == 2 ) for ( int j = 0; j <= aux.length; j++ ) {
-       String tok1 = j-1 >=0 ? aux[j-1] : "_";
-       String tok2 = j<aux.length ? aux[j] : "_";
-       for ( int i = 1; i <= weight; i++) set.add(tok1 + "_" + tok2 + "_" + prefix + "_" + i);  
-    }
-	// word trigrams
-    if ( n == 3 ) for ( int j = 0; j <= aux.length + 1; j++ ) {
-       String tok1 = j-2 >=0 ? aux[j-2] : "_";
-       String tok2 = j-1 >=0 && j-1 < aux.length? aux[j-1] : "_"; 
-       String tok3 = j<aux.length ? aux[j] : "_";
-       for ( int i = 1; i <= weight; i++) set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + prefix + "_" + i);
-    }
-	// word bigrams with gaps
-    if ( n == 4 ) for ( int j = 2; j < aux.length; j++ ) {
-       String tok1 = aux[j-2];
-       String tok2 = "GAP"; 
-       String tok3 = aux[j];
-       for ( int i = 1; i <= weight; i++) set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + prefix + "_" + i);
-    }
-	// character trigrams
-    if ( n == 5 ) for ( int j = 0; j < source.length() + 3; j++ ) {
-       String tok = "";
-       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
-       for ( int i = 1; i <= weight; i++) set.add(tok + "_" + prefix + "_" + i);  
-    }
-	// word fourgrams
-    if ( n == 6 ) for ( int j = 0; j <= aux.length + 2; j++ ) {
-       String tok1 = j-3 >=0 ? aux[j-3] : "_";
-       String tok2 = j-2 >=0 && j-2 < aux.length ? aux[j-2] : "_";
-       String tok3 = j-1 >=0 && j-1 < aux.length ? aux[j-1] : "_"; 
-       String tok4 = j<aux.length ? aux[j] : "_";
-       for ( int i = 1; i <= weight; i++) set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + tok4 + "_" + prefix + "_" + i);
-    }
-	// word unigrams with POS
-    // if ( n == 7 ) for ( int j = 0; j < aux.length; j++ ) for ( int i = 1; i <= weight; i++) set.add(aux[j] + "_" + auxPOS[j] + "_" + prefix + "_" + i);
-    // word bigrams with POS
-    /* if ( n == 8 ) for ( int j = 0; j <= aux.length; j++ ) {
-       String tok1 = j-1 >=0 ? aux[j-1] + "_" + auxPOS[j-1] : "_";
-       String tok2 = j<aux.length ? aux[j] + "_" + auxPOS[j] : "_";
-       for ( int i = 1; i <= weight; i++) set.add(tok1 + "_" + tok2 + "_" + prefix + "_" + i);  
-    } */
-    String result = "";
-    for ( String tok : set ) result += " " + tok;
-    return result.trim();
- }
- 
- public static void processExample ( String before, String after, String between, String type, PrintWriter out ) {
-     out.print(type);
-     // Features with unigrams, having a weight of 1
-     // out.print(" " + generateNGrams(before, "BEF", 1, 1, 1) + " " + generateNGrams(between, "BET", 1, 1, 1) + " " + generateNGrams(after, "AFT", 1, 1, 1));
-     // Features with character trigrams, having a weight of 1
-     out.print(" " + generateNGrams(before, "BEF", 5, 1, 0) + " " + generateNGrams(between, "BET", 5, 2, 0) + " " + generateNGrams(after, "AFT", 5, 1, 0));
-     // Features with bigrams, with gaps, having a weight of 3
-     // out.print(" " + generateNGrams(before, "BEF", 4, 1, 1) + " " + generateNGrams(between, "BET", 4, 2, 1) + " " + generateNGrams(after, "AFT", 4, 1, 1));
-     // Features with bigrams, having a weight of 4
-     // out.print(" " + generateNGrams(before, "BEF", 2, 4, 1) + " " + generateNGrams(between, "BET", 2, 5, 1) + " " + generateNGrams(after, "AFT", 2, 4, 1));
-     // Features with trigrams, having a weight of 6
-     // out.print(" " + generateNGrams(before, "BEF", 3, 6, 1) + " " + generateNGrams(between, "BET", 3, 7, 1) + " " + generateNGrams(after, "AFT", 3, 6, 1));   
-     // Features with unigrams with POS, having a weight of 2
-     // out.print(" " + generateNGrams(before, "BEF", 7, 2, 1) + " " + generateNGrams(between, "BET", 7, 3, 1) + " " + generateNGrams(after, "AFT", 7, 2, 1));   
-     // Features with bigrams with POS, having a weight of 5
-     // out.print(" " + generateNGrams(before, "BEF", 8, 5, 1) + " " + generateNGrams(between, "BET", 8, 6, 1) + " " + generateNGrams(after, "AFT", 8, 5, 1));   
-     // Features with fourgrams, having a weight of 7
-     // out.print(" " + generateNGrams(before, "BEF", 6, 7, 1) + " " + generateNGrams(between, "BET", 6, 8, 1) + " " + generateNGrams(after, "AFT", 6, 7, 1));   
-     out.println();
- }
+ public static Map<String,Integer> entropyMap;
  
  public static void processWikipedia ( String file, PrintWriter out ) throws Exception {
    BufferedReader input = new BufferedReader( new FileReader(file) );
@@ -120,22 +40,25 @@ public class GenerateSetsFromExamples {
    BufferedReader input = new BufferedReader( new FileReader(file) );
    String aux = null;
    String sentence = null;
-   String entity1 = null;
-   String entity2 = null;
    String type = null;
    while ( ( aux = input.readLine() ) != null ) {
      if ( aux.contains("\t\"") ) {
        sentence = aux.substring(aux.indexOf("\"")+1,aux.lastIndexOf("\""));
-	   String before = sentence.substring(0,Math.min(sentence.indexOf("<e1>"),sentence.indexOf("<e2>"))).trim();
-	   String after = sentence.substring(Math.max(sentence.indexOf("</e2>")+5,sentence.indexOf("</e1>")+5)).trim();  
-	   String between = sentence.substring(Math.min(sentence.indexOf("</e1>")+5,sentence.indexOf("</e2>")+5),Math.max(sentence.indexOf("</e2>"),sentence.indexOf("</e1>"))).trim();
-	   before = before + " " + between;
-	   after = between + " " + after;
-	   sentence = sentence.replaceAll("</?e[12] *>","");
-       entity1 = aux.substring(aux.indexOf("<e1>")+4,aux.lastIndexOf("</e1>"));
-	   entity2 = aux.substring(aux.indexOf("<e2>")+4,aux.lastIndexOf("</e2>"));
-           type = input.readLine().trim();
-	   //if ( type.indexOf("(") != -1 ) type = type.substring(0,type.indexOf("("));
+	   String before = sentence.substring(0,Math.min(sentence.indexOf("</e1>"),sentence.indexOf("</e2>"))).trim();
+	   String after = sentence.substring(Math.max(sentence.indexOf("<e2>")+4,sentence.indexOf("<e1>")+4)).trim();  	   
+	   String between = sentence.substring(Math.min(sentence.indexOf("</e1>")+5,sentence.indexOf("</e2>")+5),Math.max(sentence.indexOf("<e2>"),sentence.indexOf("<e1>"))).trim();  
+	   between = between.replaceAll("</?e[12] *>","");	   
+	   before = before.replaceAll("</?e[12] *>","") + " " + between;
+	   after = between + " " + after.replaceAll("</?e[12] *>","");
+	   type = input.readLine().trim();
+	   
+	   /*System.out.println();
+	   System.out.println("sentence: " + sentence);
+	   System.out.println("before: " + before);
+	   System.out.println("between: " + between);
+	   System.out.println("after: " + after);
+	   System.out.println("==================");*/
+	      
 	   processExample(before,after,between,type,out); 
      }
    }
@@ -214,7 +137,6 @@ public class GenerateSetsFromExamples {
    out.flush();
  }
  
- 
  public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
    Set<String> dataFiles = new HashSet<String>();
    BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
@@ -262,8 +184,8 @@ public class GenerateSetsFromExamples {
 	   after = after.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
   	   between = between.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 	   sentence = sentence.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
-           before = before + " " + between;
-           after = between + " " + after;
+	   before = before + " " + between;
+       after = between + " " + after;
 	   processExample(before,after,between,type,out); 
       }
     }
@@ -272,16 +194,115 @@ public class GenerateSetsFromExamples {
  }
  
  public static void main ( String args[] ) throws Exception {
-	 //processWikipedia("Datasets/results-relation-extraction.txt",, new PrintWriter(new FileWriter("data-wikipedia.txt")));
+	 
+	 //entropyMap = null
 	 //processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("test-data-wikien.txt")));
 	 //processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("train-data-wikien.txt")));
-	 //processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 //processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
+	 
+	 
+	 entropyMap = null;
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 entropyMap = getEntropyMap("train-data-semeval.txt");
+	 	 
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
+	
+	 
 	 /*
 	 for ( int f = 1 ; f <= 10; f++) {
+	  	 entropyMap = null; 
 		 processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
 		 processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
 	 }
 	 */
  }
+
+ public static Map<String,Integer> getEntropyMap ( String file ) throws Exception {
+	 Set<String> classes = new HashSet<String>();						//stores all possible classes
+   	 Map<String,String[]> shingles = new HashMap<String,String[]>();	//for each shingle store all the classes where it occurs
+   	 Map<String,Double> entropyMap = new HashMap<String,Double>();		//entropy value for each single
+   	 Map<String,Integer> result = new HashMap<String,Integer>();
+   	 BufferedReader input = new BufferedReader(new FileReader(file));
+     String line = null;
+   	 while ( (line=input.readLine()) != null ) {
+   		 String relation_class = line.substring(0,line.indexOf(" ")); line = line.substring(line.indexOf(" ") + 1);
+   		 String[] relation_shingles = line.split(" ");
+   		 classes.add(relation_class);
+   		 for ( String shingle : relation_shingles ) {
+   			 List<String> aux = new ArrayList<String>();
+   			 String[] shs = shingles.get(shingle);
+   			 if ( shs != null ) for ( String sh : shingles.get(shingle) ) aux.add(sh);
+   			 aux.add(relation_class);
+   			 shingles.put(shingle,aux.toArray(new String[0]));
+   		 } 
+     }
+   	 double minEntropy = Double.MAX_VALUE;
+   	 double maxEntropy = Double.MIN_VALUE;
+   	 for ( String shingle : shingles.keySet() ) {
+   		 Map<String,Double> classProb = new HashMap<String,Double>();	//distribution of probabilities of a shingle over classes
+   		 String[] aux = shingles.get(shingle);
+   		 for ( String cl : classes ) {
+   			 int cnt = 0;
+   			 for ( String s : aux ) if ( s.equals(cl) ) cnt++;
+   			 classProb.put(cl,((double)cnt)/(double)(aux.length));
+   		 }
+   		 double entropy = 0;
+   		 for ( String c : classProb.keySet() ) entropy += classProb.get(c) * Math.log(classProb.get(c));
+   		 entropy = 0.0 - entropy;
+   		 if ( entropy > maxEntropy) maxEntropy = entropy;
+   		 if ( entropy < minEntropy) minEntropy = entropy;
+   	     entropyMap.put(shingle,entropy);
+   	 }
+   	 // normalization and give a weight to each single according to entropy value 
+   	 for ( String shingle : entropyMap.keySet() ) {
+   		 double entropy = entropyMap.get(shingle);
+   		 entropy = 1.0 - (( entropy - minEntropy ) / ( maxEntropy - minEntropy ));
+   		 result.put(shingle, (int)Math.round(entropy * 2));
+   	 }
+   	 return result;	 
+ }
+ 
+ public static String generateNGrams(String source, String prefix ) {
+	String lowercased = source.toLowerCase();
+	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
+	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
+    String aux[] = EnglishNLP.adornText(source,0).split(" +");
+    Set<String> set = new HashSet<String>();   
+	for ( int i = 0 ; i < aux.length; i++ ) {
+		if ( prefix.equals("BEF") && aux.length - i > 7 ) continue;
+		if ( prefix.equals("AFT") && i > 7 ) continue;
+		source = (i == 0) ? aux[i] : source + " " + aux[i];
+		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length && auxPOS[i].startsWith("vb") ) {
+			set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
+			if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
+		}
+	}
+	if ( lowercased.contains(" used by ") ) set.add("USEDBY" + "_" + prefix); 
+	if ( lowercased.contains(" sent to ") ) set.add("SENTTO" + "_" + prefix); 
+	if ( lowercased.contains(" send to ") ) set.add("SENTTO" + "_" + prefix);
+	if ( lowercased.contains(" caused ") ) set.add("CAUSED" + "_" + prefix);
+	if ( lowercased.contains(" contained ") ) set.add("CONTAINED" + "_" + prefix);
+	if ( lowercased.contains(" part of ") ) set.add("PARTOF" + "_" + prefix);
+	if ( lowercased.contains(" made of ") ) set.add("MADEOF" + "_" + prefix);
+	if ( lowercased.contains(" consists ") ) set.add("CONSISTS" + "_" + prefix);
+	if ( lowercased.contains(" belong") ) set.add("BELONGS" + "_" + prefix);
+	for ( int j = 0; j < source.length() + 3; j++ ) {
+	   String tok = "";
+       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
+	   if ( entropyMap != null && entropyMap.get(tok+ "_" + prefix) != null) for ( int i = 1; i <= 1 + entropyMap.get(tok+ "_" + prefix); i++) set.add(tok + "_" + prefix + "_" + i);
+	   else if ( entropyMap == null || entropyMap.size() == 0 ) set.add(tok + "_" + prefix);
+    }
+    String result = "";
+    for ( String tok : set ) result += " " + tok;
+    return result.trim();
+ }
+ 
+ public static void processExample ( String before, String after, String between, String type, PrintWriter out ) {
+     out.print(type);
+     if ( before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.length() ) before = before.substring(before.lastIndexOf(",") + 1);
+     if ( after.indexOf(",") != -1 ) after = after.substring(0,after.lastIndexOf(","));
+     out.print(" " + generateNGrams(before, "BEF") + " " + generateNGrams(between, "BET") + " " + generateNGrams(after, "AFT"));
+     out.println();
+ }
+ 
 }
