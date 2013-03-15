@@ -2,9 +2,13 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import edu.northwestern.at.utils.corpuslinguistics.thesaurus.WordnetThesaurus;
+
 public class GenerateSetsFromExamples {
 
  public static Map<String,Integer> entropyMap;
+ 
+ public static WordnetThesaurus thesaurus = null;
  
  public static void processWikipedia ( String file, PrintWriter out ) throws Exception {
    BufferedReader input = new BufferedReader( new FileReader(file) );
@@ -53,12 +57,12 @@ public class GenerateSetsFromExamples {
 	   after = between + " " + after.replaceAll("</?e[12] *>","");
 	   type = input.readLine().trim();
 	   
-	   /*System.out.println();
+	   System.out.println();
 	   System.out.println("sentence: " + sentence);
 	   System.out.println("before: " + before);
 	   System.out.println("between: " + between);
 	   System.out.println("after: " + after);
-	   System.out.println("==================");*/
+	   System.out.println("==================");
 	      
 	   processExample(before,after,between,type,out); 
      }
@@ -68,6 +72,9 @@ public class GenerateSetsFromExamples {
  }
  
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
+	 
+   Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" }));
+   
    BufferedReader input = new BufferedReader( new FileReader(file) );
    String aux = null;
    String sentence = null;
@@ -130,7 +137,7 @@ public class GenerateSetsFromExamples {
 				   else if ( type1.equals("OTHER") && type2.equals("OTHER")) type = "OTHER";
 				   else if ( type1.equals("OTHER") && !matcher.group().contains(">"+entity1+"<")) type = type2;
 				   else if ( type2.equals("OTHER") && !matcher2.group().contains(">"+entity1+"<")) type = type1;
-				   if ( type.equals("OTHER") && Math.random() < 0.9) continue;
+				   if ( type.equals("OTHER") && Math.random() < 0.9 || exclude.contains(type)) continue;
 				   processExample(before,after,between,type,out); 
 			   }   
 		   }
@@ -177,17 +184,25 @@ public class GenerateSetsFromExamples {
 	  if ( aux.contains("<p" + j + " pair="+i) || aux.contains("<p" + k + " pair="+i) ) {
 	   type = ( aux.contains("<p" + j + " pair="+i) && aux.contains("<p" + k + " pair="+i) ) ? "related" : "not-related";
        sentence = aux;
-       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;
-	   String before = sentence.substring(0,sentence.indexOf("<p" + j + " pair=" + ( type.equals("related") ? i : "" ) )).trim();
-	   String after = sentence.substring(sentence.indexOf("</p" + k + ">")+5).trim();
+       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;   
+       String before = sentence.substring(0,sentence.indexOf("</p" + j + ">")+5).trim();
+	   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ) )).trim(); 
 	   String between = sentence.substring(sentence.indexOf("</p" + j + ">")+5,sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ))).trim();
 	   before = before.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 	   after = after.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
   	   between = between.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
-	   sentence = sentence.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 	   before = before + " " + between;
        after = between + " " + after;
-	   processExample(before,after,between,type,out); 
+
+	   System.out.println();
+	   System.out.println("sentence: " + sentence);
+	   System.out.println("before: " + before);
+	   System.out.println("between: " + between);
+	   System.out.println("after: " + after);
+	   System.out.println("type: " + type);
+	   System.out.println("==================");
+	   
+       processExample(before,after,between,type,out); 
       }
     }
     input.close();
@@ -241,19 +256,27 @@ public class GenerateSetsFromExamples {
    	 return result;	 
  }
  
- public static String generateNGrams(String source, String prefix ) {
+ public static String generateNGrams(String source, String prefix, int betweenLenght ) {
 	String lowercased = source.toLowerCase();
 	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
 	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
     String aux[] = EnglishNLP.adornText(source,0).split(" +");
-    Set<String> set = new HashSet<String>();   
-	for ( int i = 0 ; i < aux.length; i++ ) {
-		if ( prefix.equals("BEF") && aux.length - i > 7 ) continue;
-		if ( prefix.equals("AFT") && i > 7 ) continue;
+    Set<String> set = new HashSet<String>();    
+    for ( int i = 0 ; i < aux.length; i++ ) {
+		if ( prefix.equals("BEF") && aux.length - i > betweenLenght + 3 ) continue;
+		if ( prefix.equals("AFT") && i > betweenLenght + 3 ) continue;
 		source = (i == 0) ? aux[i] : source + " " + aux[i];
 		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length && auxPOS[i].startsWith("vb") ) {
 			set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
-			if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
+			if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			
+			for ( String verb : "bend,break,crack,fold,shatter,split,snap".split(",") ) if ( normalized[i].equals(verb) ) set.add("BREAKING_VERB_" + prefix);
+			for ( String verb : "give,pass,hand,sell,pay,trade,lend,loan,offer".split(",") ) if ( normalized[i].equals(verb) ) set.add("GIVE_VERB_" + prefix);
+			for ( String verb : "bash,beat,bump,hit,kick,pound,punch,slap,strike,tap,thump,whack".split(",") ) if ( normalized[i].equals(verb) ) set.add("HITTING_VERB_" + prefix);
+			for ( String verb : "advance,allocate,allot,allow,assign,award,bequeath,forward,grant,guarantee,leave,offer,promise".split(",") ) if ( normalized[i].equals(verb) ) set.add("FUTUREHAVE_VERB_" + prefix);
+			for ( String verb : "mail,send,ship".split(",") ) if ( normalized[i].equals(verb) ) set.add("SEND_VERB_" + prefix);
+			for ( String verb : "fling,flip,kick,lob,shoot,slap,throw,toss".split(",") ) if ( normalized[i].equals(verb) ) set.add("THROW_VERB_" + prefix);
+			for ( String verb : "cry,eat,exercise,flap,honk,mutter,scribble,shout,sleep,smile,squeak,waltz,wave".split(",") ) if ( normalized[i].equals(verb) ) set.add("MANNER_VERB_" + prefix);
+			for ( String verb : "dim,dry,faint,gladden,melt,scare,widen".split(",") ) if ( normalized[i].equals(verb) ) set.add("RESULT_VERB_" + prefix);
 		}
 	}
 	if ( lowercased.contains(" used by ") ) set.add("USEDBY" + "_" + prefix); 
@@ -265,41 +288,41 @@ public class GenerateSetsFromExamples {
 	if ( lowercased.contains(" made of ") ) set.add("MADEOF" + "_" + prefix);
 	if ( lowercased.contains(" consists ") ) set.add("CONSISTS" + "_" + prefix);
 	if ( lowercased.contains(" belong") ) set.add("BELONGS" + "_" + prefix);
+	// Gerar trigramas com base na string original
 	for ( int j = 0; j < source.length() + 3; j++ ) {
 	   String tok = "";
        for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
 	   if ( entropyMap != null && entropyMap.get(tok+ "_" + prefix) != null) for ( int i = 1; i <= 1 + entropyMap.get(tok+ "_" + prefix); i++) set.add(tok + "_" + prefix + "_" + i);
 	   else if ( entropyMap == null || entropyMap.size() == 0 ) set.add(tok + "_" + prefix);
-    }
-    String result = "";
+    }	
+	String result = "";
     for ( String tok : set ) result += " " + tok;
     return result.trim();
  }
  
  public static void processExample ( String before, String after, String between, String type, PrintWriter out ) {
      out.print(type);
+     int betweenLenght = EnglishNLP.adornText(between,0).split(" +").length;     
      if ( before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.length() ) before = before.substring(before.lastIndexOf(",") + 1);
-     if ( after.indexOf(",") != -1 ) after = after.substring(0,after.lastIndexOf(","));
-     out.print(" " + generateNGrams(before, "BEF") + " " + generateNGrams(between, "BET") + " " + generateNGrams(after, "AFT"));
+     if ( after.indexOf(",") != -1 ) after = after.substring(0,after.lastIndexOf(","));     
+     out.print(" " + generateNGrams(before, "BEF", betweenLenght) + " " + generateNGrams(between, "BET", betweenLenght) + " " + generateNGrams(after, "AFT", betweenLenght));
      out.println();
  }
 
- private static void generateDataAIMED() throws Exception, IOException {
+ public static void generateDataAIMED() throws Exception, IOException {
 	
 	 //Process AIMED
 	for ( int f = 1 ; f <= 10; f++) {
 		System.out.println("Generating AIMED data fold " + f );
-		/*
 		entropyMap = null; 
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
 		entropyMap = getEntropyMap("train-data-aimed.txt." + f);
-		*/
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
 	 }
 }
 
- private static void generateDataSemEval() throws Exception, IOException {
+ public static void generateDataSemEval() throws Exception, IOException {
 	//Process SemEval
 	 System.out.println("Generating SemEval data...");
 	 entropyMap = null;
@@ -312,7 +335,7 @@ public class GenerateSetsFromExamples {
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
 }
 
- private static void generateDataWikiEn() throws Exception, IOException {
+ public static void generateDataWikiEn() throws Exception, IOException {
 	//WikiEn
 	 System.out.println("Generating Wikipedia data...");
 	 entropyMap = null;
@@ -325,21 +348,11 @@ public class GenerateSetsFromExamples {
 	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("test-data-wikien.txt")));
 }
  
- public static void main ( String args[] ) throws Exception {
-	
-	if (args[0].equalsIgnoreCase("all")) {
+ public static void generateAll() throws Exception {
 		generateDataWikiEn();
 		System.out.println();
 		generateDataSemEval();
 		System.out.println();
 		generateDataAIMED();
-	}
-	
-	else if (args[0].equalsIgnoreCase("wiki")) generateDataWikiEn();
-	else if (args[0].equalsIgnoreCase("semeval")) generateDataSemEval();
-	else if (args[0].equalsIgnoreCase("aimed")) generateDataAIMED();
-	 
-	
  }
-
 }
