@@ -1,5 +1,6 @@
-import java.io.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 // This class implements the min-wise hashing scheme
 public class MinHash {

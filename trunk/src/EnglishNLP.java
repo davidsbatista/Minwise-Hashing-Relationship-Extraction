@@ -78,7 +78,7 @@ public class EnglishNLP {
         if  (   lemmatizer.cantLemmatize( spelling ) || lemmaClass.equals( "none" ) ) { } else {
             lemmata = lemmatizer.lemmatize( spelling , "compound" );
             if ( lemmata.equals( spelling ) ) {
-                List wordList = spellingTokenizer.extractWords( spelling );
+                List<String> wordList = spellingTokenizer.extractWords( spelling );
                 if  (   !partOfSpeechTags.isCompoundTag( partOfSpeech ) || ( wordList.size() == 1 ) ) {
                     if ( lemmaClass.length() == 0 ) lemmata = lemmatizer.lemmatize( spelling );
                     else lemmata = lemmatizer.lemmatize( spelling , lemmaClass );

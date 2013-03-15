@@ -48,6 +48,7 @@ public class TestClassification {
       Pair<String,String> p = new Pair<String, String>(cl, clResult);
       results.add(p);      
     }
+    input.close();
 	return results;
   }
 
@@ -81,10 +82,9 @@ public class TestClassification {
     
   public static void main ( String args[] ) throws Exception {
 	  
-	  System.out.println("Generate data...");
-      GenerateSetsFromExamples.main(args);
-
-	  //
+	  GenerateSetsFromExamples.main(args);
+	  
+	  /*
 	  // TESTING WITH SemEval
 	  //
 	  System.out.println();
@@ -125,7 +125,7 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3]);
   	  
 
-  	  /*
+  	  //
 	  // TESTING WITH Wikipedia English
 	  //
   	  System.out.println();
@@ -157,11 +157,10 @@ public class TestClassification {
   	  System.out.println("Recall : " + resultsWiki[2]);
   	  System.out.println("F1 : " + resultsWiki[3]);
 	
-      
-	  //
+	  */
 	  //
 	  // TESTING WITH AIMED
-	  /*
+	  //
 	  System.out.println();
 	  System.out.println("Test classification on AIMED...");
       double[] results = new double[] { 0.0, 0.0, 0.0, 0.0 };
@@ -172,7 +171,7 @@ public class TestClassification {
 		  System.out.println("Reading train data ...");
 		  readTrainData("train-data-aimed.txt." + i);
 		  System.out.println("Reading test data ...");
-		  LinkedList<Pair<String, String>> aux = evaluateTestData("test-data-aimed.txt." + String.valueOf(i));
+		  LinkedList<Pair<String, String>> aux = evaluateTestData("test-data-aimed.txt." + i);
 		  double[] results_aux = evaluateResults(aux,"related");
 		  System.out.println("Accuracy : " + results_aux[0]);
 		  for ( int j = 0; j < results_aux.length; j++) {  
@@ -182,15 +181,12 @@ public class TestClassification {
       
       
 	  for ( int j = 0; j < results.length; j++) results[j] = results[j] / 10;
-      
-	  if ( !printResults ) {
-  		System.out.println();
-      	System.out.println("Results for cross validation...");	
-      	System.out.println("Accuracy : " + results[0] );
-  		System.out.println("Precision : " + results[1] );
-  		System.out.println("Recall : " + results[2] );
-  		System.out.println("F1 : " + results[3] );
+   
+	  System.out.println();
+      System.out.println("Results for cross validation...");	
+      System.out.println("Accuracy : " + results[0] );
+  	  System.out.println("Precision : " + results[1] );
+  	  System.out.println("Recall : " + results[2] );
+  	  System.out.println("F1 : " + results[3] );
   	  }
   }
-  */
-}}

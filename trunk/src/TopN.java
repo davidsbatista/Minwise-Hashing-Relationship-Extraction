@@ -1,5 +1,8 @@
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeSet;
 
 // A simple utilitary class for keeping the top-n most frequent results
 public class TopN<T> {

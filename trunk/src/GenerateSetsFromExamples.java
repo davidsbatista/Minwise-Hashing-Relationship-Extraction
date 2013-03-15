@@ -33,6 +33,7 @@ public class GenerateSetsFromExamples {
        else if ( aux.startsWith("ENTITY2 : ") ) entity2 = aux.substring(10).trim();
        else if ( aux.startsWith("REL TYPE : ") ) type = aux.substring(11).trim();
    }
+   input.close();
    out.flush();
  }
  
@@ -63,6 +64,7 @@ public class GenerateSetsFromExamples {
      }
    }
    out.flush();
+   input.close();
  }
  
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
@@ -135,6 +137,7 @@ public class GenerateSetsFromExamples {
 	   }
    }
    out.flush();
+   input.close();
  }
  
  public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
@@ -146,8 +149,6 @@ public class GenerateSetsFromExamples {
    for ( File file : new File(directory).listFiles() ) if ( dataFiles.contains(file.getName()) ){ 
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String sentence = null;
-    String entity1 = null;
-    String entity2 = null;
     String type = null;
     while ( ( aux = input.readLine() ) != null ) {
 	 int auxNum1 = 1, auxNum2 = 1;
@@ -189,34 +190,11 @@ public class GenerateSetsFromExamples {
 	   processExample(before,after,between,type,out); 
       }
     }
+    input.close();
    }
    out.flush();
  }
  
- public static void main ( String args[] ) throws Exception {
-	 
-	 //entropyMap = null
-	 //processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("test-data-wikien.txt")));
-	 //processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("train-data-wikien.txt")));
-	 
-	 
-	 entropyMap = null;
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 entropyMap = getEntropyMap("train-data-semeval.txt");
-	 	 
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
-	
-	 
-	 /*
-	 for ( int f = 1 ; f <= 10; f++) {
-	  	 entropyMap = null; 
-		 processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
-		 processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
-	 }
-	 */
- }
-
  public static Map<String,Integer> getEntropyMap ( String file ) throws Exception {
 	 Set<String> classes = new HashSet<String>();						//stores all possible classes
    	 Map<String,String[]> shingles = new HashMap<String,String[]>();	//for each shingle store all the classes where it occurs
@@ -236,6 +214,7 @@ public class GenerateSetsFromExamples {
    			 shingles.put(shingle,aux.toArray(new String[0]));
    		 } 
      }
+   	 input.close();
    	 double minEntropy = Double.MAX_VALUE;
    	 double maxEntropy = Double.MIN_VALUE;
    	 for ( String shingle : shingles.keySet() ) {
@@ -304,5 +283,63 @@ public class GenerateSetsFromExamples {
      out.print(" " + generateNGrams(before, "BEF") + " " + generateNGrams(between, "BET") + " " + generateNGrams(after, "AFT"));
      out.println();
  }
+
+ private static void generateDataAIMED() throws Exception, IOException {
+	
+	 //Process AIMED
+	for ( int f = 1 ; f <= 10; f++) {
+		System.out.println("Generating AIMED data fold " + f );
+		/*
+		entropyMap = null; 
+		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
+		entropyMap = getEntropyMap("train-data-aimed.txt." + f);
+		*/
+		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
+		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
+	 }
+}
+
+ private static void generateDataSemEval() throws Exception, IOException {
+	//Process SemEval
+	 System.out.println("Generating SemEval data...");
+	 entropyMap = null;
+	 System.out.println("Determining shingles entropy...");
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 entropyMap = getEntropyMap("train-data-semeval.txt");
+	 System.out.println("Generating train data...");
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 System.out.println("Generating test data...");
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
+}
+
+ private static void generateDataWikiEn() throws Exception, IOException {
+	//WikiEn
+	 System.out.println("Generating Wikipedia data...");
+	 entropyMap = null;
+	 System.out.println("Determining shingles entropy...");
+	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("train-data-wikien.txt")));
+	 entropyMap = getEntropyMap("train-data-wikien.txt");
+	 System.out.println("Generating train data...");
+	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("train-data-wikien.txt")));
+	 System.out.println("Generating test data...");
+	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("test-data-wikien.txt")));
+}
  
+ public static void main ( String args[] ) throws Exception {
+	
+	if (args[0].equalsIgnoreCase("all")) {
+		generateDataWikiEn();
+		System.out.println();
+		generateDataSemEval();
+		System.out.println();
+		generateDataAIMED();
+	}
+	
+	else if (args[0].equalsIgnoreCase("wiki")) generateDataWikiEn();
+	else if (args[0].equalsIgnoreCase("semeval")) generateDataSemEval();
+	else if (args[0].equalsIgnoreCase("aimed")) generateDataAIMED();
+	 
+	
+ }
+
 }
