@@ -14,7 +14,7 @@
             <fileset dir="/home/dsbatista/workspace/relations-minhash/bin"/>
             <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="icu4j.jar"/>
             <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="mapdb.jar"/>
-            <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="morphadorner.jar"/>
+            <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="morphadorner.jar"/>        	
         </jar>
     </target>
 </project>
