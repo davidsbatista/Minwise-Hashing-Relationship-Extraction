@@ -56,14 +56,6 @@ public class GenerateSetsFromExamples {
 	   before = before.replaceAll("</?e[12] *>","") + " " + between;
 	   after = between + " " + after.replaceAll("</?e[12] *>","");
 	   type = input.readLine().trim();
-	   
-	   System.out.println();
-	   System.out.println("sentence: " + sentence);
-	   System.out.println("before: " + before);
-	   System.out.println("between: " + between);
-	   System.out.println("after: " + after);
-	   System.out.println("==================");
-	      
 	   processExample(before,after,between,type,out); 
      }
    }
@@ -138,6 +130,15 @@ public class GenerateSetsFromExamples {
 				   else if ( type1.equals("OTHER") && !matcher.group().contains(">"+entity1+"<")) type = type2;
 				   else if ( type2.equals("OTHER") && !matcher2.group().contains(">"+entity1+"<")) type = type1;
 				   if ( type.equals("OTHER") && Math.random() < 0.9 || exclude.contains(type)) continue;
+				   
+			       System.out.println();
+				   System.out.println("sentence: " + sentence);
+				   System.out.println("before: " + before);
+				   System.out.println("between: " + between);
+				   System.out.println("after: " + after);
+				   System.out.println("type: " + type);
+				   System.out.println("==================");			   
+				   
 				   processExample(before,after,between,type,out); 
 			   }   
 		   }
@@ -148,66 +149,73 @@ public class GenerateSetsFromExamples {
  }
  
  public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
-   Set<String> dataFiles = new HashSet<String>();
-   BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
-   String aux = null;
-   while ( ( aux = inputAux.readLine() ) != null ) dataFiles.add(aux);
-   inputAux.close();
-   for ( File file : new File(directory).listFiles() ) if ( dataFiles.contains(file.getName()) ){ 
-    BufferedReader input = new BufferedReader( new FileReader(file) );
-    String sentence = null;
-    String type = null;
-    while ( ( aux = input.readLine() ) != null ) {
-	 int auxNum1 = 1, auxNum2 = 1;
-	 aux = aux.replaceAll("</?prot>","").replaceAll("  +"," ");
-	 while ( aux.indexOf("<p") != -1 ) {
-		 String aux1 = aux.substring(0,aux.indexOf("<p")) + ("<P" + auxNum1++);
-	     String aux2 = aux.substring(aux.indexOf("<p")+3);
-         int count = 0;
-		 while ( aux2.indexOf("</p") != -1 ) {
-			 if ( aux2.substring(0,aux2.indexOf("</p")).indexOf("<p") != -1 ) {
-				 aux1 = aux1 + aux2.substring(0,aux2.indexOf("<p")+3);
-				 aux2 = aux2.substring(aux2.indexOf("<p")+3);
-				 count++;
-			 } else if ( count-- <= 0) {
-				 aux2 = aux2.substring(0,aux2.indexOf("</p")) + ("<-P" + auxNum2++) + aux2.substring(aux2.indexOf("</p")+4);			 	
-				 break;
-			 } else {
-				 aux1 = aux1 + aux2.substring(0,aux2.indexOf("</p")+4);
-				 aux2 = aux2.substring(aux2.indexOf("</p")+4);
+	 Set<String> positiveExamples = new HashSet<String>();	 
+	 Set<String> dataFiles = new HashSet<String>();
+	 BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
+	 String aux = null;
+	 while ( ( aux = inputAux.readLine() ) != null ) dataFiles.add(aux);
+	   inputAux.close();
+	   for ( File file : new File(directory).listFiles() ) if ( dataFiles.contains(file.getName()) ){ 
+	    BufferedReader input = new BufferedReader( new FileReader(file) );
+	    String sentence = null;
+	    String type = null;
+	    while ( ( aux = input.readLine() ) != null ) {
+		 int auxNum1 = 1, auxNum2 = 1;
+		 aux = aux.replaceAll("</?prot>","").replaceAll("  +"," ");
+		 while ( aux.indexOf("<p") != -1 ) {
+			 String aux1 = aux.substring(0,aux.indexOf("<p")) + ("<P" + auxNum1++);
+		     String aux2 = aux.substring(aux.indexOf("<p")+3);
+	         int count = 0;
+			 while ( aux2.indexOf("</p") != -1 ) {
+				 if ( aux2.substring(0,aux2.indexOf("</p")).indexOf("<p") != -1 ) {
+					 aux1 = aux1 + aux2.substring(0,aux2.indexOf("<p")+3);
+					 aux2 = aux2.substring(aux2.indexOf("<p")+3);
+					 count++;
+				 } else if ( count-- <= 0) {
+					 aux2 = aux2.substring(0,aux2.indexOf("</p")) + ("<-P" + auxNum2++) + aux2.substring(aux2.indexOf("</p")+4);			 	
+					 break;
+				 } else {
+					 aux1 = aux1 + aux2.substring(0,aux2.indexOf("</p")+4);
+					 aux2 = aux2.substring(aux2.indexOf("</p")+4);
+				 }
 			 }
+			 aux = aux1 + aux2;
 		 }
-		 aux = aux1 + aux2;
-	 }
-     aux = aux.replaceAll("<P","<p").replaceAll("<-P","</p");
-     for ( int i = 1; i < 20; i++ ) for ( int j = 1; j < 20; j++ ) for ( int k = j + 1 ; k < 20; k++ ) 
-	  if ( aux.contains("<p" + j + " pair="+i) || aux.contains("<p" + k + " pair="+i) ) {
-	   type = ( aux.contains("<p" + j + " pair="+i) && aux.contains("<p" + k + " pair="+i) ) ? "related" : "not-related";
-       sentence = aux;
-       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;   
-       String before = sentence.substring(0,sentence.indexOf("</p" + j + ">")+5).trim();
-	   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ) )).trim(); 
-	   String between = sentence.substring(sentence.indexOf("</p" + j + ">")+5,sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ))).trim();
-	   before = before.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
-	   after = after.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
-  	   between = between.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
-	   before = before + " " + between;
-       after = between + " " + after;
-
-	   System.out.println();
-	   System.out.println("sentence: " + sentence);
-	   System.out.println("before: " + before);
-	   System.out.println("between: " + between);
-	   System.out.println("after: " + after);
-	   System.out.println("type: " + type);
-	   System.out.println("==================");
-	   
-       processExample(before,after,between,type,out); 
-      }
-    }
-    input.close();
-   }
-   out.flush();
+	     aux = aux.replaceAll("<P","<p").replaceAll("<-P","</p");
+	     for ( int i = 1; i < 20; i++ ) for ( int j = 1; j < 20; j++ ) for ( int k = j + 1 ; k < 20; k++ ) 
+		  if ( aux.contains("<p" + j + " pair="+i) || aux.contains("<p" + k + " pair="+i) ) {
+		   type = ( aux.contains("<p" + j + " pair="+i) && aux.contains("<p" + k + " pair="+i) ) ? "related" : "not-related";
+	       sentence = aux;
+	       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;   
+	       String before = sentence.substring(0,sentence.indexOf("</p" + j + ">")+5).trim();
+		   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ) )).trim(); 
+		   String between = sentence.substring(sentence.indexOf("</p" + j + ">")+5,sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ))).trim();
+		   before = before.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
+		   after = after.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
+	  	   between = between.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
+		   before = before + " " + between;
+	       after = between + " " + after;
+	       
+	       /*
+	       System.out.println();
+		   System.out.println("sentence: " + sentence);
+		   System.out.println("before: " + before);
+		   System.out.println("between: " + between);
+		   System.out.println("after: " + after);
+		   System.out.println("type: " + type);
+		   System.out.println("==================");
+		   */
+	       
+	       String relation = before + between + after;
+	       if (type.equals("related")) positiveExamples.add(relation);
+		   
+		   if (positiveExamples.contains(relation))continue;
+		   else processExample(before,after,between,type,out); 
+		  }
+	    }
+	    input.close();
+	   }
+	   out.flush();
  }
  
  public static Map<String,Integer> getEntropyMap ( String file ) throws Exception {
