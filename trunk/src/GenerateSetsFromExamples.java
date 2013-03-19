@@ -307,6 +307,9 @@ public class GenerateSetsFromExamples {
      if ( beforeLength >= Math.max(betweenLength, afterLength) ) out.print(" " + "LARGER_BEF"); 
      if ( afterLength >= Math.max(betweenLength, beforeLength) ) out.print(" " + "LARGER_AFT"); 
      if ( betweenLength >= Math.max(afterLength, beforeLength) ) out.print(" " + "LARGER_BET");
+     if ( beforeLength == 0 ) out.print(" " + "EMPTY_BEF"); 
+     if ( afterLength == 0 ) out.print(" " + "EMPTY_AFT"); 
+     if ( betweenLength == 0 ) out.print(" " + "EMPTY_BET");
      ArrayList<String> someCollection = new ArrayList<String>();
      for ( String aux : new String[]{ "BEF\t" + before, "BET\t" + between, "AFT\t" + after } ) someCollection.add(aux); 
      for ( String obj : someCollection ) {
@@ -322,9 +325,11 @@ public class GenerateSetsFromExamples {
 	 //Process AIMED
 	for ( int f = 1 ; f <= 10; f++) {
 		System.out.println("Generating AIMED data fold " + f );
+		/*
 		entropyMap = null; 
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
 		entropyMap = getEntropyMap("train-data-aimed.txt." + f);
+		*/
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
 	 }
