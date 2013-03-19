@@ -38,6 +38,7 @@ public class TestClassification {
       dataIndex.index(dataIndex.indexSize(),set.toArray(new String[0]),cl);      
       if ( number > 0 && num++ > number) break;
     }
+    if ( knn <= 0 ) dataIndex.computeOptimalK();
     input.close();
   }
   
@@ -136,8 +137,8 @@ public class TestClassification {
       LinkedList<Pair<String,String>> aux = evaluateTestData("test-data-wikien.txt");	  
       double[] resultsWiki = { 0.0, 0.0, 0.0, 0.0 };
       
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" };
-      String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather"};    		  
+      String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" };
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather"};    		  
       
       for ( String c : classesWikiEn  ) {		  
     	  System.out.println();
@@ -161,11 +162,9 @@ public class TestClassification {
   }
   
   public static void testAIMED() throws Exception{
-	  
 	  System.out.println();
 	  System.out.println("Test classification on AIMED...");
-      double[] results = new double[] { 0.0, 0.0, 0.0, 0.0 };
-      
+      double[] results = new double[] { 0.0, 0.0, 0.0, 0.0 };    
       for ( int i = 1 ; i <= 10; i++) {
 		  System.out.println();
 		  System.out.println("Results for fold " + i + "...");
@@ -179,17 +178,14 @@ public class TestClassification {
 			  results[j] = results[j] + results_aux[j];
 		  }
       }
-      
-      
-	  for ( int j = 0; j < results.length; j++) results[j] = results[j] / 10;
-   
+	  for ( int j = 0; j < results.length; j++) results[j] = results[j] / 10;   
 	  System.out.println();
       System.out.println("Results for cross validation...");	
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1] );
   	  System.out.println("Recall : " + results[2] );
   	  System.out.println("F1 : " + results[3] );
-  	 }
+  }
 
   public static void main ( String args[] ) throws Exception {
 	  
@@ -232,5 +228,6 @@ public class TestClassification {
 	  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("false")) {
 		  testWikiEN();
 	  }
+	  System.exit(0);
 	}
 }

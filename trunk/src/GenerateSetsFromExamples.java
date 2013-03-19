@@ -2,6 +2,9 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import com.davidsoergel.conja.Function;
+import com.davidsoergel.conja.Parallel;
+
 import edu.northwestern.at.utils.corpuslinguistics.thesaurus.WordnetThesaurus;
 
 public class GenerateSetsFromExamples {
@@ -219,10 +222,10 @@ public class GenerateSetsFromExamples {
  }
  
  public static Map<String,Integer> getEntropyMap ( String file ) throws Exception {
-	 Set<String> classes = new HashSet<String>();						//stores all possible classes
-   	 Map<String,String[]> shingles = new HashMap<String,String[]>();	//for each shingle store all the classes where it occurs
-   	 Map<String,Double> entropyMap = new HashMap<String,Double>();		//entropy value for each single
-   	 Map<String,Integer> result = new HashMap<String,Integer>();
+	 final Set<String> classes = new HashSet<String>();	//stores all possible classes
+   	 final Map<String,String[]> shingles = new HashMap<String,String[]>(); //for each shingle store all the classes where it occurs
+   	 final Map<String,Double> entropyMap = new HashMap<String,Double>(); //entropy value for each single
+   	 final Map<String,Integer> result = new HashMap<String,Integer>();
    	 BufferedReader input = new BufferedReader(new FileReader(file));
      String line = null;
    	 while ( (line=input.readLine()) != null ) {
@@ -238,10 +241,10 @@ public class GenerateSetsFromExamples {
    		 } 
      }
    	 input.close();
-   	 double minEntropy = Double.MAX_VALUE;
-   	 double maxEntropy = Double.MIN_VALUE;
-   	 for ( String shingle : shingles.keySet() ) {
-   		 Map<String,Double> classProb = new HashMap<String,Double>();	//distribution of probabilities of a shingle over classes
+   	 final double minmaxEntropy[] = { Double.MAX_VALUE, Double.MIN_VALUE };
+	 for( String shingle : shingles.keySet() ) {			
+    // Parallel.forEach(shingles.keySet().iterator(), new Function<String, Void>() { public Void apply(String shingle) {
+    	 Map<String,Double> classProb = new HashMap<String,Double>(); //distribution of probabilities of a shingle over classes
    		 String[] aux = shingles.get(shingle);
    		 for ( String cl : classes ) {
    			 int cnt = 0;
@@ -251,51 +254,37 @@ public class GenerateSetsFromExamples {
    		 double entropy = 0;
    		 for ( String c : classProb.keySet() ) entropy += classProb.get(c) * Math.log(classProb.get(c));
    		 entropy = 0.0 - entropy;
-   		 if ( entropy > maxEntropy) maxEntropy = entropy;
-   		 if ( entropy < minEntropy) minEntropy = entropy;
+   		 if ( entropy < minmaxEntropy[0]) minmaxEntropy[0] = entropy;
+   		 if ( entropy > minmaxEntropy[1]) minmaxEntropy[1] = entropy;
    	     entropyMap.put(shingle,entropy);
-   	 }
+   	    // return null;
+   	 } // });
    	 // normalization and give a weight to each single according to entropy value 
-   	 for ( String shingle : entropyMap.keySet() ) {
+	 for( String shingle : entropyMap.keySet() ) {			
+	 //Parallel.forEach(entropyMap.keySet().iterator(), new Function<String, Void>() { public Void apply(String shingle) {
    		 double entropy = entropyMap.get(shingle);
-   		 entropy = 1.0 - (( entropy - minEntropy ) / ( maxEntropy - minEntropy ));
+   		 entropy = 1.0 - (( entropy - minmaxEntropy[0] ) / ( minmaxEntropy[1] - minmaxEntropy[0] ));
    		 result.put(shingle, (int)Math.round(entropy * 2));
-   	 }
+   		 // return null;
+   	 } //});
    	 return result;	 
  }
  
  public static String generateNGrams(String source, String prefix, int betweenLenght ) {
-	String lowercased = source.toLowerCase();
 	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
 	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
     String aux[] = EnglishNLP.adornText(source,0).split(" +");
-    Set<String> set = new HashSet<String>();    
+    Set<String> set = new HashSet<String>();
     for ( int i = 0 ; i < aux.length; i++ ) {
 		if ( prefix.equals("BEF") && aux.length - i > betweenLenght + 3 ) continue;
 		if ( prefix.equals("AFT") && i > betweenLenght + 3 ) continue;
 		source = (i == 0) ? aux[i] : source + " " + aux[i];
-		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length && auxPOS[i].startsWith("vb") ) {
+		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length && auxPOS[i].startsWith("v") ) {
 			set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
-			if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			
-			for ( String verb : "bend,break,crack,fold,shatter,split,snap".split(",") ) if ( normalized[i].equals(verb) ) set.add("BREAKING_VERB_" + prefix);
-			for ( String verb : "give,pass,hand,sell,pay,trade,lend,loan,offer".split(",") ) if ( normalized[i].equals(verb) ) set.add("GIVE_VERB_" + prefix);
-			for ( String verb : "bash,beat,bump,hit,kick,pound,punch,slap,strike,tap,thump,whack".split(",") ) if ( normalized[i].equals(verb) ) set.add("HITTING_VERB_" + prefix);
-			for ( String verb : "advance,allocate,allot,allow,assign,award,bequeath,forward,grant,guarantee,leave,offer,promise".split(",") ) if ( normalized[i].equals(verb) ) set.add("FUTUREHAVE_VERB_" + prefix);
-			for ( String verb : "mail,send,ship".split(",") ) if ( normalized[i].equals(verb) ) set.add("SEND_VERB_" + prefix);
-			for ( String verb : "fling,flip,kick,lob,shoot,slap,throw,toss".split(",") ) if ( normalized[i].equals(verb) ) set.add("THROW_VERB_" + prefix);
-			for ( String verb : "cry,eat,exercise,flap,honk,mutter,scribble,shout,sleep,smile,squeak,waltz,wave".split(",") ) if ( normalized[i].equals(verb) ) set.add("MANNER_VERB_" + prefix);
-			for ( String verb : "dim,dry,faint,gladden,melt,scare,widen".split(",") ) if ( normalized[i].equals(verb) ) set.add("RESULT_VERB_" + prefix);
+			if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
+			if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
 		}
 	}
-	if ( lowercased.contains(" used by ") ) set.add("USEDBY" + "_" + prefix); 
-	if ( lowercased.contains(" sent to ") ) set.add("SENTTO" + "_" + prefix); 
-	if ( lowercased.contains(" send to ") ) set.add("SENTTO" + "_" + prefix);
-	if ( lowercased.contains(" caused ") ) set.add("CAUSED" + "_" + prefix);
-	if ( lowercased.contains(" contained ") ) set.add("CONTAINED" + "_" + prefix);
-	if ( lowercased.contains(" part of ") ) set.add("PARTOF" + "_" + prefix);
-	if ( lowercased.contains(" made of ") ) set.add("MADEOF" + "_" + prefix);
-	if ( lowercased.contains(" consists ") ) set.add("CONSISTS" + "_" + prefix);
-	if ( lowercased.contains(" belong") ) set.add("BELONGS" + "_" + prefix);
 	// Gerar trigramas com base na string original
 	for ( int j = 0; j < source.length() + 3; j++ ) {
 	   String tok = "";
@@ -310,13 +299,24 @@ public class GenerateSetsFromExamples {
  
  public static void processExample ( String before, String after, String between, String type, PrintWriter out ) {
      out.print(type);
-     int betweenLenght = EnglishNLP.adornText(between,0).split(" +").length;     
-     if ( before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.length() ) before = before.substring(before.lastIndexOf(",") + 1);
-     if ( after.indexOf(",") != -1 ) after = after.substring(0,after.lastIndexOf(","));     
-     out.print(" " + generateNGrams(before, "BEF", betweenLenght) + " " + generateNGrams(between, "BET", betweenLenght) + " " + generateNGrams(after, "AFT", betweenLenght));
+     if ( before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.lastIndexOf(between) ) before = before.substring(before.lastIndexOf(",") + 1);
+     if ( after.indexOf(",") != -1 && after.indexOf(",") > between.length()) after = after.substring(0,after.lastIndexOf(","));
+     int betweenLength = EnglishNLP.adornText(between,0).split(" +").length;     
+     int beforeLength = EnglishNLP.adornText(before,0).split(" +").length;
+     int afterLength = EnglishNLP.adornText(after,0).split(" +").length;
+     if ( beforeLength >= Math.max(betweenLength, afterLength) ) out.print(" " + "LARGER_BEF"); 
+     if ( afterLength >= Math.max(betweenLength, beforeLength) ) out.print(" " + "LARGER_AFT"); 
+     if ( betweenLength >= Math.max(afterLength, beforeLength) ) out.print(" " + "LARGER_BET");
+     ArrayList<String> someCollection = new ArrayList<String>();
+     for ( String aux : new String[]{ "BEF\t" + before, "BET\t" + between, "AFT\t" + after } ) someCollection.add(aux); 
+     for ( String obj : someCollection ) {
+    			String suffix = obj.substring(0,obj.indexOf("\t"));
+    			String str = obj.substring(obj.indexOf("\t")+1);
+    			out.print(" " + generateNGrams(str, suffix, betweenLength));
+     }
      out.println();
- }
-
+ } 
+ 
  public static void generateDataAIMED() throws Exception, IOException {
 	
 	 //Process AIMED
@@ -333,10 +333,12 @@ public class GenerateSetsFromExamples {
  public static void generateDataSemEval() throws Exception, IOException {
 	//Process SemEval
 	 System.out.println("Generating SemEval data...");
+	 /*
 	 entropyMap = null;
 	 System.out.println("Determining shingles entropy...");
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
 	 entropyMap = getEntropyMap("train-data-semeval.txt");
+	 */
 	 System.out.println("Generating train data...");
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
 	 System.out.println("Generating test data...");
