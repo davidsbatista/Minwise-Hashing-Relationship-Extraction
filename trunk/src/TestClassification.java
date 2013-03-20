@@ -1,6 +1,9 @@
 import java.io.*;
 import java.util.*;
 
+import minhash.LocalitySentitiveHashing;
+import minhash.Pair;
+
 public class TestClassification {
 
   private static int knn = 7;
