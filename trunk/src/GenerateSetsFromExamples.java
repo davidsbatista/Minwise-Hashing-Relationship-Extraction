@@ -2,6 +2,8 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
+import nlputils.EnglishNLP;
+
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
 
@@ -298,15 +300,15 @@ public class GenerateSetsFromExamples {
    	 return result;	 
  }
  
- public static String generateNGrams(String source, String prefix, int betweenLenght , int window ) {
+ public static String generateNGrams(String source, String prefix2, int betweenLenght , int window ) {
+    String prefix = ( prefix2.equals("BEF") || prefix2.equals("AFT") ) ? prefix2 + "_" + window : prefix2;
 	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
 	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
     String aux[] = EnglishNLP.adornText(source,0).split(" +");
     Set<String> set = new HashSet<String>();
     for ( int i = 0 ; i < aux.length; i++ ) {
-		if ( prefix.equals("BEF") && aux.length - i > betweenLenght + window ) continue;
-		if ( prefix.equals("AFT") && i > betweenLenght + window ) continue;
-		if ( prefix.equals("BEF") || prefix.equals("AFT") ) prefix += "_" + window;
+		if ( prefix.startsWith("BEF") && aux.length - i > betweenLenght + window ) continue;
+		if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
 		source = (i == 0) ? aux[i] : source + " " + aux[i];	
 		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {
 			if ( auxPOS[i].startsWith("v") ) {
@@ -318,14 +320,15 @@ public class GenerateSetsFromExamples {
 		    }
 		}
 	}
+    final String source2 = source;
 	// Gerar trigramas com base na string original
-	for ( int j = 0; j < source.length() + 3; j++ ) {
+    for ( int j = 0; j < source.length() + 3; j++ ) {
 	   String tok = "";
-       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
+       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source2.length()  ? '_' : source2.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
        if ( frequencyMap != null && ( frequencyMap.get(tok+ "_" + prefix) == null || frequencyMap.get(tok+ "_" + prefix) < minFreqThreshold ) ) continue;
 	   if ( entropyMap != null && entropyMap.get(tok+ "_" + prefix) != null) for ( int i = 1; i <= 1 + entropyMap.get(tok+ "_" + prefix); i++) set.add(tok + "_" + prefix + "_" + i);
 	   else if ( entropyMap == null || entropyMap.size() == 0 ) set.add(tok + "_" + prefix);
-    }	
+	}
 	String result = "";
     for ( String tok : set ) result += " " + tok;
     return result.trim();
