@@ -1,6 +1,9 @@
+package minhash;
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.Array;
+
+
 import org.mapdb.*;
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
@@ -45,7 +48,7 @@ public class LocalitySentitiveHashing {
  public LocalitySentitiveHashing ( File file, int numFunctions , int numBands, Map<String,Integer> featureWeights ) {
 	 if ( numFunctions % numBands != 0 ) throw new Error("Number of hash functions is not divisible by the number of bands.");
      try {
-  	   DB db = DBMaker.newFileDB(file).closeOnJvmShutdown().make();
+  	   DB db = DBMaker.newFileDB(file).journalDisable().closeOnJvmShutdown().make();
        this.featureWeights = featureWeights;
 	   this.function = MinHash.createHashFunctions(MinHash.HashType.POLYNOMIAL,numFunctions);
        this.representation = db.getTreeMap("representation");
@@ -70,9 +73,7 @@ public class LocalitySentitiveHashing {
  public void index ( Integer id, String[] data , int weights[], String result ) {
     if ( data.length != weights.length ) throw new Error("The arrays with the data and with the weights do not have the same size.");
 	Set<String> newSet = new HashSet<String>();
-	for ( int i = 0; i < data.length; i++ ) for ( int j = 0; j < weights[i]; i++ ) {
-		newSet.add(data[i] + "_VALUE_" + j);
-	}
+	for ( int i = 0; i < data.length; i++ ) for ( int j = 0; j < weights[i]; i++ ) newSet.add(data[i] + "_VALUE_" + j);
 	index(id, newSet.toArray(new String[0]), result);
  }
  
@@ -142,30 +143,34 @@ public class LocalitySentitiveHashing {
 	 	   weights = new int[data.length];
 		   for ( int i = 0 ; i < weights.length; i++ ) weights[i] = featureWeights.containsKey(data[i]) ? featureWeights.get(data[i]) : 0;
 	 }
-     int size = function.length / index.length;
-	 int[] minhash = weights == null ? MinHash.minHashFromSet(data,function) : MinHash.minHashFromWeightedSet(data,weights,function);
+     final int size = function.length / index.length;
+	 final int[] minhash = weights == null ? MinHash.minHashFromSet(data,function) : MinHash.minHashFromWeightedSet(data,weights,function);
 	 if ( k <= 0 ) {
-		 TopN<Integer> result = new TopN<Integer>(1);
+		 final TopN<Integer> result = new TopN<Integer>(1);
+//		 Parallel.forEach(index.length, new Function<Integer, Void>() { public Void apply(Integer i) {
 		 for ( int i = 0 ; i < index.length; i++ ) {
 	         int code = function[0].hash(integersToBytes(minhash,i*size,size));
 			 Set<Integer> auxSet = index[i].get(code);
 			 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
-				 int rep[] = this.representation.get(candidate);
+				 int rep[] = representation.get(candidate);
 			     result.add(candidate, MinHash.jaccardSimilarity(minhash,rep));			
 			 }
-		 }
+//			 return null;
+		 }// });
 		 k = result.get().size() == 1 ? kvalue.get(result.mostFrequent()) : 7;
 	 }
-	 TopN<String> result = new TopN<String>(k);
-	 for ( int i = 0 ; i < index.length; i++ ) {
+	 final TopN<String> result = new TopN<String>(k);
+//	 Parallel.forEach(index.length, new Function<Integer, Void>() { public Void apply(Integer i) {
+	 for ( int i = 0 ; i < index.length; i++ ) { 
          int code = function[0].hash(integersToBytes(minhash,i*size,size));
 		 Set<Integer> auxSet = index[i].get(code);
 		 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
-			 String value = this.value.get(candidate);
-			 int rep[] = this.representation.get(candidate);
-		     result.add(value, MinHash.jaccardSimilarity(minhash,rep));			
+			 String valueS = value.get(candidate);
+			 int rep[] = representation.get(candidate);
+		     result.add(valueS, MinHash.jaccardSimilarity(minhash,rep));			
 		 }
-	 }
+//		 return null;
+	 }// });
 	 return result;	 
  }
  

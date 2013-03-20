@@ -1,19 +1,23 @@
+package minhash;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 // A simple utilitary class for keeping the top-n most frequent results
 public class TopN<T> {
 	
-  private TreeSet<Pair<T, Double>> elements;
+  private SortedSet<Pair<T, Double>> elements;
   
   private int n;
 
   public TopN(int n) {
     this.n = n;
-    this.elements = new TreeSet<Pair<T, Double>>(
+    this.elements = Collections.synchronizedSortedSet(new TreeSet<Pair<T, Double>>(
         new Comparator<Pair<T, Double>>() {
           @Override
           public int compare(Pair<T, Double> o1, Pair<T, Double> o2) {
@@ -21,20 +25,20 @@ public class TopN<T> {
             if (o1.getSecond() < o2.getSecond()) return 1;
             return o1.getFirst() == null ? 1 : o2.getFirst() == null ? -1 : new Integer(o1.getFirst().hashCode()).compareTo(o2.getFirst().hashCode());
           }
-    });
+    }));
   }
 
   public void add(T element, double score) {
     Pair<T, Double> keyVal = new Pair<T, Double>(element,score);
     elements.add(keyVal);
-    if (elements.size() > n) elements.pollLast();
+    if (elements.size() > n) elements.remove(elements.last());
   }
 
-  public TreeSet<Pair<T, Double>> get() { return elements; }
+  public SortedSet<Pair<T, Double>> get() { return elements; }
   
   public T mostFrequent() {
 	  Map<T, Double> map = new HashMap<T, Double>();
-	  TreeSet<Pair<T, Double>> aux = get();
+	  SortedSet<Pair<T, Double>> aux = get();
 	  if ( aux == null || aux.size() == 0 ) return null;
 	  for ( Pair<T, Double> t : aux ) {
 		  Double score = map.get(t.getFirst());
@@ -53,7 +57,7 @@ public class TopN<T> {
   
   public Double interpolate() {
 	  Map<T, Double> map = new HashMap<T, Double>();
-	  TreeSet<Pair<T, Double>> aux = get();
+	  SortedSet<Pair<T, Double>> aux = get();
 	  if ( aux == null || aux.size() == 0 ) return null;
 	  for ( Pair<T, Double> t : aux ) {
 		  Double score = map.get(t.getFirst());
@@ -72,7 +76,7 @@ public class TopN<T> {
   
   public double[] interpolateGeospatial() {
 	  Map<T, Double> map = new HashMap<T, Double>();
-	  TreeSet<Pair<T, Double>> aux = get();
+	  SortedSet<Pair<T, Double>> aux = get();
 	  if ( aux == null || aux.size() == 0 ) return null;
 	  for ( Pair<T, Double> t : aux ) {
 		  Double score = map.get(t.getFirst());

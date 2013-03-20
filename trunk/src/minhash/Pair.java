@@ -1,6 +1,7 @@
+package minhash;
 
 // A simple utilitary class for storing a pair of objects
-class Pair<A, B> {
+public class Pair<A, B> {
 	
     private A first;
     private B second;
