@@ -58,7 +58,14 @@ public class LocalitySentitiveHashing {
  
  // Returns the number of examples that are currently indexed
  public int indexSize ( ) { return value.size(); }
-  
+
+ // Returns the number of examples that are currently indexed that are of a particular type
+ public int indexSize ( String type ) { 
+	 int counter = 0;
+	 for ( Integer key : value.keySet() ) if( value.get(key).equals(type)) counter++; 
+	 return counter;
+ }
+ 
  // Adds a new example to the index
  public void index ( Integer id, String[] data , int weights[], String result ) {
     if ( data.length != weights.length ) throw new Error("The arrays with the data and with the weights do not have the same size.");

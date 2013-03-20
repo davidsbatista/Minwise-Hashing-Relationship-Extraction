@@ -5,13 +5,17 @@ import java.util.regex.*;
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
 
+import edu.mit.jverbnet.index.VerbIndex;
+import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
 import edu.northwestern.at.utils.corpuslinguistics.thesaurus.WordnetThesaurus;
 
 public class GenerateSetsFromExamples {
 
  public static Map<String,Integer> entropyMap;
+
+ public static Map<String,Integer> frequencyMap;
  
- public static WordnetThesaurus thesaurus = null;
+ public static int minFreqThreshold = 2;
  
  public static void processWikipedia ( String file, PrintWriter out ) throws Exception {
    BufferedReader input = new BufferedReader( new FileReader(file) );
@@ -67,19 +71,20 @@ public class GenerateSetsFromExamples {
  }
  
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
-	 
+   int numberOfOther = 0;
    Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" }));
-   
    BufferedReader input = new BufferedReader( new FileReader(file) );
    String aux = null;
-   String sentence = null;
    String entity1 = null;
    String type = null;
    while ( ( aux = input.readLine() ) != null ) {
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
-		   sentence = aux.replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +title *= *\"[^\"]+\")?","<a");
+		   aux = aux.replaceAll("</?i>","").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +title *= *\"[^\"]+\")?","<a");
 		   entity1 = entity1.replaceAll(" \\(.*","").trim();
-		   if ( sentence.contains(entity1) ) sentence = sentence.replaceAll(entity1,"<a>"+entity1+"</a>"); else {
+		   for ( List<String> tokens : new ICU4JBreakIteratorSentenceSplitter().extractSentences(aux) ) {
+			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT; 
+			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");
+		    if ( sentence.contains(entity1)) sentence = sentence.replaceAll(entity1,"<a>"+entity1+"</a>"); else {
 			   String auxS[] = entity1.split(" ");
 			   if ( sentence.startsWith("He ")) {
 			   	 sentence = sentence.replaceAll("He ","<a>"+entity1+"</a> ");
@@ -104,10 +109,11 @@ public class GenerateSetsFromExamples {
 			   } else if ( sentence.contains(" she ")) {
 			   	 sentence = sentence.replaceAll(" she "," <a>"+entity1+"</a> ");
 			   }
-	   	   }
-		   Pattern pattern = Pattern.compile("<a[^>]*>[^<]+</a>");
-		   Matcher matcher = pattern.matcher(sentence);
-		   while (matcher.find()) {
+	   	    }
+
+		    Pattern pattern = Pattern.compile("<a[^>]*>[^<]+</a>");
+		    Matcher matcher = pattern.matcher(sentence);
+		    while (matcher.find()) {
 			   String type1 = matcher.group();
 			   if ( !type1.contains(" relation=") ) type1 = "OTHER"; else { 
 				   type1 = type1.substring(type1.indexOf(" relation=")+11); 
@@ -122,37 +128,43 @@ public class GenerateSetsFromExamples {
 					   type2 = type2.substring(type2.indexOf(" relation=")+11); 
 					   type2 = type2.substring(0, type2.indexOf("\"")); 
 				   }
-				   String before = sentence.substring(0,matcher.start()).replaceAll("<[^>]*>","");
-				   String after = sentence.substring(matcher.end()+matcher2.end()).replaceAll("<[^>]*>","");
-				   String between = sentence.substring(matcher.end(),matcher.end()+matcher2.start()).replaceAll("<[^>]*>","");
-                                   before = before + " " + between;
-                                   after = between + " " + after;
+				   String before = sentence.substring(0,matcher.end()).replaceAll("<[^>]+>","");
+				   String after = sentence.substring(matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
+				   String between = sentence.substring(matcher.end(),matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
+                   before = before + " " + between;
+                   after = between + " " + after;
 				   type = "OTHER";
 				   if ( !type1.equals("OTHER") && !type2.equals("OTHER")) type = "OTHER";
 				   else if ( type1.equals("OTHER") && type2.equals("OTHER")) type = "OTHER";
-				   else if ( type1.equals("OTHER") && !matcher.group().contains(">"+entity1+"<")) type = type2;
-				   else if ( type2.equals("OTHER") && !matcher2.group().contains(">"+entity1+"<")) type = type1;
-				   if ( type.equals("OTHER") && Math.random() < 0.9 || exclude.contains(type)) continue;
+				   else if ( type1.equals("OTHER") && matcher.group().contains(">"+entity1+"<")) type = type2;
+				   else if ( type2.equals("OTHER") && matcher2.group().contains(">"+entity1+"<")) type = type1;
+				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
 				   
-			       System.out.println();
+				   
+/*			       System.out.println();
 				   System.out.println("sentence: " + sentence);
-				   System.out.println("before: " + before);
-				   System.out.println("between: " + between);
-				   System.out.println("after: " + after);
+				   System.out.println();
+				   System.out.println("* before: " + before);
+				   System.out.println("* between: " + between);
+				   System.out.println("* after: " + after);
+				   System.out.println();
 				   System.out.println("type: " + type);
-				   System.out.println("==================");			   
-				   
+				   System.out.println("=================="); */			   
+				   if ( type.equals("OTHER")) numberOfOther++;
 				   processExample(before,after,between,type,out); 
 			   }   
+		     }
 		   }
 	   }
    }
    out.flush();
+   System.err.println("Number of elements of class OTHER : " + numberOfOther);
    input.close();
  }
  
  public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
-	 Set<String> positiveExamples = new HashSet<String>();	 
+	 Set<Integer> positiveExamples = new HashSet<Integer>();	 
+	 Set<Integer> negativeExamples = new HashSet<Integer>();	 
 	 Set<String> dataFiles = new HashSet<String>();
 	 BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
 	 String aux = null;
@@ -210,15 +222,31 @@ public class GenerateSetsFromExamples {
 		   */
 	       
 	       String relation = before + between + after;
-	       if (type.equals("related")) positiveExamples.add(relation);
-		   
-		   if (positiveExamples.contains(relation))continue;
-		   else processExample(before,after,between,type,out); 
+		   if (!positiveExamples.contains(relation.hashCode()) && !negativeExamples.contains(relation.hashCode())) processExample(before,after,between,type,out);
+		   if (type.equals("related")) positiveExamples.add(relation.hashCode()); else negativeExamples.add(relation.hashCode());
 		  }
 	    }
 	    input.close();
 	   }
+	   System.err.println(positiveExamples.size() + " positive examples and " + negativeExamples.size() + " negative examples.");
 	   out.flush();
+ }
+
+ public static Map<String,Integer> getFrequencyMap ( String file ) throws Exception {
+   	 final Map<String,Integer> shingles = new HashMap<String,Integer>(); //for each shingle store all the classes where it occurs
+   	 BufferedReader input = new BufferedReader(new FileReader(file));
+     String line = null;
+   	 while ( (line=input.readLine()) != null ) {
+   		 line = line.substring(line.indexOf(" ") + 1);
+   		 String[] relation_shingles = line.split(" ");
+   		 for ( String shingle : relation_shingles ) {
+   			 Integer shs = shingles.get(shingle);
+   			 if ( shs == null ) shs = new Integer(1); else shs++;
+   			 shingles.put(shingle,shs);
+   		 } 
+     }
+   	 input.close();
+   	 return shingles;	 
  }
  
  public static Map<String,Integer> getEntropyMap ( String file ) throws Exception {
@@ -270,25 +298,31 @@ public class GenerateSetsFromExamples {
    	 return result;	 
  }
  
- public static String generateNGrams(String source, String prefix, int betweenLenght ) {
+ public static String generateNGrams(String source, String prefix, int betweenLenght , int window ) {
 	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
 	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
     String aux[] = EnglishNLP.adornText(source,0).split(" +");
     Set<String> set = new HashSet<String>();
     for ( int i = 0 ; i < aux.length; i++ ) {
-		if ( prefix.equals("BEF") && aux.length - i > betweenLenght + 3 ) continue;
-		if ( prefix.equals("AFT") && i > betweenLenght + 3 ) continue;
-		source = (i == 0) ? aux[i] : source + " " + aux[i];
-		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length && auxPOS[i].startsWith("v") ) {
-			set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
-			if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
-			if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
+		if ( prefix.equals("BEF") && aux.length - i > betweenLenght + window ) continue;
+		if ( prefix.equals("AFT") && i > betweenLenght + window ) continue;
+		if ( prefix.equals("BEF") || prefix.equals("AFT") ) prefix += "_" + window;
+		source = (i == 0) ? aux[i] : source + " " + aux[i];	
+		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {
+			if ( auxPOS[i].startsWith("v") ) {
+			  set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
+			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
+			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
+		    } else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
+	  		  set.add(normalized[i] + "_PREP_" + prefix);
+		    }
 		}
 	}
 	// Gerar trigramas com base na string original
 	for ( int j = 0; j < source.length() + 3; j++ ) {
 	   String tok = "";
        for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
+       if ( frequencyMap != null && ( frequencyMap.get(tok+ "_" + prefix) == null || frequencyMap.get(tok+ "_" + prefix) < minFreqThreshold ) ) continue;
 	   if ( entropyMap != null && entropyMap.get(tok+ "_" + prefix) != null) for ( int i = 1; i <= 1 + entropyMap.get(tok+ "_" + prefix); i++) set.add(tok + "_" + prefix + "_" + i);
 	   else if ( entropyMap == null || entropyMap.size() == 0 ) set.add(tok + "_" + prefix);
     }	
@@ -315,7 +349,7 @@ public class GenerateSetsFromExamples {
      for ( String obj : someCollection ) {
     			String suffix = obj.substring(0,obj.indexOf("\t"));
     			String str = obj.substring(obj.indexOf("\t")+1);
-    			out.print(" " + generateNGrams(str, suffix, betweenLength));
+    			out.print(" " + generateNGrams(str, suffix, betweenLength, 3));
      }
      out.println();
  } 
@@ -344,6 +378,12 @@ public class GenerateSetsFromExamples {
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
 	 entropyMap = getEntropyMap("train-data-semeval.txt");
 	 */
+	 /*
+	 frequencyMap = null;
+	 System.out.println("Determining shingles frequency...");
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 frequencyMap = getFrequencyMap("train-data-semeval.txt");
+	 */
 	 System.out.println("Generating train data...");
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
 	 System.out.println("Generating test data...");
@@ -353,14 +393,14 @@ public class GenerateSetsFromExamples {
  public static void generateDataWikiEn() throws Exception, IOException {
 	//WikiEn
 	 System.out.println("Generating Wikipedia data...");
-	 entropyMap = null;
+	 /*entropyMap = null;
 	 System.out.println("Determining shingles entropy...");
 	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("train-data-wikien.txt")));
-	 entropyMap = getEntropyMap("train-data-wikien.txt");
+	 entropyMap = getEntropyMap("train-data-wikien.txt"); */
 	 System.out.println("Generating train data...");
-	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("train-data-wikien.txt")));
+	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("train-data-wikien.txt")));
 	 System.out.println("Generating test data...");
-	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("test-data-wikien.txt")));
+	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("test-data-wikien.txt")));
 }
  
  public static void generateAll() throws Exception {

@@ -83,8 +83,11 @@ public class TestClassification {
 	  }
 	  double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
 	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
-	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));
+	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
 	  System.out.println("Results for class \"" + class_relation + "\" ...");
+	  System.out.println("Number of test instances : " + numInstancesOfClass );
+	  System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
+	  System.out.println("Number of classifications : " + numClassified );
 	  System.out.println("Precision : " + precision );
 	  System.out.println("Recall : " + recall );
 	  System.out.println("F1 : " + f1 );
