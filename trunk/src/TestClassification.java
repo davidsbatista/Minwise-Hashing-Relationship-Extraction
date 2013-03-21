@@ -12,9 +12,8 @@ public class TestClassification {
   private static int signature = 400;
   private static int bands = 50;
   private static boolean separateDirection = false;
-  
-  private static LocalitySentitiveHashing dataIndex;
-  
+ 
+  private static LocalitySentitiveHashing dataIndex;  
   private static LocalitySentitiveHashing directionIndex;
 
   public static void readTrainData ( String file ) throws Exception {
@@ -197,7 +196,7 @@ public class TestClassification {
 
   public static void main ( String args[] ) throws Exception {
 	  
-	  EnglishNLP.verbClasses("resources/levin-verb-classes.txt");
+	  EnglishNLP.readVerbClasses("/home/dsbatista/relations-minhash/resources/levin-verb-classes.txt");
 	  
 	  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
 		  GenerateSetsFromExamples.generateAll();

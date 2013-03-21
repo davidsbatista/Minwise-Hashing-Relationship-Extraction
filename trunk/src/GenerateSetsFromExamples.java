@@ -171,6 +171,7 @@ public class GenerateSetsFromExamples {
 	    String type = null;
 	    while ( ( aux = input.readLine() ) != null ) {
 		 int auxNum1 = 1, auxNum2 = 1;
+		 aux = aux.replaceAll("([a-zA-Z0-9] )<prot>( [^<] )</prot>", "\1<p>\2</p>");
 		 aux = aux.replaceAll("</?prot>","").replaceAll("  +"," ");
 		 while ( aux.indexOf("<p") != -1 ) {
 			 String aux1 = aux.substring(0,aux.indexOf("<p")) + ("<P" + auxNum1++);
@@ -308,7 +309,7 @@ public class GenerateSetsFromExamples {
 			  set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
-			  for (String levin_class : EnglishNLP.getClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
+			  //for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }
