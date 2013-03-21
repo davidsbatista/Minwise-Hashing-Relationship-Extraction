@@ -8,7 +8,7 @@
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="TestClassification"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ icu4j.jar mapdb.jar morphadorner.jar conja-1.07-SNAPSHOT.jar log4j-1.2-1.2.15.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ icu4j.jar mapdb.jar morphadorner.jar conja-1.07-SNAPSHOT.jar log4j-1.2-1.2.15.jar guava-14.0.1.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="/home/dsbatista/workspace/relations-minhash/bin"/>
@@ -17,6 +17,7 @@
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="morphadorner.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="conja-1.07-SNAPSHOT.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="log4j-1.2-1.2.15.jar"/>
+        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="guava-14.0.1.jar"/>
         </jar>
     </target>
 </project>
