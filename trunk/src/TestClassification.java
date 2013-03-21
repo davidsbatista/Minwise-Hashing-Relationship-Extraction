@@ -9,7 +9,7 @@ import minhash.Pair;
 public class TestClassification {
 
   private static int knn = 7;
-  private static int signature = 400;
+  private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
  
@@ -196,47 +196,59 @@ public class TestClassification {
 
   public static void main ( String args[] ) throws Exception {
 	  
-	  EnglishNLP.readVerbClasses("/home/dsbatista/relations-minhash/resources/levin-verb-classes.txt");
-	  
-	  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
-		  GenerateSetsFromExamples.generateAll();
-		  testSemEval();
-		  testAIMED();
-		  testWikiEN();
+	  if (args.length != 5) {
+		  System.out.println("Proper Usage is: dataset true|false knn signature bands");
+	      System.exit(0);
 	  }
 	  
-	  else if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("false")) {
-		  testSemEval();
-		  testAIMED();
-		  testWikiEN();
-	  }
-	  
-	  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
-		  GenerateSetsFromExamples.generateDataSemEval();
-		  testSemEval();
-	  }
-	  
-	  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("true")) {
-		  GenerateSetsFromExamples.generateDataAIMED();
-		  testAIMED();
-	  }
-	  
-	  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("true")) {
-		  GenerateSetsFromExamples.generateDataWikiEn();
-		  testWikiEN();
-	  }
-	  
-	  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) {
-		  testSemEval();
-	  }
-	  
-	  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) {
-		  testAIMED();
-	  }
-	  
-	  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("false")) {
-		  testWikiEN();
-	  }
-	  System.exit(0);
-	}
+	  else {	
+		  EnglishNLP.readVerbClasses("/home/dsbatista/relations-minhash/resources/levin-verb-classes.txt");		  
+		  signature = Integer.parseInt(args[2]);
+		  bands = Integer.parseInt(args[3]);
+		  knn = Integer.parseInt(args[4]);
+		  System.out.println("signature: " + signature);
+		  System.out.println("bands: " + bands);
+		  System.out.println("knn: " + knn);		  
+		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
+			  GenerateSetsFromExamples.generateAll();
+			  testSemEval();
+			  testAIMED();
+			  testWikiEN();
+		  }
+		  
+		  else if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("false")) {
+			  testSemEval();
+			  testAIMED();
+			  testWikiEN();
+		  }
+		  
+		  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
+			  GenerateSetsFromExamples.generateDataSemEval();
+			  testSemEval();
+		  }
+		  
+		  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("true")) {
+			  GenerateSetsFromExamples.generateDataAIMED();
+			  testAIMED();
+		  }
+		  
+		  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("true")) {
+			  GenerateSetsFromExamples.generateDataWikiEn();
+			  testWikiEN();
+		  }
+		  
+		  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) {
+			  testSemEval();
+		  }
+		  
+		  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) {
+			  testAIMED();
+		  }
+		  
+		  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("false")) {
+			  testWikiEN();
+		  }
+		  System.exit(0);
+		}
+  }
 }
