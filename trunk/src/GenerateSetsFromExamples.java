@@ -1,22 +1,15 @@
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-
 import nlputils.EnglishNLP;
-
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
-
-import edu.mit.jverbnet.index.VerbIndex;
 import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
-import edu.northwestern.at.utils.corpuslinguistics.thesaurus.WordnetThesaurus;
 
 public class GenerateSetsFromExamples {
 
  public static Map<String,Integer> entropyMap;
-
  public static Map<String,Integer> frequencyMap;
- 
  public static int minFreqThreshold = 2;
  
  public static void processWikipedia ( String file, PrintWriter out ) throws Exception {
@@ -315,7 +308,8 @@ public class GenerateSetsFromExamples {
 			  set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
-		    } else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
+			  for (String levin_class : EnglishNLP.getClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
+			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }
 		}
