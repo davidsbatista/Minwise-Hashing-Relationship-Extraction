@@ -135,8 +135,7 @@ public class GenerateSetsFromExamples {
 				   else if ( type2.equals("OTHER") && matcher2.group().contains(">"+entity1+"<")) type = type1;
 				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
 				   
-				   
-/*			       System.out.println();
+			       System.out.println();
 				   System.out.println("sentence: " + sentence);
 				   System.out.println();
 				   System.out.println("* before: " + before);
@@ -144,7 +143,7 @@ public class GenerateSetsFromExamples {
 				   System.out.println("* after: " + after);
 				   System.out.println();
 				   System.out.println("type: " + type);
-				   System.out.println("=================="); */			   
+				   System.out.println("=================="); 			   
 				   if ( type.equals("OTHER")) numberOfOther++;
 				   processExample(before,after,between,type,out); 
 			   }   
@@ -158,11 +157,9 @@ public class GenerateSetsFromExamples {
  }
  
  public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
-	 Set<Integer> positiveExamples = new HashSet<Integer>();	 
-	 Set<Integer> negativeExamples = new HashSet<Integer>();	 
 	 Set<String> dataFiles = new HashSet<String>();
 	 BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
-	 String aux = null;
+	 String aux = null, original = null;
 	 while ( ( aux = inputAux.readLine() ) != null ) dataFiles.add(aux);
 	   inputAux.close();
 	   for ( File file : new File(directory).listFiles() ) if ( dataFiles.contains(file.getName()) ){ 
@@ -170,9 +167,14 @@ public class GenerateSetsFromExamples {
 	    String sentence = null;
 	    String type = null;
 	    while ( ( aux = input.readLine() ) != null ) {
-		 int auxNum1 = 1, auxNum2 = 1;
-		 aux = aux.replaceAll("([a-zA-Z0-9] )<prot>( [^<] )</prot>", "\1<p>\2</p>");
+	   	 Set<String> positiveExamples = new HashSet<String>();	 
+		 Set<String> negativeExamples = new HashSet<String>();
+	     original = aux;
+	     int auxNum1 = 1, auxNum2 = 1;
+	     
+	     for ( int num = 25 ; num <= 50 ; num++ ) aux = aux.replaceFirst("([\\-a-zA-Z0-9] +)<prot>([^<]+)</prot>", "$1<p3  pair=" + num + " >$2</p >");
 		 aux = aux.replaceAll("</?prot>","").replaceAll("  +"," ");
+		 
 		 while ( aux.indexOf("<p") != -1 ) {
 			 String aux1 = aux.substring(0,aux.indexOf("<p")) + ("<P" + auxNum1++);
 		     String aux2 = aux.substring(aux.indexOf("<p")+3);
@@ -193,38 +195,50 @@ public class GenerateSetsFromExamples {
 			 aux = aux1 + aux2;
 		 }
 	     aux = aux.replaceAll("<P","<p").replaceAll("<-P","</p");
-	     for ( int i = 1; i < 20; i++ ) for ( int j = 1; j < 20; j++ ) for ( int k = j + 1 ; k < 20; k++ ) 
-		  if ( aux.contains("<p" + j + " pair="+i) || aux.contains("<p" + k + " pair="+i) ) {
-		   type = ( aux.contains("<p" + j + " pair="+i) && aux.contains("<p" + k + " pair="+i) ) ? "related" : "not-related";
-	       sentence = aux;
+	     sentence = aux;
+		// System.out.println("==================");
+		// System.out.println("original: " + original);
+		// System.out.println("sentence: " + sentence);
+	     for ( int i = 1; i < 50; i++ ) for ( int j = 1; j < 50; j++ ) for ( int k = j + 1 ; k < 50; k++ ) {
+		  if ( aux.contains("<p" + j + " pair="+i+" ") || aux.contains("<p" + k + " pair="+i+" ") ) {
+		   type = ( aux.contains("<p" + j + " pair="+i+" ") && aux.contains("<p" + k + " pair="+i+" ") ) ? "related" : "not-related";
 	       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;   
 	       String before = sentence.substring(0,sentence.indexOf("</p" + j + ">")+5).trim();
-		   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ) )).trim(); 
-		   String between = sentence.substring(sentence.indexOf("</p" + j + ">")+5,sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i : "" ))).trim();
+		   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i + " " : "" ) )).trim(); 
+		   String between = sentence.substring(sentence.indexOf("</p" + j + ">")+5,sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i+" " : "" ))).trim();
 		   before = before.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 		   after = after.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 	  	   between = between.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 		   before = before + " " + between;
-	       after = between + " " + after;
-	       
-	       /*
-	       System.out.println();
-		   System.out.println("sentence: " + sentence);
-		   System.out.println("before: " + before);
-		   System.out.println("between: " + between);
-		   System.out.println("after: " + after);
-		   System.out.println("type: " + type);
-		   System.out.println("==================");
-		   */
-	       
-	       String relation = before + between + after;
-		   if (!positiveExamples.contains(relation.hashCode()) && !negativeExamples.contains(relation.hashCode())) processExample(before,after,between,type,out);
-		   if (type.equals("related")) positiveExamples.add(relation.hashCode()); else negativeExamples.add(relation.hashCode());
+	       after = between + " " + after;	       
+	       String relation = before + "\t" + between + "\t" + after;
+		   if (type.equals("related")) positiveExamples.add(relation); else negativeExamples.add(relation);
 		  }
+	     }
+	     for ( String auxStr : positiveExamples) {
+	    	  String auxStr2[] = auxStr.split("\t");
+	    	  processExample(auxStr2[0],auxStr2[1],auxStr2[2],"related",out);
+		      //System.out.println();
+			  //System.out.println("before: " + auxStr2[0]);
+			  //System.out.println("between: " + auxStr2[1]);
+			  //System.out.println("after: " + auxStr2[2]);
+			  //System.out.println("type: related");
+		      //System.out.println();
+	     }
+	     for ( String auxStr : negativeExamples) if ( !positiveExamples.contains(auxStr) ) {
+	    	  String auxStr2[] = auxStr.split("\t");
+	    	  processExample(auxStr2[0],auxStr2[1],auxStr2[2],"not-related",out);
+		      //System.out.println();
+			  //System.out.println("before: " + auxStr2[0]);
+			  //System.out.println("between: " + auxStr2[1]);
+			  //System.out.println("after: " + auxStr2[2]);
+			  //System.out.println("type: not-related");
+		      //System.out.println();
+	     }
+		 //System.out.println("==================");
 	    }
 	    input.close();
 	   }
-	   System.err.println(positiveExamples.size() + " positive examples and " + negativeExamples.size() + " negative examples.");
 	   out.flush();
  }
 
@@ -309,7 +323,7 @@ public class GenerateSetsFromExamples {
 			  set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
-			  //for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
+			  for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }
