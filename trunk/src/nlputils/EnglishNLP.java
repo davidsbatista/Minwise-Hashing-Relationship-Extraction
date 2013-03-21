@@ -41,15 +41,11 @@ public class EnglishNLP {
 
 	static Multimap<String, String> levin_verb_classes = LinkedListMultimap.create();
 	
-	public static void main(String[] args) throws IOException {
-		verbClasses(args[0]);
-	}
-	
-	public static Collection<String> getClass(String verb) {
+	public static Collection<String> getVerbClass(String verb) {
 		return levin_verb_classes.get(verb);
 	}
 	
-	public static void verbClasses(String path) throws IOException {
+	public static void readVerbClasses(String path) throws IOException {
 		BufferedReader input = new BufferedReader( new FileReader(new File(path)) );
 		String aux = null;
 		String levin_class = null;
@@ -58,16 +54,11 @@ public class EnglishNLP {
 		while ( ( aux = input.readLine() ) != null ) {
 			if ( aux.startsWith("VERB") ) {
 				String[] data = aux.split("\\s+",2);
-				levin_class = data[1];
+				levin_class = data[0];
 				n_classes++;
-			}
-			else if ( aux.trim().length() != 0) verbs = aux.split("\\s+");
-			else {
-				int i;
-				if (verbs[0].startsWith("(")) i=1; else i =0;
-				for (int z = i; z < verbs.length; z++) {
-					levin_verb_classes.put(verbs[z],levin_class);
-				}
+			} else if ( aux.trim().length() != 0) {
+				verbs = aux.split("\\s+");
+				for (int z = 0; z < verbs.length; z++) levin_verb_classes.put(verbs[z],levin_class);
 			}
 		}
 		System.out.println("Total Levin Classes: " + n_classes);
