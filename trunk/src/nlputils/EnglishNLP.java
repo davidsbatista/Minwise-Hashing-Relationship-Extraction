@@ -61,8 +61,8 @@ public class EnglishNLP {
 				for (int z = 0; z < verbs.length; z++) levin_verb_classes.put(verbs[z],levin_class);
 			}
 		}
-		System.out.println("Total Levin Classes: " + n_classes);
-		System.out.println("# Unique Verbs: " + levin_verb_classes.keySet().size());	
+		System.out.println("Total Levin classes: " + n_classes);
+		System.out.println("Number of unique verbs: " + levin_verb_classes.keySet().size());	
 		input.close();
 	}
 
