@@ -1,16 +1,30 @@
 package nlputils;
 
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
-import edu.northwestern.at.utils.*;
-import edu.northwestern.at.utils.corpuslinguistics.adornedword.*;
-import edu.northwestern.at.utils.corpuslinguistics.lemmatizer.*;
-import edu.northwestern.at.utils.corpuslinguistics.lexicon.*;
-import edu.northwestern.at.utils.corpuslinguistics.partsofspeech.*;
-import edu.northwestern.at.utils.corpuslinguistics.postagger.*;
-import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.*;
-import edu.northwestern.at.utils.corpuslinguistics.spellingstandardizer.*;
-import edu.northwestern.at.utils.corpuslinguistics.tokenizer.*;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
+
+import edu.northwestern.at.utils.CharUtils;
+import edu.northwestern.at.utils.corpuslinguistics.adornedword.AdornedWord;
+import edu.northwestern.at.utils.corpuslinguistics.lemmatizer.DefaultLemmatizer;
+import edu.northwestern.at.utils.corpuslinguistics.lemmatizer.Lemmatizer;
+import edu.northwestern.at.utils.corpuslinguistics.lexicon.Lexicon;
+import edu.northwestern.at.utils.corpuslinguistics.partsofspeech.PartOfSpeechTags;
+import edu.northwestern.at.utils.corpuslinguistics.postagger.DefaultPartOfSpeechTagger;
+import edu.northwestern.at.utils.corpuslinguistics.postagger.PartOfSpeechTagger;
+import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.DefaultSentenceSplitter;
+import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.SentenceSplitter;
+import edu.northwestern.at.utils.corpuslinguistics.spellingstandardizer.DefaultSpellingStandardizer;
+import edu.northwestern.at.utils.corpuslinguistics.spellingstandardizer.SpellingStandardizer;
+import edu.northwestern.at.utils.corpuslinguistics.tokenizer.DefaultWordTokenizer;
+import edu.northwestern.at.utils.corpuslinguistics.tokenizer.PennTreebankTokenizer;
+import edu.northwestern.at.utils.corpuslinguistics.tokenizer.WordTokenizer;
 
 public class EnglishNLP {
 
@@ -24,6 +38,42 @@ public class EnglishNLP {
     static SentenceSplitter sentenceSplitter = null;
     static Lemmatizer lemmatizer = null;
 	static SpellingStandardizer standardizer = null;
+
+	static Multimap<String, String> levin_verb_classes = LinkedListMultimap.create();
+	
+	public static void main(String[] args) throws IOException {
+		verbClasses(args[0]);
+	}
+	
+	public static Collection<String> getClass(String verb) {
+		return levin_verb_classes.get(verb);
+	}
+	
+	public static void verbClasses(String path) throws IOException {
+		BufferedReader input = new BufferedReader( new FileReader(new File(path)) );
+		String aux = null;
+		String levin_class = null;
+		String[] verbs = null;
+		int n_classes = 0;
+		while ( ( aux = input.readLine() ) != null ) {
+			if ( aux.startsWith("VERB") ) {
+				String[] data = aux.split("\\s+",2);
+				levin_class = data[1];
+				n_classes++;
+			}
+			else if ( aux.trim().length() != 0) verbs = aux.split("\\s+");
+			else {
+				int i;
+				if (verbs[0].startsWith("(")) i=1; else i =0;
+				for (int z = i; z < verbs.length; z++) {
+					levin_verb_classes.put(verbs[z],levin_class);
+				}
+			}
+		}
+		System.out.println("Total Levin Classes: " + n_classes);
+		System.out.println("# Unique Verbs: " + levin_verb_classes.keySet().size());	
+		input.close();
+	}
 
     public static String adornText( String textToAdorn, int num ) {
 	  try {
