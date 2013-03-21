@@ -1,9 +1,8 @@
 package minhash;
+
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.Array;
-
-
 import org.mapdb.*;
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
@@ -48,7 +47,7 @@ public class LocalitySentitiveHashing {
  public LocalitySentitiveHashing ( File file, int numFunctions , int numBands, Map<String,Integer> featureWeights ) {
 	 if ( numFunctions % numBands != 0 ) throw new Error("Number of hash functions is not divisible by the number of bands.");
      try {
-  	   DB db = DBMaker.newFileDB(file).journalDisable().closeOnJvmShutdown().make();
+  	   DB db = DBMaker.newFileDB(file).closeOnJvmShutdown().make();
        this.featureWeights = featureWeights;
 	   this.function = MinHash.createHashFunctions(MinHash.HashType.POLYNOMIAL,numFunctions);
        this.representation = db.getTreeMap("representation");
