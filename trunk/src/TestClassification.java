@@ -88,7 +88,8 @@ public class TestClassification {
 	  double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
 	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
 	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
-	  System.out.println("Results for class \"" + class_relation + "\" ...");
+	  System.out.println("Results for class \"" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
+	  //System.out.println("Total number of instances : " + (dataIndex.indexSize(class_relation) + numInstancesOfClass));
 	  System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
 	  System.out.println("Number of test instances : " + numInstancesOfClass );
 	  System.out.println("Number of classifications : " + numClassified );
@@ -197,7 +198,7 @@ public class TestClassification {
   public static void main ( String args[] ) throws Exception {
 	  
 	  if (args.length != 5) {
-		  System.out.println("Proper Usage is: dataset true|false knn signature bands");
+		  System.out.println("usage is: dataset true|false knn signature bands");
 	      System.exit(0);
 	  }
 	  

@@ -4,7 +4,10 @@ import java.util.regex.*;
 import nlputils.EnglishNLP;
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
+
+import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.BreakIteratorSentenceSplitter;
 import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
+import edu.northwestern.at.utils.corpuslinguistics.tokenizer.PennTreebankTokenizer;
 
 public class GenerateSetsFromExamples {
 
@@ -64,22 +67,43 @@ public class GenerateSetsFromExamples {
    out.flush();
    input.close();
  }
- 
+  
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
    int numberOfOther = 0;
-   Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" }));
+   //Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" }));
    BufferedReader input = new BufferedReader( new FileReader(file) );
    String aux = null;
    String entity1 = null;
    String type = null;
+   boolean debug = false;
    while ( ( aux = input.readLine() ) != null ) {
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 		   aux = aux.replaceAll("</?i>","").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +title *= *\"[^\"]+\")?","<a");
-		   entity1 = entity1.replaceAll(" \\(.*","").trim();
-		   for ( List<String> tokens : new ICU4JBreakIteratorSentenceSplitter().extractSentences(aux) ) {
+		   entity1 = entity1.replaceAll(" \\(.*","").trim();		   
+		   List<List<String>> sentences = new ICU4JBreakIteratorSentenceSplitter().extractSentences(aux);		   		   
+		   /* fix extracted sentences */
+		   List<List<String>> new_sentences = new Vector<List<String>>();
+		   int i = 0;
+		   while (i < sentences.size()) {				   
+			   List<String> s = sentences.get(i);
+			   List<String> new_sentence = new ArrayList<String>();
+			   new_sentence.addAll(sentences.get(i));
+			   while (s.get(s.size()-1).matches("[A-Z]\\.")) {					   
+				   new_sentence.addAll(sentences.get(i+1));
+				   i++;
+				   s = sentences.get(i);
+			   }
+			   new_sentences.add(new_sentence);
+			   i++;
+		   }
+			   
+			 		   
+		   for ( List<String> tokens : new_sentences ) {
 			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT; 
 			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");
-		    if ( sentence.contains(entity1)) sentence = sentence.replaceAll(entity1,"<a>"+entity1+"</a>"); else {
+			if ( sentence.contains(entity1)) sentence = sentence.replaceAll(entity1,"<a>"+entity1+"</a>"); 
+			
+			else {
 			   String auxS[] = entity1.split(" ");
 			   if ( sentence.startsWith("He ")) {
 			   	 sentence = sentence.replaceAll("He ","<a>"+entity1+"</a> ");
@@ -89,13 +113,20 @@ public class GenerateSetsFromExamples {
 		   	     sentence = sentence.replace(auxS[auxS.length-1],"<a>"+entity1+"</a>");
 		       } else if ( sentence.startsWith(auxS[0])) {
 		   	     sentence = sentence.replace(auxS[0],"<a>"+entity1+"</a>");			   
-			   } else if ( auxS.length >=3 && sentence.contains(auxS[0]+ " " + auxS[auxS.length-1])) {
+			   } 
+		         else if ( auxS.length >=3 && sentence.contains(auxS[0]+ " " + auxS[auxS.length-1])) 		        	 
+		        //TODO: && not inside <a> </a>		         		         
+		        {
 			   	 sentence = sentence.replaceAll(auxS[0]+ " " + auxS[auxS.length-1],"<a>"+entity1+"</a>");
 			   } else if ( auxS.length > 1 && sentence.contains(auxS[auxS.length-1])) {
 			   	 sentence = sentence.replaceAll(auxS[auxS.length-1],"<a>"+entity1+"</a>");
-			   } else if ( sentence.contains(auxS[0])) {
+			   }
+				else if ( sentence.contains(auxS[0])) {
 			   	 sentence = sentence.replaceAll(auxS[0],"<a>"+entity1+"</a>");
-			   } else if ( sentence.contains("He ")) {
+			   	 
+			   } 
+			   
+			     else if ( sentence.contains("He ")) {
 			   	 sentence = sentence.replaceAll("He ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.contains("She ")) {
 			   	 sentence = sentence.replaceAll("She ","<a>"+entity1+"</a> ");
@@ -106,6 +137,8 @@ public class GenerateSetsFromExamples {
 			   }
 	   	    }
 
+			//System.out.println("sentence: " + sentence);
+			
 		    Pattern pattern = Pattern.compile("<a[^>]*>[^<]+</a>");
 		    Matcher matcher = pattern.matcher(sentence);
 		    while (matcher.find()) {
@@ -134,8 +167,9 @@ public class GenerateSetsFromExamples {
 				   else if ( type1.equals("OTHER") && matcher.group().contains(">"+entity1+"<")) type = type2;
 				   else if ( type2.equals("OTHER") && matcher2.group().contains(">"+entity1+"<")) type = type1;
 				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
-				   
-			       System.out.println();
+
+				   /*
+				   System.out.println();
 				   System.out.println("sentence: " + sentence);
 				   System.out.println();
 				   System.out.println("* before: " + before);
@@ -143,7 +177,10 @@ public class GenerateSetsFromExamples {
 				   System.out.println("* after: " + after);
 				   System.out.println();
 				   System.out.println("type: " + type);
-				   System.out.println("=================="); 			   
+				   System.out.println("==================");
+				   */
+
+
 				   if ( type.equals("OTHER")) numberOfOther++;
 				   processExample(before,after,between,type,out); 
 			   }   
