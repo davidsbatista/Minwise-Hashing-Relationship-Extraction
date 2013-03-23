@@ -12,6 +12,7 @@ public class TestClassification {
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
+  public static boolean SemEvalAsymmetrical = false;
  
   private static LocalitySentitiveHashing dataIndex;  
   private static LocalitySentitiveHashing directionIndex;
@@ -108,7 +109,7 @@ public class TestClassification {
       System.out.println("Reading test data SemEval...");
       LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
-      String[] classes = {"Cause-Effect(e1,e2)","Cause-Effect(e2,e1)",
+      String[] classes_asymmetrical = {"Cause-Effect(e1,e2)","Cause-Effect(e2,e1)",
     		  "Component-Whole(e1,e2)","Component-Whole(e2,e1)",
     		  "Content-Container(e1,e2)","Content-Container(e2,e1)",
     		  "Entity-Destination(e1,e2)","Entity-Destination(e2,e1)",
@@ -117,7 +118,21 @@ public class TestClassification {
     		  "Member-Collection(e1,e2)","Member-Collection(e2,e1)",
     		  "Message-Topic(e1,e2)","Message-Topic(e2,e1)",
     		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)"};	  
-      for ( String c : classes  ) {		  
+      
+      String[] classes_symmetrical = {"Cause-Effect",
+    		  "Component-Whole",
+    		  "Content-Container",
+    		  "Entity-Destination",
+    		  "Entity-Origin)",
+    		  "Instrument-Agency",
+    		  "Member-Collection",
+    		  "Message-Topic",
+    		  "Product-Producer"};
+            
+      String[] classes = null;
+      if (SemEvalAsymmetrical) classes = classes_asymmetrical; else classes = classes_symmetrical;
+      
+      for ( String c : classes_symmetrical  ) {		  
     	  System.out.println();		  		  
     	  double[] results_aux = evaluateResults(all_results,c);		  
     	  for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
@@ -204,12 +219,15 @@ public class TestClassification {
 	  
 	  else {	
 		  EnglishNLP.readVerbClasses("/home/dsbatista/relations-minhash/resources/levin-verb-classes.txt");		  
+		  
 		  signature = Integer.parseInt(args[2]);
 		  bands = Integer.parseInt(args[3]);
 		  knn = Integer.parseInt(args[4]);
+		  
 		  System.out.println("signature: " + signature);
 		  System.out.println("bands: " + bands);
 		  System.out.println("knn: " + knn);		  
+		  
 		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsFromExamples.generateAll();
 			  testSemEval();

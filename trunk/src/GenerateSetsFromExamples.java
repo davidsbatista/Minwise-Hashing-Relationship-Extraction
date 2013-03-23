@@ -60,6 +60,7 @@ public class GenerateSetsFromExamples {
 	   before = before.replaceAll("</?e[12] *>","") + " " + between;
 	   after = between + " " + after.replaceAll("</?e[12] *>","");
 	   type = input.readLine().trim();
+	   if (TestClassification.SemEvalAsymmetrical) type = type.split("\\(")[0];
 	   processExample(before,after,between,type,out); 
      }
    }
@@ -74,7 +75,6 @@ public class GenerateSetsFromExamples {
    String aux = null;
    String entity1 = null;
    String type = null;
-   boolean debug = false;
    while ( ( aux = input.readLine() ) != null ) {
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 		   aux = aux.replaceAll("</?i>","").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +title *= *\"[^\"]+\")?","<a");
