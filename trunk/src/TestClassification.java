@@ -12,7 +12,7 @@ public class TestClassification {
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
-  public static boolean SemEvalAsymmetrical = false;
+  public static boolean SemEvalSymmetrical = false;
  
   private static LocalitySentitiveHashing dataIndex;  
   private static LocalitySentitiveHashing directionIndex;
@@ -117,7 +117,7 @@ public class TestClassification {
     		  "Instrument-Agency(e1,e2)","Instrument-Agency(e2,e1)",
     		  "Member-Collection(e1,e2)","Member-Collection(e2,e1)",
     		  "Message-Topic(e1,e2)","Message-Topic(e2,e1)",
-    		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)"};	  
+    		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)","Other"};	  
       
       String[] classes_symmetrical = {"Cause-Effect",
     		  "Component-Whole",
@@ -127,12 +127,12 @@ public class TestClassification {
     		  "Instrument-Agency",
     		  "Member-Collection",
     		  "Message-Topic",
-    		  "Product-Producer"};
+    		  "Product-Producer","Other"};
             
       String[] classes = null;
-      if (SemEvalAsymmetrical) classes = classes_asymmetrical; else classes = classes_symmetrical;
+      if (SemEvalSymmetrical) classes = classes_symmetrical; else classes = classes_asymmetrical;
       
-      for ( String c : classes_symmetrical  ) {		  
+      for ( String c : classes  ) {		  
     	  System.out.println();		  		  
     	  double[] results_aux = evaluateResults(all_results,c);		  
     	  for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
