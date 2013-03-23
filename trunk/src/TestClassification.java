@@ -123,7 +123,7 @@ public class TestClassification {
     		  "Component-Whole",
     		  "Content-Container",
     		  "Entity-Destination",
-    		  "Entity-Origin)",
+    		  "Entity-Origin",
     		  "Instrument-Agency",
     		  "Member-Collection",
     		  "Message-Topic",
