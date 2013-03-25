@@ -8,12 +8,15 @@ import minhash.Pair;
 
 public class TestClassification {
 
-  private static int knn = 7;
+  private static int knn = 5;
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
-  public static boolean SemEvalSymmetrical = false;
+  public static boolean SemEvalAsymmetrical = true;
  
+  private static int trainInstances = 0;
+  private static int testInstances = 0;
+  
   private static LocalitySentitiveHashing dataIndex;  
   private static LocalitySentitiveHashing directionIndex;
 
@@ -97,6 +100,8 @@ public class TestClassification {
 	  System.out.println("Precision : " + precision );
 	  System.out.println("Recall : " + recall );
 	  System.out.println("F1 : " + f1 );
+	  trainInstances += dataIndex.indexSize( class_relation );
+	  testInstances += numInstancesOfClass;
 	  double accuracy = numCorrect / (float) results.size(); 
 	  return new double[]{ accuracy, precision, recall, f1 };
   }
@@ -130,7 +135,9 @@ public class TestClassification {
     		  "Product-Producer","Other"};
             
       String[] classes = null;
-      if (SemEvalSymmetrical) classes = classes_symmetrical; else classes = classes_asymmetrical;
+
+      if (SemEvalAsymmetrical) classes = classes_symmetrical; else classes = classes_asymmetrical;
+
       
       for ( String c : classes  ) {		  
     	  System.out.println();		  		  
@@ -140,12 +147,13 @@ public class TestClassification {
       }    
       for (int i = 1; i < results.length; i++) results[i] = results[i] / classes.length;
       System.out.println();
+      System.out.println("Total train instances : " + trainInstances);
+      System.out.println("Total test instances : " + testInstances);
       System.out.println("Macro-Average results for all classes...");	
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1]);
   	  System.out.println("Recall : " + results[2]);
-  	  System.out.println("F1 : " + results[3]);
-	  
+  	  System.out.println("F1 : " + results[3]);	  
   }
   
   public static void testWikiEN() throws Exception{
