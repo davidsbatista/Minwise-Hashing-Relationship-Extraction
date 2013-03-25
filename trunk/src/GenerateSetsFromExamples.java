@@ -14,6 +14,7 @@ public class GenerateSetsFromExamples {
  public static Map<String,Integer> frequencyMap;
  public static int minFreqThreshold = 2;
  
+ 
  public static void processWikipedia ( String file, PrintWriter out ) throws Exception {
    BufferedReader input = new BufferedReader( new FileReader(file) );
    String aux = null;
@@ -50,9 +51,15 @@ public class GenerateSetsFromExamples {
    String aux = null;
    String sentence = null;
    String type = null;
+   List<Integer> sentences_size = new Vector<Integer>();
+   Map<String,Integer> class_instances = new HashMap<String,Integer>();
+   Map<String,Integer> nominals = new HashMap<String,Integer>();
+   int num_terms = 0;
    while ( ( aux = input.readLine() ) != null ) {
      if ( aux.contains("\t\"") ) {
-       sentence = aux.substring(aux.indexOf("\"")+1,aux.lastIndexOf("\""));
+       sentence = aux.substring(aux.indexOf("\"")+1,aux.lastIndexOf("\""));       
+       sentences_size.add(sentence.length());
+       num_terms += sentence.split("\\s+").length;
 	   String before = sentence.substring(0,Math.min(sentence.indexOf("</e1>"),sentence.indexOf("</e2>"))).trim();
 	   String after = sentence.substring(Math.max(sentence.indexOf("<e2>")+4,sentence.indexOf("<e1>")+4)).trim();  	   
 	   String between = sentence.substring(Math.min(sentence.indexOf("</e1>")+5,sentence.indexOf("</e2>")+5),Math.max(sentence.indexOf("<e2>"),sentence.indexOf("<e1>"))).trim();  
@@ -60,12 +67,75 @@ public class GenerateSetsFromExamples {
 	   before = before.replaceAll("</?e[12] *>","") + " " + between;
 	   after = between + " " + after.replaceAll("</?e[12] *>","");
 	   type = input.readLine().trim();
-	   if (TestClassification.SemEvalSymmetrical) type = type.split("\\(")[0];
+	   	   
+	   String entity1 = sentence.substring(sentence.indexOf("<e1>")+4,sentence.indexOf("</e1>")).trim();
+	   String entity2 = sentence.substring(sentence.indexOf("<e2>")+4,sentence.indexOf("</e2>")).trim();
+	   
+	   try {
+		   int num = nominals.get(entity1);
+		   num++;
+		   nominals.put(type, num);
+	   } catch (Exception e) {
+		   nominals.put(entity1, 1);
+	   }
+	   
+	   try {
+		   int num = nominals.get(entity2);
+		   num++;
+		   nominals.put(type, num);
+	   } catch (Exception e) {
+		   nominals.put(entity2, 1);
+	   }
+	   
+	   try {
+		   int num = class_instances.get(type);
+		   num++;
+		   class_instances.put(type, num);
+	   } catch (Exception e) {
+		   class_instances.put(type, 1);
+	   }
+	   
+	   if (!TestClassification.SemEvalAsymmetrical==false) type = type.split("\\(")[0];
 	   processExample(before,after,between,type,out); 
      }
    }
    out.flush();
    input.close();
+
+   System.out.println("#Terms: " + num_terms);
+   
+   /* sentence length statistics */
+   System.out.println();
+   int total = 0; 
+   for (Integer s : sentences_size) { total += s;}
+   double average = (double) total / (double) sentences_size.size();   
+   System.out.println("Avg. sentence Length: " + average);   
+   List<Double> distance_to_average = new Vector<Double>();      
+   for (Integer s : sentences_size) { 
+	   double difference = (double) s - (average);
+	   distance_to_average.add(Math.pow(difference, 2));   
+   }   
+   double stdvt = 0.0;
+   for (Double d: distance_to_average) {stdvt += d;}   
+   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+   
+   /* class instance statistics */
+   System.out.println();
+   total = 0;
+   for (String c : class_instances.keySet()) { total += class_instances.get(c);}
+   average = (double) total / (double) class_instances.keySet().size();
+   System.out.println("Avg. class instances: " + average);
+   
+   distance_to_average = new Vector<Double>();
+   for (String c : class_instances.keySet()) { 
+	   double difference = (double) class_instances.get(c) - (average);
+	   distance_to_average.add(Math.pow(difference, 2));
+   }   
+   stdvt = 0.0;
+   for (Double d: distance_to_average) {stdvt += d;}   
+   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+   
+   System.out.println("#Nominals: " + nominals.keySet().size());
  }
   
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
@@ -195,7 +265,10 @@ public class GenerateSetsFromExamples {
  public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
 	 Set<String> dataFiles = new HashSet<String>();
 	 BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
-	 String aux = null, original = null;
+	 String aux = null; String original = null;
+	 List<Integer> sentences_size = new Vector<Integer>();	 
+	 Map<String,Integer> class_instances = new HashMap<String,Integer>();
+	 int num_terms = 0;
 	 while ( ( aux = inputAux.readLine() ) != null ) dataFiles.add(aux);
 	   inputAux.close();
 	   for ( File file : new File(directory).listFiles() ) if ( dataFiles.contains(file.getName()) ){ 
@@ -232,12 +305,21 @@ public class GenerateSetsFromExamples {
 		 }
 	     aux = aux.replaceAll("<P","<p").replaceAll("<-P","</p");
 	     sentence = aux;
+	     sentences_size.add(sentence.length());
+	     num_terms += sentence.split("\\s+").length;
 		// System.out.println("==================");
 		// System.out.println("original: " + original);
 		// System.out.println("sentence: " + sentence);
 	     for ( int i = 1; i < 50; i++ ) for ( int j = 1; j < 50; j++ ) for ( int k = j + 1 ; k < 50; k++ ) {
 		  if ( aux.contains("<p" + j + " pair="+i+" ") || aux.contains("<p" + k + " pair="+i+" ") ) {
 		   type = ( aux.contains("<p" + j + " pair="+i+" ") && aux.contains("<p" + k + " pair="+i+" ") ) ? "related" : "not-related";
+		   try {
+			   int num = class_instances.get(type);
+			   num++;
+			   class_instances.put(type, num);
+		   } catch (Exception e) {
+			   class_instances.put(type, 1);
+		   }
 	       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;   
 	       String before = sentence.substring(0,sentence.indexOf("</p" + j + ">")+5).trim();
 		   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i + " " : "" ) )).trim(); 
@@ -275,6 +357,44 @@ public class GenerateSetsFromExamples {
 	    }
 	    input.close();
 	   }
+	   
+	   System.out.println();
+	   System.out.println("#Terms: " + num_terms);
+	   
+	   int total = 0; 
+	   for (Integer s : sentences_size) { total += s;}
+	   double average = (double) total / (double) sentences_size.size();
+	   
+	   System.out.println("Avg. sentence Length: " + average);   
+	   List<Double> distance_to_average = new Vector<Double>();   
+	   
+	   for (Integer s : sentences_size) { 
+		   double difference = (double) s - (average);
+		   distance_to_average.add(Math.pow(difference, 2));   
+	   }
+	   
+	   double stdvt = 0.0;
+	   for (Double d: distance_to_average) {
+		   stdvt += d;
+	   }   
+	   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+	   
+	   /* class instance statistics */
+	   System.out.println();
+	   total = 0;
+	   for (String c : class_instances.keySet()) { total += class_instances.get(c);}
+	   average = (double) total / (double) class_instances.keySet().size();
+	   System.out.println("Avg. class instances: " + average);
+	   
+	   distance_to_average = new Vector<Double>();
+	   for (String c : class_instances.keySet()) { 
+		   double difference = (double) class_instances.get(c) - (average);
+		   distance_to_average.add(Math.pow(difference, 2));
+	   }   
+	   stdvt = 0.0;
+	   for (Double d: distance_to_average) {stdvt += d;}   
+	   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+	   
 	   out.flush();
  }
 
@@ -413,7 +533,7 @@ public class GenerateSetsFromExamples {
 		entropyMap = getEntropyMap("train-data-aimed.txt." + f);
 		*/
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
-		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
+		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));		
 	 }
 }
 
@@ -432,9 +552,9 @@ public class GenerateSetsFromExamples {
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
 	 frequencyMap = getFrequencyMap("train-data-semeval.txt");
 	 */
-	 System.out.println("Generating train data...");
+	 System.out.println("\nGenerating train data...");
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 System.out.println("Generating test data...");
+	 System.out.println("\nGenerating test data...");
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
 }
 
