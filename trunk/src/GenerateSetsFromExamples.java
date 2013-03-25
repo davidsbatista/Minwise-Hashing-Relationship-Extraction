@@ -139,16 +139,29 @@ public class GenerateSetsFromExamples {
  }
   
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
-   int numberOfOther = 0;
-   //Set<String> exclude = new HashSet<String>(Arrays.asList(new String[] {"ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" }));
+   
+   
    BufferedReader input = new BufferedReader( new FileReader(file) );
+   
    String aux = null;
    String entity1 = null;
    String type = null;
+   
+   int numberOfOther = 0;
+   int num_terms = 0;
+   
+   List<Integer> sentences_size = new Vector<Integer>();
+   Map<String,Integer> class_instances = new HashMap<String,Integer>();
+   Map<String,Integer> nominals = new HashMap<String,Integer>();   
+   
    while ( ( aux = input.readLine() ) != null ) {
+	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
+		   
 		   aux = aux.replaceAll("</?i>","").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +title *= *\"[^\"]+\")?","<a");
 		   entity1 = entity1.replaceAll(" \\(.*","").trim();		   
+		   num_terms += aux.split("\\s+").length;		   
+		   
 		   List<List<String>> sentences = new ICU4JBreakIteratorSentenceSplitter().extractSentences(aux);		   		   
 		   /* fix extracted sentences */
 		   List<List<String>> new_sentences = new Vector<List<String>>();
@@ -170,6 +183,7 @@ public class GenerateSetsFromExamples {
 		   for ( List<String> tokens : new_sentences ) {
 			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT; 
 			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");
+			sentences_size.add(sentence.length());
 			if ( sentence.contains(entity1)) sentence = sentence.replaceAll(entity1,"<a>"+entity1+"</a>"); 
 			
 			else {
@@ -193,8 +207,7 @@ public class GenerateSetsFromExamples {
 				else if ( sentence.contains(auxS[0])) {
 			   	 sentence = sentence.replaceAll(auxS[0],"<a>"+entity1+"</a>");
 			   	 
-			   } 
-			   
+			   } 			   
 			     else if ( sentence.contains("He ")) {
 			   	 sentence = sentence.replaceAll("He ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.contains("She ")) {
@@ -235,6 +248,15 @@ public class GenerateSetsFromExamples {
 				   else if ( type1.equals("OTHER") && type2.equals("OTHER")) type = "OTHER";
 				   else if ( type1.equals("OTHER") && matcher.group().contains(">"+entity1+"<")) type = type2;
 				   else if ( type2.equals("OTHER") && matcher2.group().contains(">"+entity1+"<")) type = type1;
+				   
+				   try {
+					   int num = class_instances.get(type);
+					   num++;
+					   class_instances.put(type, num);
+				   } catch (Exception e) {
+					   class_instances.put(type, 1);
+				   }
+				   
 				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
 
 				   /*
@@ -259,10 +281,46 @@ public class GenerateSetsFromExamples {
    }
    out.flush();
    System.err.println("Number of elements of class OTHER : " + numberOfOther);
+   System.out.println();
+   
+   System.out.println("#Terms: " + num_terms);
+   
+   /* sentence length statistics */
+   System.out.println();
+   
+   int total = 0; 
+   for (Integer s : sentences_size) { total += s;}
+   double average = (double) total / (double) sentences_size.size();   
+   System.out.println("Avg. sentence Length: " + average);   
+   List<Double> distance_to_average = new Vector<Double>();      
+   for (Integer s : sentences_size) { 
+	   double difference = (double) s - (average);
+	   distance_to_average.add(Math.pow(difference, 2));   
+   }   
+   double stdvt = 0.0;
+   for (Double d: distance_to_average) {stdvt += d;}   
+   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+   
+   /* class instance statistics */
+   System.out.println();
+   total = 0;
+   for (String c : class_instances.keySet()) { total += class_instances.get(c);}
+   average = (double) total / (double) class_instances.keySet().size();
+   System.out.println("Avg. class instances: " + average);
+   
+   distance_to_average = new Vector<Double>();
+   for (String c : class_instances.keySet()) { 
+	   double difference = (double) class_instances.get(c) - (average);
+	   distance_to_average.add(Math.pow(difference, 2));
+   }   
+   stdvt = 0.0;
+   for (Double d: distance_to_average) {stdvt += d;}   
+   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
    input.close();
  }
  
  public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
+	 
 	 Set<String> dataFiles = new HashSet<String>();
 	 BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
 	 String aux = null; String original = null;
@@ -306,13 +364,15 @@ public class GenerateSetsFromExamples {
 	     aux = aux.replaceAll("<P","<p").replaceAll("<-P","</p");
 	     sentence = aux;
 	     sentences_size.add(sentence.length());
-	     num_terms += sentence.split("\\s+").length;
+	     num_terms += sentence.split("\\s+").length;	     
+	     		   
 		// System.out.println("==================");
 		// System.out.println("original: " + original);
 		// System.out.println("sentence: " + sentence);
 	     for ( int i = 1; i < 50; i++ ) for ( int j = 1; j < 50; j++ ) for ( int k = j + 1 ; k < 50; k++ ) {
 		  if ( aux.contains("<p" + j + " pair="+i+" ") || aux.contains("<p" + k + " pair="+i+" ") ) {
 		   type = ( aux.contains("<p" + j + " pair="+i+" ") && aux.contains("<p" + k + " pair="+i+" ") ) ? "related" : "not-related";
+		   
 		   try {
 			   int num = class_instances.get(type);
 			   num++;
@@ -320,6 +380,7 @@ public class GenerateSetsFromExamples {
 		   } catch (Exception e) {
 			   class_instances.put(type, 1);
 		   }
+		   
 	       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;   
 	       String before = sentence.substring(0,sentence.indexOf("</p" + j + ">")+5).trim();
 		   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i + " " : "" ) )).trim(); 
@@ -378,23 +439,7 @@ public class GenerateSetsFromExamples {
 		   stdvt += d;
 	   }   
 	   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
-	   
-	   /* class instance statistics */
-	   System.out.println();
-	   total = 0;
-	   for (String c : class_instances.keySet()) { total += class_instances.get(c);}
-	   average = (double) total / (double) class_instances.keySet().size();
-	   System.out.println("Avg. class instances: " + average);
-	   
-	   distance_to_average = new Vector<Double>();
-	   for (String c : class_instances.keySet()) { 
-		   double difference = (double) class_instances.get(c) - (average);
-		   distance_to_average.add(Math.pow(difference, 2));
-	   }   
-	   stdvt = 0.0;
-	   for (Double d: distance_to_average) {stdvt += d;}   
-	   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
-	   
+
 	   out.flush();
  }
 
@@ -525,7 +570,10 @@ public class GenerateSetsFromExamples {
  public static void generateDataAIMED() throws Exception, IOException {
 	
 	 //Process AIMED
-	for ( int f = 1 ; f <= 10; f++) {
+	 //line below is only for gathering statistics concerning the whole dataset
+	 //processAIMED("Datasets/aimed", "Datasets/aimed/full/full.txt", new PrintWriter(new FileWriter("full-dataset-processed.txt")));
+	 
+	 for ( int f = 1 ; f <= 10; f++) {
 		System.out.println("Generating AIMED data fold " + f );
 		/*
 		entropyMap = null; 
@@ -533,7 +581,7 @@ public class GenerateSetsFromExamples {
 		entropyMap = getEntropyMap("train-data-aimed.txt." + f);
 		*/
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
-		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));		
+		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
 	 }
 }
 
@@ -565,9 +613,9 @@ public class GenerateSetsFromExamples {
 	 System.out.println("Determining shingles entropy...");
 	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("train-data-wikien.txt")));
 	 entropyMap = getEntropyMap("train-data-wikien.txt"); */
-	 System.out.println("Generating train data...");
+	 System.out.println("\nGenerating train data...");
 	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("train-data-wikien.txt")));
-	 System.out.println("Generating test data...");
+	 System.out.println("\n\nGenerating test data...");
 	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("test-data-wikien.txt")));
 }
  
