@@ -95,7 +95,7 @@ public class GenerateSetsFromExamples {
 		   class_instances.put(type, 1);
 	   }
 	   
-	   if (!TestClassification.SemEvalAsymmetrical==false) type = type.split("\\(")[0];
+	   if (!TestClassification.SemEvalAsymmetrical) type = type.split("\\(")[0];
 	   processExample(before,after,between,type,out); 
      }
    }
@@ -270,7 +270,6 @@ public class GenerateSetsFromExamples {
 				   System.out.println("type: " + type);
 				   System.out.println("==================");
 				   */
-
 
 				   if ( type.equals("OTHER")) numberOfOther++;
 				   processExample(before,after,between,type,out); 

@@ -12,7 +12,7 @@ public class TestClassification {
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
-  public static boolean SemEvalAsymmetrical = true;
+  public static boolean SemEvalAsymmetrical = false;
  
   private static int trainInstances = 0;
   private static int testInstances = 0;
@@ -122,7 +122,7 @@ public class TestClassification {
     		  "Instrument-Agency(e1,e2)","Instrument-Agency(e2,e1)",
     		  "Member-Collection(e1,e2)","Member-Collection(e2,e1)",
     		  "Message-Topic(e1,e2)","Message-Topic(e2,e1)",
-    		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)","Other"};	  
+    		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)"};	  
       
       String[] classes_symmetrical = {"Cause-Effect",
     		  "Component-Whole",
@@ -132,12 +132,16 @@ public class TestClassification {
     		  "Instrument-Agency",
     		  "Member-Collection",
     		  "Message-Topic",
-    		  "Product-Producer","Other"};
+    		  "Product-Producer"};
             
       String[] classes = null;
 
-      if (SemEvalAsymmetrical) classes = classes_symmetrical; else classes = classes_asymmetrical;
+      if (SemEvalAsymmetrical) classes = classes_asymmetrical; else classes = classes_symmetrical;
 
+      
+      for (int i = 0; i < classes.length; i++) {
+		System.out.println(classes[i]);
+	}
       
       for ( String c : classes  ) {		  
     	  System.out.println();		  		  
