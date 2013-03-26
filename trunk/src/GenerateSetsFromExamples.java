@@ -14,7 +14,6 @@ public class GenerateSetsFromExamples {
  public static Map<String,Integer> frequencyMap;
  public static int minFreqThreshold = 2;
  
- 
  public static void processWikipedia ( String file, PrintWriter out ) throws Exception {
    BufferedReader input = new BufferedReader( new FileReader(file) );
    String aux = null;
@@ -102,6 +101,11 @@ public class GenerateSetsFromExamples {
    out.flush();
    input.close();
 
+   int n_nominals = 0;
+   for (String e : nominals.keySet()) {
+	   n_nominals += nominals.get(e);
+   }
+   System.out.println("#Nominals: " + nominals.keySet().size());   
    System.out.println("#Terms: " + num_terms);
    
    /* sentence length statistics */
@@ -133,14 +137,11 @@ public class GenerateSetsFromExamples {
    }   
    stdvt = 0.0;
    for (Double d: distance_to_average) {stdvt += d;}   
-   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
-   
-   System.out.println("#Nominals: " + nominals.keySet().size());
+   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));   
  }
   
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
-   
-   
+      
    BufferedReader input = new BufferedReader( new FileReader(file) );
    
    String aux = null;
@@ -158,7 +159,7 @@ public class GenerateSetsFromExamples {
 	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 		   
-		   aux = aux.replaceAll("</?i>","").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +title *= *\"[^\"]+\")?","<a");
+		   aux = aux.replaceAll("</?i>","").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
 		   entity1 = entity1.replaceAll(" \\(.*","").trim();		   
 		   num_terms += aux.split("\\s+").length;		   
 		   
@@ -178,37 +179,41 @@ public class GenerateSetsFromExamples {
 			   new_sentences.add(new_sentence);
 			   i++;
 		   }
-			   
-			 		   
+		   
+		   String auxS[] = entity1.split(" +");
 		   for ( List<String> tokens : new_sentences ) {
 			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT; 
 			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");
 			sentences_size.add(sentence.length());
-			if ( sentence.contains(entity1)) sentence = sentence.replaceAll(entity1,"<a>"+entity1+"</a>"); 
-			
-			else {
-			   String auxS[] = entity1.split(" ");
-			   if ( sentence.startsWith("He ")) {
-			   	 sentence = sentence.replaceAll("He ","<a>"+entity1+"</a> ");
+			if ( sentence.replaceAll("<a[^>]+>[^<]+</a>","-").contains(" " + entity1 + " ")) sentence = sentence.replaceAll(" " + entity1 + " "," <a>"+entity1+"</a> ");  else {
+			   if ( sentence.startsWith(entity1 + " ")) {
+				 sentence = sentence.replace(entity1 + " ","<a>"+entity1+"</a> ");
+			   } else if ( sentence.startsWith("He ")) {
+			   	 sentence = sentence.replace("He ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.startsWith("She ")) {
-			   	 sentence = sentence.replaceAll("She ","<a>"+entity1+"</a> ");
-		       } else if ( auxS.length > 1 && sentence.startsWith(auxS[auxS.length-1])) {
-		   	     sentence = sentence.replace(auxS[auxS.length-1],"<a>"+entity1+"</a>");
-		       } else if ( sentence.startsWith(auxS[0])) {
-		   	     sentence = sentence.replace(auxS[0],"<a>"+entity1+"</a>");			   
-			   } 
-		         else if ( auxS.length >=3 && sentence.contains(auxS[0]+ " " + auxS[auxS.length-1])) 		        	 
-		        //TODO: && not inside <a> </a>		         		         
-		        {
-			   	 sentence = sentence.replaceAll(auxS[0]+ " " + auxS[auxS.length-1],"<a>"+entity1+"</a>");
-			   } else if ( auxS.length > 1 && sentence.contains(auxS[auxS.length-1])) {
-			   	 sentence = sentence.replaceAll(auxS[auxS.length-1],"<a>"+entity1+"</a>");
-			   }
-				else if ( sentence.contains(auxS[0])) {
-			   	 sentence = sentence.replaceAll(auxS[0],"<a>"+entity1+"</a>");
+			   	 sentence = sentence.replace("She ","<a>"+entity1+"</a> ");
 			   	 
-			   } 			   
-			     else if ( sentence.contains("He ")) {
+			   	 /* sentence starts with surname */
+		       } else if ( auxS.length > 1 && sentence.startsWith(auxS[auxS.length-1]+ " ")) {
+		   	     sentence = sentence.replace(auxS[auxS.length-1] + " ","<a>"+entity1+"</a> ");
+		   	     /* starts with first name */
+		       } else if ( sentence.startsWith(auxS[0]+ " ")) {
+		   	     sentence = sentence.replace(auxS[0]+ " ","<a>"+entity1+"</a> ");			   
+			   } 
+			     /* contains first name and last name */
+		         else if ( auxS.length >=3 && sentence.contains(" " + auxS[0] + " " + auxS[auxS.length-1] + " ") && 
+		        		 !entity1.equalsIgnoreCase("George W. Bush") &&
+		        		 !entity1.equalsIgnoreCase("Charles Galton Darwin"))		        	  
+		        {
+			   	 sentence = sentence.replaceAll(" " + auxS[0]+ " " + auxS[auxS.length-1] + " "," <a>"+entity1+"</a> ");
+			   } else if ( auxS.length > 1 && sentence.contains(" " + auxS[auxS.length-1]+ " ") &&
+					   !entity1.equalsIgnoreCase("George W. Bush") &&
+					   !entity1.equalsIgnoreCase("Charles Galton Darwin")) {
+			   	 sentence = sentence.replace(" " + auxS[auxS.length-1]+ " "," <a>"+entity1+"</a> ");
+			   }
+				else if ( sentence.contains(" " + auxS[0]+" ")) {
+			   	 sentence = sentence.replaceAll(" " + auxS[0]+ " "," <a>"+entity1+"</a> "); 
+			   } else if ( sentence.contains("He ")) {
 			   	 sentence = sentence.replaceAll("He ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.contains("She ")) {
 			   	 sentence = sentence.replaceAll("She ","<a>"+entity1+"</a> ");
@@ -243,6 +248,11 @@ public class GenerateSetsFromExamples {
 				   String between = sentence.substring(matcher.end(),matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
                    before = before + " " + between;
                    after = between + " " + after;
+                   
+                   before = before.replaceAll(" +", " ").trim();
+                   after = after.replaceAll(" +", " ").trim();
+                   between = between.replaceAll(" +", " ").trim();
+                   
 				   type = "OTHER";
 				   if ( !type1.equals("OTHER") && !type2.equals("OTHER")) type = "OTHER";
 				   else if ( type1.equals("OTHER") && type2.equals("OTHER")) type = "OTHER";
@@ -258,8 +268,13 @@ public class GenerateSetsFromExamples {
 				   }
 				   
 				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
-
+				   
 				   /*
+				   System.out.print("entity1: ");
+				   for (int j = 0; j < auxS.length; j++) {
+					   System.out.print(j + " " + auxS[j]);
+				   }				   
+				   System.out.println("\nentity1: " + entity1);				   
 				   System.out.println();
 				   System.out.println("sentence: " + sentence);
 				   System.out.println();
@@ -282,9 +297,10 @@ public class GenerateSetsFromExamples {
    System.err.println("Number of elements of class OTHER : " + numberOfOther);
    System.out.println();
    
-   System.out.println("#Terms: " + num_terms);
    
-   /* sentence length statistics */
+   
+   /* statistics  
+   System.out.println("#Terms: " + num_terms);    
    System.out.println();
    
    int total = 0; 
@@ -300,7 +316,7 @@ public class GenerateSetsFromExamples {
    for (Double d: distance_to_average) {stdvt += d;}   
    System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
    
-   /* class instance statistics */
+   /* class instance statistics 
    System.out.println();
    total = 0;
    for (String c : class_instances.keySet()) { total += class_instances.get(c);}
@@ -315,6 +331,7 @@ public class GenerateSetsFromExamples {
    stdvt = 0.0;
    for (Double d: distance_to_average) {stdvt += d;}   
    System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+   */
    input.close();
  }
  
@@ -523,7 +540,7 @@ public class GenerateSetsFromExamples {
 			  set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
-			  //for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
+			  for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }

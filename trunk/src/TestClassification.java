@@ -12,7 +12,7 @@ public class TestClassification {
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
-  public static boolean SemEvalAsymmetrical = false;
+  public static boolean SemEvalAsymmetrical = true;
  
   private static int trainInstances = 0;
   private static int testInstances = 0;
@@ -92,7 +92,7 @@ public class TestClassification {
 	  double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
 	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
 	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
-	  System.out.println("Results for class \"" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
+	  System.out.println("Results for class \t" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
 	  //System.out.println("Total number of instances : " + (dataIndex.indexSize(class_relation) + numInstancesOfClass));
 	  System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
 	  System.out.println("Number of test instances : " + numInstancesOfClass );
