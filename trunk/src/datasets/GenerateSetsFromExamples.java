@@ -160,7 +160,7 @@ public class GenerateSetsFromExamples {
 	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 		   
-		   aux = aux.replaceAll("</?i>","").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
+		   aux = aux.replaceAll("</?i>","").replaceAll("&amp;","&").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
 		   entity1 = entity1.replaceAll(" \\(.*","").trim();		   
 		   num_terms += aux.split("\\s+").length;		   
 		   
@@ -188,18 +188,21 @@ public class GenerateSetsFromExamples {
 			sentences_size.add(sentence.length());
 			if ( sentence.replaceAll("<a[^>]+>[^<]+</a>","-").contains(" " + entity1 + " ")) sentence = sentence.replaceAll(" " + entity1 + " "," <a>"+entity1+"</a> ");  else {
 			   if ( sentence.startsWith(entity1 + " ")) {
-				 sentence = sentence.replace(entity1 + " ","<a>"+entity1+"</a> ");
+				 sentence = sentence.replaceFirst(entity1 + " ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.startsWith("He ")) {
-			   	 sentence = sentence.replace("He ","<a>"+entity1+"</a> ");
+			   	 sentence = sentence.replaceFirst("He ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.startsWith("She ")) {
-			   	 sentence = sentence.replace("She ","<a>"+entity1+"</a> ");
-			   	 
+			   	 sentence = sentence.replaceFirst("She ","<a>"+entity1+"</a> ");
+			   } else if ( sentence.startsWith("His ")) {
+			   	 sentence = sentence.replaceFirst("His ","<a>"+entity1+"</a> ");
+			   } else if ( sentence.startsWith("Her ")) {
+			   	 sentence = sentence.replaceFirst("Her ","<a>"+entity1+"</a> ");
 			   	 /* sentence starts with surname */
 		       } else if ( auxS.length > 1 && sentence.startsWith(auxS[auxS.length-1]+ " ")) {
 		   	     sentence = sentence.replace(auxS[auxS.length-1] + " ","<a>"+entity1+"</a> ");
 		   	     /* starts with first name */
 		       } else if ( sentence.startsWith(auxS[0]+ " ")) {
-		   	     sentence = sentence.replace(auxS[0]+ " ","<a>"+entity1+"</a> ");			   
+		   	     sentence = sentence.replaceFirst(auxS[0]+ " ","<a>"+entity1+"</a> ");			   
 			   } 
 			     /* contains first name and last name */
 		         else if ( auxS.length >=3 && sentence.contains(" " + auxS[0] + " " + auxS[auxS.length-1] + " ") && 
@@ -210,18 +213,26 @@ public class GenerateSetsFromExamples {
 			   } else if ( auxS.length > 1 && sentence.contains(" " + auxS[auxS.length-1]+ " ") &&
 					   !entity1.equalsIgnoreCase("George W. Bush") &&
 					   !entity1.equalsIgnoreCase("Charles Galton Darwin")) {
-			   	 sentence = sentence.replace(" " + auxS[auxS.length-1]+ " "," <a>"+entity1+"</a> ");
+			   	 sentence = sentence.replaceFirst(" " + auxS[auxS.length-1]+ " "," <a>"+entity1+"</a> ");			   	 
 			   }
 				else if ( sentence.contains(" " + auxS[0]+" ")) {
-			   	 sentence = sentence.replaceAll(" " + auxS[0]+ " "," <a>"+entity1+"</a> "); 
+			   	 sentence = sentence.replaceFirst(" " + auxS[0]+ " "," <a>"+entity1+"</a> "); 
 			   } else if ( sentence.contains("He ")) {
-			   	 sentence = sentence.replaceAll("He ","<a>"+entity1+"</a> ");
+			   	 sentence = sentence.replaceFirst("He ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.contains("She ")) {
-			   	 sentence = sentence.replaceAll("She ","<a>"+entity1+"</a> ");
+			   	 sentence = sentence.replaceFirst("She ","<a>"+entity1+"</a> ");
+			   } else if ( sentence.contains("His ")) {
+			   	 sentence = sentence.replaceFirst("His ","<a>"+entity1+"</a> ");
+			   } else if ( sentence.contains("Her ")) {
+			   	 sentence = sentence.replaceFirst("Her ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.contains(" he ")) {
-			   	 sentence = sentence.replaceAll(" he "," <a>"+entity1+"</a> ");
+			   	 sentence = sentence.replaceFirst(" he "," <a>"+entity1+"</a> ");
 			   } else if ( sentence.contains(" she ")) {
-			   	 sentence = sentence.replaceAll(" she "," <a>"+entity1+"</a> ");
+			   	 sentence = sentence.replaceFirst(" she "," <a>"+entity1+"</a> ");
+			   } else if ( sentence.contains(" his ")) {
+			   	 sentence = sentence.replaceFirst(" his "," <a>"+entity1+"</a> ");
+			   } else if ( sentence.contains(" her ")) {
+			   	 sentence = sentence.replaceFirst(" her "," <a>"+entity1+"</a> ");
 			   }
 	   	    }
 
@@ -273,7 +284,7 @@ public class GenerateSetsFromExamples {
 				   /*
 				   System.out.print("entity1: ");
 				   for (int j = 0; j < auxS.length; j++) {
-					   System.out.print(j + " " + auxS[j]);
+					   System.out.println(j + "\t" + auxS[j]);
 				   }				   
 				   System.out.println("\nentity1: " + entity1);				   
 				   System.out.println();
@@ -558,7 +569,16 @@ public class GenerateSetsFromExamples {
 	}
 	String result = "";
     for ( String tok : set ) result += " " + tok;
-    return result.trim();
+    
+    String newFeatures = "";
+    String originalFeatures[] = result.trim().split(" ");
+    Arrays.sort(originalFeatures);
+    /*
+    for ( int idx1 = 0 ; idx1 < originalFeatures.length; idx1++ ) for ( int idx2 = idx1 + 1 ; idx2 < originalFeatures.length; idx2++ ) {
+      newFeatures += originalFeatures[idx1] + "_" + originalFeatures[idx2] + " ";
+    }
+    */
+    return newFeatures + result.trim();
  }
  
  public static void processExample ( String before, String after, String between, String type, PrintWriter out ) {
@@ -574,15 +594,16 @@ public class GenerateSetsFromExamples {
      if ( beforeLength == 0 ) out.print(" " + "EMPTY_BEF"); 
      if ( afterLength == 0 ) out.print(" " + "EMPTY_AFT"); 
      if ( betweenLength == 0 ) out.print(" " + "EMPTY_BET");
-     ArrayList<String> someCollection = new ArrayList<String>();
-     for ( String aux : new String[]{ "BEF\t" + before, "BET\t" + between, "AFT\t" + after } ) someCollection.add(aux); 
+     String shingles = new String();
+     ArrayList<String> someCollection = new ArrayList<String>();     
+     for ( String aux : new String[]{ "BEF\t" + before, "BET\t" + between, "AFT\t" + after } ) someCollection.add(aux);
      for ( String obj : someCollection ) {
     			String suffix = obj.substring(0,obj.indexOf("\t"));
     			String str = obj.substring(obj.indexOf("\t")+1);
     			out.print(" " + generateNGrams(str, suffix, betweenLength, 3));
      }
      out.println();
- } 
+} 
  
  public static void generateDataAIMED() throws Exception, IOException {
 	
