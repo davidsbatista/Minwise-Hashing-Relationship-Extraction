@@ -5,6 +5,8 @@ import java.util.regex.*;
 import nlputils.EnglishNLP;
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
 
@@ -155,14 +157,23 @@ public class GenerateSetsFromExamples {
    List<Integer> sentences_size = new Vector<Integer>();
    Map<String,Integer> class_instances = new HashMap<String,Integer>();
    Map<String,Integer> nominals = new HashMap<String,Integer>();   
+   int number_sentences = 0;
+   boolean debug = false;
+   int relations = 0;
    
-   while ( ( aux = input.readLine() ) != null ) {
-	   
+   Multimap<String, String> all_sentences = LinkedListMultimap.create();
+
+   while ( ( aux = input.readLine() ) != null ) {	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
-		   
 		   aux = aux.replaceAll("</?i>","").replaceAll("&amp;","&").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
+		   aux = aux.replaceAll("</?span[^>]*>","").replaceAll("</?sup[^>]*>","").replaceAll("<a [^>]*class='external autonumber'[^>]*>[^<]+</a>" , "");
 		   entity1 = entity1.replaceAll(" \\(.*","").trim();		   
 		   num_terms += aux.split("\\s+").length;		   
+		   
+		   all_sentences = LinkedListMultimap.create();
+		   debug=false;
+		   relations=0;
+		   if (aux.contains("relation=\"associate\"")) debug=true;
 		   
 		   List<List<String>> sentences = new ICU4JBreakIteratorSentenceSplitter().extractSentences(aux);		   		   
 		   /* fix extracted sentences */
@@ -179,13 +190,19 @@ public class GenerateSetsFromExamples {
 			   }
 			   new_sentences.add(new_sentence);
 			   i++;
-		   }
+		   }		   
+		   
+		   number_sentences += new_sentences.size();
 		   
 		   String auxS[] = entity1.split(" +");
 		   for ( List<String> tokens : new_sentences ) {
-			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT; 
+			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT;
 			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");
 			sentences_size.add(sentence.length());
+			
+			//if (sentence.contains("Franklins")) sentence.replaceFirst(" Franklins ", " <a>"+entity1+"</a> ");
+			//if (sentence.contains("Einsteins")) sentence.replaceFirst(" Einsteins ", " <a>"+entity1+"</a> ");						
+			
 			if ( sentence.replaceAll("<a[^>]+>[^<]+</a>","-").contains(" " + entity1 + " ")) sentence = sentence.replaceAll(" " + entity1 + " "," <a>"+entity1+"</a> ");  else {
 			   if ( sentence.startsWith(entity1 + " ")) {
 				 sentence = sentence.replaceFirst(entity1 + " ","<a>"+entity1+"</a> ");
@@ -197,6 +214,7 @@ public class GenerateSetsFromExamples {
 			   	 sentence = sentence.replaceFirst("His ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.startsWith("Her ")) {
 			   	 sentence = sentence.replaceFirst("Her ","<a>"+entity1+"</a> ");
+			   	 
 			   	 /* sentence starts with surname */
 		       } else if ( auxS.length > 1 && sentence.startsWith(auxS[auxS.length-1]+ " ")) {
 		   	     sentence = sentence.replace(auxS[auxS.length-1] + " ","<a>"+entity1+"</a> ");
@@ -205,14 +223,10 @@ public class GenerateSetsFromExamples {
 		   	     sentence = sentence.replaceFirst(auxS[0]+ " ","<a>"+entity1+"</a> ");			   
 			   } 
 			     /* contains first name and last name */
-		         else if ( auxS.length >=3 && sentence.contains(" " + auxS[0] + " " + auxS[auxS.length-1] + " ") && 
-		        		 !entity1.equalsIgnoreCase("George W. Bush") &&
-		        		 !entity1.equalsIgnoreCase("Charles Galton Darwin"))		        	  
+		         else if ( auxS.length >=3 && sentence.contains(" " + auxS[0] + " " + auxS[auxS.length-1] + " "))		        	  
 		        {
 			   	 sentence = sentence.replaceAll(" " + auxS[0]+ " " + auxS[auxS.length-1] + " "," <a>"+entity1+"</a> ");
-			   } else if ( auxS.length > 1 && sentence.contains(" " + auxS[auxS.length-1]+ " ") &&
-					   !entity1.equalsIgnoreCase("George W. Bush") &&
-					   !entity1.equalsIgnoreCase("Charles Galton Darwin")) {
+			   } else if ( auxS.length > 1 && sentence.contains(" " + auxS[auxS.length-1]+ " ")) {
 			   	 sentence = sentence.replaceFirst(" " + auxS[auxS.length-1]+ " "," <a>"+entity1+"</a> ");			   	 
 			   }
 				else if ( sentence.contains(" " + auxS[0]+" ")) {
@@ -235,8 +249,6 @@ public class GenerateSetsFromExamples {
 			   	 sentence = sentence.replaceFirst(" her "," <a>"+entity1+"</a> ");
 			   }
 	   	    }
-
-			//System.out.println("sentence: " + sentence);
 			
 		    Pattern pattern = Pattern.compile("<a[^>]*>[^<]+</a>");
 		    Matcher matcher = pattern.matcher(sentence);
@@ -281,32 +293,51 @@ public class GenerateSetsFromExamples {
 				   
 				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
 				   
-				   /*
-				   System.out.print("entity1: ");
-				   for (int j = 0; j < auxS.length; j++) {
-					   System.out.println(j + "\t" + auxS[j]);
-				   }				   
-				   System.out.println("\nentity1: " + entity1);				   
-				   System.out.println();
-				   System.out.println("sentence: " + sentence);
-				   System.out.println();
-				   System.out.println("* before: " + before);
-				   System.out.println("* between: " + between);
-				   System.out.println("* after: " + after);
-				   System.out.println();
-				   System.out.println("type: " + type);
-				   System.out.println("==================");
-				   */
-
+				   if (debug==true) all_sentences.put(type,sentence);
+					   
+					   /*
+					   System.out.println("\nentity1: " + entity1);				   
+					   System.out.println();
+					   System.out.println("sentence: " + sentence);
+					   System.out.println();
+					   System.out.println("* before: " + before);
+					   System.out.println("* between: " + between);
+					   System.out.println("* after: " + after);
+					   System.out.println();
+					   System.out.println("type: " + type);
+					   System.out.println("==================");
+					   */
+				   
 				   if ( type.equals("OTHER")) numberOfOther++;
 				   processExample(before,after,between,type,out); 
 			   }   
 		     }
 		   }
+		   if (debug==true && all_sentences.get("associate").size()==0) {
+		    	System.out.println("==================================");		    	
+		    	if (!all_sentences.keySet().contains("associate")) {
+		    		System.out.println("entity: " + entity1);
+		    		System.out.println("paragrah: " + aux);
+		    		System.out.println("");
+		    		System.out.println("sentences: ");
+		    		for (List<String> x : new_sentences) System.out.println(x+"\n");
+		    		System.out.println("relations/sentences: ");
+		    		for (String t : all_sentences.keySet()) {
+						System.out.println("* " + t + "\n");
+						for (String s : all_sentences.get(t)) {
+							System.out.println(s);
+						}
+						System.out.println();
+					}	
+		    	}
+			    System.out.println("==================================");		    	
+		    }
 	   }
    }
    out.flush();
-   System.err.println("Number of elements of class OTHER : " + numberOfOther);
+   System.err.println("Number of elements of class OTHER : " + numberOfOther);   
+   System.err.println("Number of sentences : " + number_sentences);
+   System.out.println("total number of class instances: " + class_instances.size());   
    System.out.println();
    
    
@@ -552,7 +583,7 @@ public class GenerateSetsFromExamples {
 			  set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
-			  //for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
+			  for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }
