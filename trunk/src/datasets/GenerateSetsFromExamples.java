@@ -161,24 +161,29 @@ public class GenerateSetsFromExamples {
    boolean debug = false;
    int relations = 0;
    
-   Multimap<String, String> all_sentences = LinkedListMultimap.create();
-
+   Multimap<String, String> relation_sentences = LinkedListMultimap.create();
+   Set<String >all_sentences = null;
+   
    while ( ( aux = input.readLine() ) != null ) {	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 		   aux = aux.replaceAll("</?i>","").replaceAll("&amp;","&").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
 		   aux = aux.replaceAll("</?span[^>]*>","").replaceAll("</?sup[^>]*>","").replaceAll("<a [^>]*class='external autonumber'[^>]*>[^<]+</a>" , "");
-		   entity1 = entity1.replaceAll(" \\(.*","").trim();		   
+		   entity1 = entity1.replaceAll(" \\(.*","").replaceAll(",","").trim();		   
 		   num_terms += aux.split("\\s+").length;		   
 		   
-		   all_sentences = LinkedListMultimap.create();
+		   relation_sentences = LinkedListMultimap.create();
+		   all_sentences = new HashSet<String>();
 		   debug=false;
 		   relations=0;
-		   if (aux.contains("relation=\"associate\"")) debug=true;
+		   if (aux.contains("relation=\"visited\"")) debug=true;
+		   
+		   List<List<String>> new_sentences = new Vector<List<String>>();
 		   
 		   List<List<String>> sentences = new ICU4JBreakIteratorSentenceSplitter().extractSentences(aux);		   		   
 		   /* fix extracted sentences */
-		   List<List<String>> new_sentences = new Vector<List<String>>();
+		   new_sentences = new Vector<List<String>>();
 		   int i = 0;
+		   
 		   while (i < sentences.size()) {				   
 			   List<String> s = sentences.get(i);
 			   List<String> new_sentence = new ArrayList<String>();
@@ -190,18 +195,25 @@ public class GenerateSetsFromExamples {
 			   }
 			   new_sentences.add(new_sentence);
 			   i++;
-		   }		   
+		   }   
 		   
 		   number_sentences += new_sentences.size();
-		   
 		   String auxS[] = entity1.split(" +");
+		   
+		   /*
+		   if (auxS[auxS.length-1].equals("Jr.")) {
+			auxS[auxS.length-1] = auxS[auxS.length-2];
+		   }
+		   */
+		   
 		   for ( List<String> tokens : new_sentences ) {
 			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT;
 			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");
 			sentences_size.add(sentence.length());
 			
-			//if (sentence.contains("Franklins")) sentence.replaceFirst(" Franklins ", " <a>"+entity1+"</a> ");
-			//if (sentence.contains("Einsteins")) sentence.replaceFirst(" Einsteins ", " <a>"+entity1+"</a> ");						
+			if (sentence.contains("Franklins")) sentence = sentence.replaceFirst(" Franklins ", " <a>"+entity1+"</a> ");
+			if (sentence.contains("Einsteins")) sentence = sentence.replaceFirst(" Einsteins ", " <a>"+entity1+"</a> ");						
+			if (sentence.contains("Doles")) sentence = sentence.replaceFirst(" Doles ", " <a>"+entity1+"</a> ");
 			
 			if ( sentence.replaceAll("<a[^>]+>[^<]+</a>","-").contains(" " + entity1 + " ")) sentence = sentence.replaceAll(" " + entity1 + " "," <a>"+entity1+"</a> ");  else {
 			   if ( sentence.startsWith(entity1 + " ")) {
@@ -216,22 +228,37 @@ public class GenerateSetsFromExamples {
 			   	 sentence = sentence.replaceFirst("Her ","<a>"+entity1+"</a> ");
 			   	 
 			   	 /* sentence starts with surname */
-		       } else if ( auxS.length > 1 && sentence.startsWith(auxS[auxS.length-1]+ " ")) {
-		   	     sentence = sentence.replace(auxS[auxS.length-1] + " ","<a>"+entity1+"</a> ");
-		   	     /* starts with first name */
-		       } else if ( sentence.startsWith(auxS[0]+ " ")) {
-		   	     sentence = sentence.replaceFirst(auxS[0]+ " ","<a>"+entity1+"</a> ");			   
+		       } else if ( auxS.length > 1 && (sentence.startsWith(auxS[auxS.length-1]+ " "))) {
+		    	 sentence = sentence.replace(auxS[auxS.length-1] + " ","<a>"+entity1+"</a> ");
+		       }
+			   	 /* sentence starts with surname + 's */
+		    	 else if ( auxS.length > 1 && (sentence.startsWith(auxS[auxS.length-1]+"'s" + " "))) {
+			    	 sentence = sentence.replace(auxS[auxS.length-1]+"'s" + " ","<a>"+entity1+"</a>'s ");
+		    	 }
+			    /* sentence starts with surname + ' */
+			     else if ( auxS.length > 1 && (sentence.startsWith(auxS[auxS.length-1]+"'" + " "))) {
+				    sentence = sentence.replace(auxS[auxS.length-1]+"'" + " ","<a>"+entity1+"</a>' ");
+		    	 
+		   	     /* sentence starts with first name */
+		       } else if ( sentence.startsWith(auxS[0]+ " ")) {	     
+		   	     sentence = sentence.replaceFirst(auxS[0]+ " ","<a>"+entity1+"</a> ");
 			   } 
 			     /* contains first name and last name */
-		         else if ( auxS.length >=3 && sentence.contains(" " + auxS[0] + " " + auxS[auxS.length-1] + " "))		        	  
-		        {
+		         else if ( auxS.length >=3 && sentence.contains(" " + auxS[0] + " " + auxS[auxS.length-1] + " ")) {
 			   	 sentence = sentence.replaceAll(" " + auxS[0]+ " " + auxS[auxS.length-1] + " "," <a>"+entity1+"</a> ");
-			   } else if ( auxS.length > 1 && sentence.contains(" " + auxS[auxS.length-1]+ " ")) {
+			   } 
+		         else if ( auxS.length > 1 && sentence.contains(" " + auxS[auxS.length-1]+ " ")) {
 			   	 sentence = sentence.replaceFirst(" " + auxS[auxS.length-1]+ " "," <a>"+entity1+"</a> ");			   	 
 			   }
+			   	/* contains first name only */
 				else if ( sentence.contains(" " + auxS[0]+" ")) {
-			   	 sentence = sentence.replaceFirst(" " + auxS[0]+ " "," <a>"+entity1+"</a> "); 
-			   } else if ( sentence.contains("He ")) {
+			   	 sentence = sentence.replaceFirst(" " + auxS[0]+ " "," <a>"+entity1+"</a> ");
+			   }
+			   /* contains surname name with 's */ 
+				else if ( sentence.contains(" " + auxS[auxS.length-1]+"'s" + " ")) {
+					sentence = sentence.replaceFirst(" " + auxS[auxS.length-1]+"'s" + " "," <a>"+entity1+"</a>'s ");
+				}
+			   	 else if ( sentence.contains("He ")) {
 			   	 sentence = sentence.replaceFirst("He ","<a>"+entity1+"</a> ");
 			   } else if ( sentence.contains("She ")) {
 			   	 sentence = sentence.replaceFirst("She ","<a>"+entity1+"</a> ");
@@ -248,7 +275,15 @@ public class GenerateSetsFromExamples {
 			   } else if ( sentence.contains(" her ")) {
 			   	 sentence = sentence.replaceFirst(" her "," <a>"+entity1+"</a> ");
 			   }
+			   else if ( sentence.contains(" Him ")) {
+				   	 sentence = sentence.replaceFirst(" Him "," <a>"+entity1+"</a> ");
+				}
+			   else if ( sentence.contains(" him ")) {
+				   	 sentence = sentence.replaceFirst(" him "," <a>"+entity1+"</a> ");
+			   }
 	   	    }
+			
+			if (debug==true) all_sentences.add(sentence);
 			
 		    Pattern pattern = Pattern.compile("<a[^>]*>[^<]+</a>");
 		    Matcher matcher = pattern.matcher(sentence);
@@ -293,7 +328,7 @@ public class GenerateSetsFromExamples {
 				   
 				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
 				   
-				   if (debug==true) all_sentences.put(type,sentence);
+				   if (debug==true) relation_sentences.put(type,sentence);
 					   
 					   /*
 					   System.out.println("\nentity1: " + entity1);				   
@@ -313,25 +348,37 @@ public class GenerateSetsFromExamples {
 			   }   
 		     }
 		   }
-		   if (debug==true && all_sentences.get("associate").size()==0) {
+		   /*
+		   if (debug==true && relation_sentences.get("visited").size()==0) {
 		    	System.out.println("==================================");		    	
-		    	if (!all_sentences.keySet().contains("associate")) {
+		    	if (!relation_sentences.keySet().contains("visited")) {
 		    		System.out.println("entity: " + entity1);
+		    		
+		    		for (String n : entity1.split("\\s+")) {
+						System.out.print(n+'\t');
+					}
+		    		System.out.println();
+		    		
 		    		System.out.println("paragrah: " + aux);
 		    		System.out.println("");
 		    		System.out.println("sentences: ");
 		    		for (List<String> x : new_sentences) System.out.println(x+"\n");
+		    		System.out.println("sentences replaced: ");
+		    		for (String x : all_sentences) System.out.println(x+"\n");
+		    		
 		    		System.out.println("relations/sentences: ");
-		    		for (String t : all_sentences.keySet()) {
+		    		for (String t : relation_sentences.keySet()) {
 						System.out.println("* " + t + "\n");
-						for (String s : all_sentences.get(t)) {
+						for (String s : relation_sentences.get(t)) {
 							System.out.println(s);
 						}
 						System.out.println();
-					}	
+					}
+					
 		    	}
 			    System.out.println("==================================");		    	
 		    }
+		    */
 	   }
    }
    out.flush();
