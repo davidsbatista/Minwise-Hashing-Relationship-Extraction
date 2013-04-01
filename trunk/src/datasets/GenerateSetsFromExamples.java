@@ -151,6 +151,8 @@ public class GenerateSetsFromExamples {
    String entity1 = null;
    String type = null;
    
+   List<String> avoidClasses = Arrays.asList("descendant","discovered","gpe_competition","grandmother","inventor","supported_person","uncle");
+   
    int numberOfOther = 0;
    int num_terms = 0;
    
@@ -318,6 +320,10 @@ public class GenerateSetsFromExamples {
 				   else if ( type1.equals("OTHER") && matcher.group().contains(">"+entity1+"<")) type = type2;
 				   else if ( type2.equals("OTHER") && matcher2.group().contains(">"+entity1+"<")) type = type1;
 				   
+				   if (avoidClasses.contains(type)) type="OTHER";
+
+				   if ( (type.equals("OTHER") && Math.random() < 0.975 )) continue;
+				   
 				   try {
 					   int num = class_instances.get(type);
 					   num++;
@@ -326,6 +332,8 @@ public class GenerateSetsFromExamples {
 					   class_instances.put(type, 1);
 				   }
 				   
+				   //if (debug==true) all_sentences.put(type,sentence);
+
 				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
 				   
 				   if (debug==true) relation_sentences.put(type,sentence);
@@ -627,10 +635,10 @@ public class GenerateSetsFromExamples {
 		source = (i == 0) ? aux[i] : source + " " + aux[i];	
 		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {
 			if ( auxPOS[i].startsWith("v") ) {
-			  set.add(normalized[i] + "_" + ( i < aux.length -1 ? normalized[i+1] + "_" : "" ) + prefix);
-			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
+			  set.add(normalized[i] + "_" + ( i < aux.length - 1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
-			  for (String levin_class : EnglishNLP.getVerbClass(aux[i])) set.add(levin_class.replaceAll(" ", "_") + "_LEVIN_CLASS_" + prefix);
+			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
+			  for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }
@@ -647,16 +655,7 @@ public class GenerateSetsFromExamples {
 	}
 	String result = "";
     for ( String tok : set ) result += " " + tok;
-    
-    String newFeatures = "";
-    String originalFeatures[] = result.trim().split(" ");
-    Arrays.sort(originalFeatures);
-    /*
-    for ( int idx1 = 0 ; idx1 < originalFeatures.length; idx1++ ) for ( int idx2 = idx1 + 1 ; idx2 < originalFeatures.length; idx2++ ) {
-      newFeatures += originalFeatures[idx1] + "_" + originalFeatures[idx2] + " ";
-    }
-    */
-    return newFeatures + result.trim();
+    return result.trim();
  }
  
  public static void processExample ( String before, String after, String between, String type, PrintWriter out ) {
