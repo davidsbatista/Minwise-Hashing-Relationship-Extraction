@@ -22,8 +22,8 @@ public class LocalitySentitiveHashing {
  // The class assigned to each example in the database
  private Map<Integer,String> value;
 
- // The optimal k value for each training example
- private Map<Integer,Short> kvalue;
+ // The validity score for each training example
+ private Map<Integer,Double> validity;
  
  // An optional map with importance weights assigned to each of the elements that are used in the representation of the examples
  private Map<String,Integer> featureWeights;
@@ -52,7 +52,7 @@ public class LocalitySentitiveHashing {
 	   this.function = MinHash.createHashFunctions(MinHash.HashType.POLYNOMIAL,numFunctions);
        this.representation = db.getTreeMap("representation");
 	   this.value = db.getTreeMap("value");
-	   this.kvalue = db.getTreeMap("kvalue");
+	   this.validity = db.getTreeMap("kvalue");
 	   this.index = (Map[]) Array.newInstance(db.getTreeMap("index").getClass(),numBands);	 
 	   for ( int i = 0 ; i < numBands ; i++ ) this.index[i] = db.getTreeMap("index-"+i);
  	 } catch ( Exception ex ) { ex.printStackTrace(); throw new Error(ex); } 
@@ -96,33 +96,28 @@ public class LocalitySentitiveHashing {
 	 value.put(id,result);
  }
  
- // Computes the optimal K value for each example in the database, through a leave-one-out methodology
- public void computeOptimalK( ) { computeOptimalK(new short[]{3,5,7,15} ); }
-
- // Computes the optimal K value for each example in the database, through a leave-one-out methodology
- public void computeOptimalK( final short[] valuesToTest ) {
+ // Computes the validity score for each example in the database, through a leave-one-out methodology
+ public void computeValidity( int k ) {
 	 for( Integer example : value.keySet() ) {
-	 //Parallel.forEach(value.keySet().iterator(), new Function<Integer, Void>() { public Void apply(Integer example) {
 		 String cl = value.get(example);
-		 int minhash[] = representation.get(example);
-		 for ( short k : valuesToTest ) {			
-			 TopN<String> result = new TopN<String>(k);
-		     int size = function.length / index.length;
-			 for ( int i = 0 ; i < index.length; i++ ) {
-		         int code = function[0].hash(integersToBytes(minhash,i*size,size));
-				 Set<Integer> auxSet = index[i].get(code);
-				 if ( auxSet != null ) for ( Integer candidate : auxSet ) if ( candidate != example ) {
-					 String val = value.get(candidate);
-					 int rep[] = representation.get(candidate);
-				     result.add(val, MinHash.jaccardSimilarity(minhash,rep));			
-				 }
+		 int minhash[] = representation.get(example);			
+		 TopN<String> result = new TopN<String>(k);
+		 int size = function.length / index.length;
+		 for ( int i = 0 ; i < index.length; i++ ) {
+		     int code = function[0].hash(integersToBytes(minhash,i*size,size));
+		     Set<Integer> auxSet = index[i].get(code);
+			 if ( auxSet != null ) for ( Integer candidate : auxSet ) if ( candidate != example ) {
+				 String val = value.get(candidate);
+				 int rep[] = representation.get(candidate);
+			     result.add(val, MinHash.jaccardSimilarity(minhash,rep));			
 			 }
-			 String newCl = result.mostFrequent();
-			 kvalue.put(example, new Short(k));
-			 if ( newCl.equals(cl) ) break;
 		 }
-		// return null;
-	 }// });
+		 double cnt = 0;
+		 SortedSet<Pair<String,Double>> mySet = result.get();
+		 for ( Pair<String,Double> newCl : mySet) if ( cl.equals(newCl.getFirst())) cnt++; 
+		 if ( mySet.size() != 0 ) cnt = cnt / ((double)(mySet.size())); 
+		 validity.put(example, cnt);
+	 }
  }
 
  // Returns the top-k most similar examples in the database
@@ -144,20 +139,6 @@ public class LocalitySentitiveHashing {
 	 }
      final int size = function.length / index.length;
 	 final int[] minhash = weights == null ? MinHash.minHashFromSet(data,function) : MinHash.minHashFromWeightedSet(data,weights,function);
-	 if ( k <= 0 ) {
-		 final TopN<Integer> result = new TopN<Integer>(1);
-//		 Parallel.forEach(index.length, new Function<Integer, Void>() { public Void apply(Integer i) {
-		 for ( int i = 0 ; i < index.length; i++ ) {
-	         int code = function[0].hash(integersToBytes(minhash,i*size,size));
-			 Set<Integer> auxSet = index[i].get(code);
-			 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
-				 int rep[] = representation.get(candidate);
-			     result.add(candidate, MinHash.jaccardSimilarity(minhash,rep));			
-			 }
-//			 return null;
-		 }// });
-		 k = result.get().size() == 1 ? kvalue.get(result.mostFrequent()) : 7;
-	 }
 	 final TopN<String> result = new TopN<String>(k);
 //	 Parallel.forEach(index.length, new Function<Integer, Void>() { public Void apply(Integer i) {
 	 for ( int i = 0 ; i < index.length; i++ ) { 
@@ -166,7 +147,9 @@ public class LocalitySentitiveHashing {
 		 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
 			 String valueS = value.get(candidate);
 			 int rep[] = representation.get(candidate);
-		     result.add(valueS, MinHash.jaccardSimilarity(minhash,rep));			
+		     double score = MinHash.jaccardSimilarity(minhash,rep);
+		     if ( validity.containsKey(candidate) ) score = score * validity.get(candidate);
+			 result.add(valueS, score);			
 		 }
 //		 return null;
 	 }// });
