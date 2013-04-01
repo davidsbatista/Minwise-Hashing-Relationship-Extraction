@@ -48,7 +48,7 @@ public class TestClassification {
       dataIndex.index(dataIndex.indexSize(),set.toArray(new String[0]),cl);      
       if ( number > 0 && num++ > number) break;
     }
-    if ( knn <= 0 ) dataIndex.computeOptimalK();
+    //dataIndex.computeValidity(knn);
     input.close();
   }
   
@@ -174,8 +174,11 @@ public class TestClassification {
       LinkedList<Pair<String,String>> aux = evaluateTestData("test-data-wikien.txt");	  
       double[] resultsWiki = { 0.0, 0.0, 0.0, 0.0 };
       
-      String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" };
-    		  
+      //All
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" };
+      
+      //All except classes with no test instances
+      String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law"};          
       
       for ( String c : classesWikiEn  ) {		  
     	  System.out.println();
