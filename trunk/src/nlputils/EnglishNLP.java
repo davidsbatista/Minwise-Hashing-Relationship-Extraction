@@ -39,13 +39,14 @@ public class EnglishNLP {
     static Lemmatizer lemmatizer = null;
 	static SpellingStandardizer standardizer = null;
 
-	static Multimap<String, String> levin_verb_classes = LinkedListMultimap.create();
+	public static Multimap<String, String> levin_verb_classes = null;
 	
 	public static Collection<String> getVerbClass(String verb) {
 		return levin_verb_classes.get(verb);
 	}
 	
 	public static void readVerbClasses(String path) throws IOException {
+		levin_verb_classes = LinkedListMultimap.create();
 		BufferedReader input = new BufferedReader( new FileReader(new File(path)) );
 		String aux = null;
 		String levin_class = null;

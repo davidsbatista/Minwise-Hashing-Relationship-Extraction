@@ -642,38 +642,52 @@ public class GenerateSetsFromExamples {
 	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
     String aux[] = EnglishNLP.adornText(source,0).split(" +");
     Set<String> set = new HashSet<String>();
+    
+
+    if (auxPOS.length == normalized.length && auxPOS.length == aux.length) {
+    	//adiciona o BETWEEN normalizado
+    	if (prefix.equals("BET")) {
+    		StringBuffer BET_norm = new StringBuffer("");
+        	for (int j = 0; j < normalized.length; j++) { BET_norm.append(normalized[j] + "_");}
+        	set.add( BET_norm.toString() + "BET_ALL");
+    	} 
+    }
+    
     for ( int i = 0 ; i < aux.length; i++ ) {
 		if ( prefix.startsWith("BEF") && aux.length - i > betweenLenght + window ) continue;
 		if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
 		source = (i == 0) ? aux[i] : source + " " + aux[i];
-		//adiciona o BETWEEN normalizado
-		StringBuffer BET_norm = new StringBuffer("");
-		for (int j = 0; j < normalized.length; j++) { BET_norm.append(normalized[j] + "_");}
-		if ( prefix.startsWith("BET") ) set.add( BET_norm.toString() + "BET_ALL");
-		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {	
-			
+		
+		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {		
 			if ( auxPOS[i].startsWith("v") ) { 
 			  set.add(normalized[i] + "_" + ( i < aux.length - 1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
-			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
-			  //for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
+			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			  
 			  
-			  //um verbo seguido de uma preposição	
-			  if (i < aux.length - 1 && (auxPOS[i+1].startsWith("pp") || auxPOS[i+1].equals("p-acp") || auxPOS[i+1].startsWith("pf"))) {
-			  	  set.add( normalized[i] + "_" + normalized[i+1] + prefix);
-			  }
-			 //um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
-			/*
-			 * j		adjective
-			 * jn		adjective/noun
-			 * 
-			 * an	 	adverb/noun	 noun
-			 * av	 	adverb
-			 * a-acp	acp word as adverb
-			 * startsWith("av")	adverb
-			 */
-			  
-			  
+			  //Levin classes
+			  if (EnglishNLP.levin_verb_classes!=null) for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
+			
+			//ReVerb inspired: um verbo seguido de uma preposição
+		  	if (i < aux.length - 1 && (auxPOS[i+1].startsWith("pp") || auxPOS[i+1].equals("p-acp") || auxPOS[i+1].startsWith("pf"))) {
+		  	  	  set.add( normalized[i] + "_" + normalized[i+1] + "_RVB_" + prefix);
+		  	}  	
+		  	
+	  	    //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+	  		if (i < aux.length - 1) {
+	  			int j=i+1;
+	  			String pattern = new String();
+	  			while ( j < aux.length - 1 && (auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j"))) {
+	  				j++;
+	  			}
+	  			if (auxPOS[j].startsWith("pp") || auxPOS[j].equals("p-acp") || auxPOS[j].startsWith("pf")) {
+	  				for (int z = i; z <= j; z++) {
+						pattern += normalized[z] + "_";
+					}
+	  				set.add( pattern + "_RVB_" + prefix);
+	  			}
+	  		}
+
+			//preposições normalizadas 
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }
