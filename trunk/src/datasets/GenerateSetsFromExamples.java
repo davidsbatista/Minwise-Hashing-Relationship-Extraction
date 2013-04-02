@@ -345,17 +345,6 @@ public class GenerateSetsFromExamples {
 				   }
 				   
 				   //if (debug==true) all_sentences.put(type,sentence);
-
-				   if ( type.equals("OTHER") && Math.random() < 0.975 ) continue;
-				   
-				   
- 				   List<String> classes = Arrays.asList(classesWikiEn);
-				   
- 				   if (!classes.contains(type))	continue;
-				   
-				   
-				   //if (debug==true) relation_sentences.put(type,sentence);
-					   
 					   /*
 					   System.out.println("\nentity1: " + entity1);				   
 					   System.out.println();
@@ -369,7 +358,7 @@ public class GenerateSetsFromExamples {
 					   System.out.println("==================");
 					   */
 				   
-				   //if ( type.equals("OTHER")) numberOfOther++;
+				   if ( type.equals("OTHER")) numberOfOther++;
 				   processExample(before,after,between,type,out); 
 			   }   
 		     }
@@ -408,9 +397,8 @@ public class GenerateSetsFromExamples {
 	   }
    }
    out.flush();
-   /*
    System.err.println("Number of elements of class OTHER : " + numberOfOther);   
-   System.err.println("Number of sentences : " + number_sentences);
+   //System.err.println("Number of sentences : " + number_sentences);
    System.out.println("total number of classes: " + class_instances.size());   
    int acc_class_instances = 0;
    for (String c : class_instances.keySet()) {
@@ -419,7 +407,7 @@ public class GenerateSetsFromExamples {
    System.out.println();
    System.out.println("total number of class instances: " + acc_class_instances);
    
-   /* statistics  
+   /* statistics  */
    System.out.println("#Terms: " + num_terms);    
    System.out.println();
    
