@@ -657,23 +657,44 @@ public class GenerateSetsFromExamples {
     for ( int i = 0 ; i < aux.length; i++ ) {
 		if ( prefix.startsWith("BEF") && aux.length - i > betweenLenght + window ) continue;
 		if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
-		source = (i == 0) ? aux[i] : source + " " + aux[i];	
-		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {
-			if ( auxPOS[i].startsWith("v") ) {
+		source = (i == 0) ? aux[i] : source + " " + aux[i];
+		//adiciona o BETWEEN normalizado
+		StringBuffer BET_norm = new StringBuffer("");
+		for (int j = 0; j < normalized.length; j++) { BET_norm.append(normalized[j] + "_");}
+		if ( prefix.startsWith("BET") ) set.add( BET_norm.toString() + "BET_ALL");
+		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {	
+			
+			if ( auxPOS[i].startsWith("v") ) { 
 			  set.add(normalized[i] + "_" + ( i < aux.length - 1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);
-			  for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
+			  //for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
+			  
+			  //um verbo seguido de uma preposição	
+			  if (i < aux.length - 1 && (auxPOS[i+1].startsWith("pp") || auxPOS[i+1].equals("p-acp") || auxPOS[i+1].startsWith("pf"))) {
+			  	  set.add( normalized[i] + "_" + normalized[i+1] + prefix);
+			  }
+			 //um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+			/*
+			 * j		adjective
+			 * jn		adjective/noun
+			 * 
+			 * an	 	adverb/noun	 noun
+			 * av	 	adverb
+			 * a-acp	acp word as adverb
+			 * startsWith("av")	adverb
+			 */
+			  
+			  
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
 		    }
 		}
 	}
-    final String source2 = source;
 	// Gerar trigramas com base na string original
     for ( int j = 0; j < source.length() + 3; j++ ) {
 	   String tok = "";
-       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source2.length()  ? '_' : source2.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
+       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
        if ( frequencyMap != null && ( frequencyMap.get(tok+ "_" + prefix) == null || frequencyMap.get(tok+ "_" + prefix) < minFreqThreshold ) ) continue;
 	   if ( entropyMap != null && entropyMap.get(tok+ "_" + prefix) != null) for ( int i = 1; i <= 1 + entropyMap.get(tok+ "_" + prefix); i++) set.add(tok + "_" + prefix + "_" + i);
 	   else if ( entropyMap == null || entropyMap.size() == 0 ) set.add(tok + "_" + prefix);
@@ -712,7 +733,7 @@ public class GenerateSetsFromExamples {
 	 //line below is only for gathering statistics concerning the whole dataset
 	 //processAIMED("Datasets/aimed", "Datasets/aimed/full/full.txt", new PrintWriter(new FileWriter("full-dataset-processed.txt")));
 	 
-	 for ( int f = 1 ; f <= 1; f++) {
+	 for ( int f = 1 ; f <= 10; f++) {
 		System.out.println("Generating AIMED data fold " + f );
 		/*
 		entropyMap = null; 
