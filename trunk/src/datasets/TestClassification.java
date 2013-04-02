@@ -14,7 +14,7 @@ public class TestClassification {
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
-  public static boolean SemEvalAsymmetrical = true;
+  public static boolean SemEvalAsymmetrical = false;
  
   private static int trainInstances = 0;
   private static int testInstances = 0;
@@ -134,16 +134,11 @@ public class TestClassification {
     		  "Instrument-Agency",
     		  "Member-Collection",
     		  "Message-Topic",
-    		  "Product-Producer"};
+    		  "Product-Producer","Other"};
             
       String[] classes = null;
 
       if (SemEvalAsymmetrical) classes = classes_asymmetrical; else classes = classes_symmetrical;
-
-      
-      for (int i = 0; i < classes.length; i++) {
-		System.out.println(classes[i]);
-	}
       
       for ( String c : classes  ) {		  
     	  System.out.println();		  		  
@@ -174,6 +169,33 @@ public class TestClassification {
       LinkedList<Pair<String,String>> aux = evaluateTestData("test-data-wikien.txt");	  
       double[] resultsWiki = { 0.0, 0.0, 0.0, 0.0 };
       
+      //All classes
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law","descendant","inventor","grandmother","discovered","gpe_competition","uncle","supported_person"};
+       
+      //All classes except the ones with 0 test instances
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law"};
+      
+      //All classes except the ones with less then 10 examples or with 0 test instances
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role"}; 
+      
+      //top 15 classes
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place"};
+      
+      //top 25 classes
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
+      
+      
+      /*
+       * Classes with no test instances: 
+       * 
+       * "descendant"
+       * "inventor"
+       * "grandmother
+       * "discovered"
+       * "gpe_competition"
+       * "uncle"
+       * "supported_person"
+       */
       //All
       //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" };
       
@@ -205,7 +227,7 @@ public class TestClassification {
 	  System.out.println();
 	  System.out.println("Test classification on AIMED...");
       double[] results = new double[] { 0.0, 0.0, 0.0, 0.0 };    
-      for ( int i = 1 ; i <= 10; i++) {
+      for ( int i = 1 ; i <= 1; i++) {
 		  System.out.println();
 		  System.out.println("Results for fold " + i + "...");
 		  System.out.println("Reading train data ...");
