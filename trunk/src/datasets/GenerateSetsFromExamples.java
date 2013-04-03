@@ -645,12 +645,13 @@ public class GenerateSetsFromExamples {
     
 
     if (auxPOS.length == normalized.length && auxPOS.length == aux.length) {
-    	//adiciona o BETWEEN normalizado
+    	//BETWEEN normalizado
     	if (prefix.equals("BET")) {
     		StringBuffer BET_norm = new StringBuffer("");
         	for (int j = 0; j < normalized.length; j++) { BET_norm.append(normalized[j] + "_");}
         	set.add( BET_norm.toString() + "BET_ALL");
     	} 
+    	
     }
     
     for ( int i = 0 ; i < aux.length; i++ ) {
@@ -664,14 +665,15 @@ public class GenerateSetsFromExamples {
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			  
 			  
-			  //Levin classes
-			  if (EnglishNLP.levin_verb_classes!=null) for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
+			//Levin classes
+			//if (EnglishNLP.levin_verb_classes!=null) for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
 			
+			  /*
 			//ReVerb inspired: um verbo seguido de uma preposição
 		  	if (i < aux.length - 1 && (auxPOS[i+1].startsWith("pp") || auxPOS[i+1].equals("p-acp") || auxPOS[i+1].startsWith("pf"))) {
 		  	  	  set.add( normalized[i] + "_" + normalized[i+1] + "_RVB_" + prefix);
-		  	}  	
-		  	
+		  	}
+		  	*/
 	  	    //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
 	  		if (i < aux.length - 1) {
 	  			int j=i+1;
@@ -686,7 +688,8 @@ public class GenerateSetsFromExamples {
 	  				set.add( pattern + "_RVB_" + prefix);
 	  			}
 	  		}
-
+			
+			  
 			//preposições normalizadas 
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
@@ -735,7 +738,7 @@ public class GenerateSetsFromExamples {
 	 //line below is only for gathering statistics concerning the whole dataset
 	 //processAIMED("Datasets/aimed", "Datasets/aimed/full/full.txt", new PrintWriter(new FileWriter("full-dataset-processed.txt")));
 	 
-	 for ( int f = 1 ; f <= 10; f++) {
+	 for ( int f = 1 ; f <= 1; f++) {
 		System.out.println("Generating AIMED data fold " + f );
 		/*
 		entropyMap = null; 

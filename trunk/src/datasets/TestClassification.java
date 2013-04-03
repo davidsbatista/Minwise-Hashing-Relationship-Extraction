@@ -228,7 +228,7 @@ public class TestClassification {
 	  System.out.println();
 	  System.out.println("Test classification on AIMED...");
       double[] results = new double[] { 0.0, 0.0, 0.0, 0.0 };    
-      for ( int i = 1 ; i <= 10; i++) {
+      for ( int i = 1 ; i <= 1; i++) {
 		  System.out.println();
 		  System.out.println("Results for fold " + i + "...");
 		  System.out.println("Reading train data ...");
