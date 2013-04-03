@@ -642,18 +642,6 @@ public class GenerateSetsFromExamples {
 	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
     String aux[] = EnglishNLP.adornText(source,0).split(" +");
     Set<String> set = new HashSet<String>();
-    
-
-    if (auxPOS.length == normalized.length && auxPOS.length == aux.length) {
-    	//BETWEEN normalizado
-    	if (prefix.equals("BET")) {
-    		StringBuffer BET_norm = new StringBuffer("");
-        	for (int j = 0; j < normalized.length; j++) { BET_norm.append(normalized[j] + "_");}
-        	set.add( BET_norm.toString() + "BET_ALL");
-    	} 
-    	
-    }
-    
     for ( int i = 0 ; i < aux.length; i++ ) {
 		if ( prefix.startsWith("BEF") && aux.length - i > betweenLenght + window ) continue;
 		if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
@@ -674,22 +662,20 @@ public class GenerateSetsFromExamples {
 		  	  	  set.add( normalized[i] + "_" + normalized[i+1] + "_RVB_" + prefix);
 		  	}
 		  	*/
-	  	    //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
-	  		if (i < aux.length - 1) {
-	  			int j=i+1;
-	  			String pattern = new String();
-	  			while ( j < aux.length - 1 && (auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j"))) {
-	  				j++;
-	  			}
-	  			if (auxPOS[j].startsWith("pp") || auxPOS[j].equals("p-acp") || auxPOS[j].startsWith("pf")) {
-	  				for (int z = i; z <= j; z++) {
-						pattern += normalized[z] + "_";
-					}
-	  				set.add( pattern + "_RVB_" + prefix);
-	  			}
-	  		}
-			
 			  
+	  	    //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+	  		  if (i < aux.length - 2) {
+	  			String pattern = normalized[i];
+	  			int j = i+1;				
+				while ( (j < aux.length - 2) && (auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j")) || auxPOS[j].startsWith("n")) {	  				
+					pattern += "_" + normalized[j];
+					j++;				
+				}					
+				if (auxPOS[j].startsWith("pp") || auxPOS[j].equals("p-acp") || auxPOS[j].startsWith("pf")) {
+						pattern += "_" + normalized[j];
+						set.add(pattern + "_RVB_" + prefix);
+					}
+	  		  }
 			//preposições normalizadas 
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);

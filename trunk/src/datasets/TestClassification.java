@@ -96,7 +96,6 @@ public class TestClassification {
 	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
 	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
 	  System.out.println("Results for class \t" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
-	  //System.out.println("Total number of instances : " + (dataIndex.indexSize(class_relation) + numInstancesOfClass));
 	  System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
 	  System.out.println("Number of test instances : " + numInstancesOfClass );
 	  System.out.println("Number of classifications : " + numClassified );
@@ -135,7 +134,7 @@ public class TestClassification {
     		  "Instrument-Agency",
     		  "Member-Collection",
     		  "Message-Topic",
-    		  "Product-Producer","Other"};
+    		  "Product-Producer"};
             
       String[] classes = null;
 
@@ -159,9 +158,7 @@ public class TestClassification {
   }
   
   public static void testWikiEN() throws Exception{
-  	  //
-	  // TESTING WITH Wikipedia English
-	  //
+
   	  System.out.println();
 	  System.out.println("Test classification on English Wikipedia...");
       System.out.println("Reading train data WikiEN...");
@@ -169,36 +166,12 @@ public class TestClassification {
 	  System.out.println("Reading test data WikiEN...");
       LinkedList<Pair<String,String>> aux = evaluateTestData("test-data-wikien.txt");	  
       double[] resultsWiki = { 0.0, 0.0, 0.0, 0.0 };
-      
-      //All classes
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law","descendant","inventor","grandmother","discovered","gpe_competition","uncle","supported_person"};
-       
-      //All classes except the ones with 0 test instances
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law"};
-      
-      //All classes except the ones with less then 10 examples or with 0 test instances
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role"}; 
-      
+
       //top 15 classes
       //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place"};
       
       //top 25 classes
       //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
-      
-      
-      /*
-       * Classes with no test instances: 
-       * 
-       * "descendant"
-       * "inventor"
-       * "grandmother
-       * "discovered"
-       * "gpe_competition"
-       * "uncle"
-       * "supported_person"
-       */
-      //All
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","inventor","cousin","descendant","role","nephew","uncle","supported_person","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","gpe_competition","brother_in_law","grandmother","discovered" };
       
       //All except classes with no test instances
       String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law"};          
@@ -228,7 +201,7 @@ public class TestClassification {
 	  System.out.println();
 	  System.out.println("Test classification on AIMED...");
       double[] results = new double[] { 0.0, 0.0, 0.0, 0.0 };    
-      for ( int i = 1 ; i <= 1; i++) {
+      for ( int i = 1 ; i <= 10; i++) {
 		  System.out.println();
 		  System.out.println("Results for fold " + i + "...");
 		  System.out.println("Reading train data ...");
