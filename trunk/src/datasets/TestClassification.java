@@ -245,6 +245,10 @@ public class TestClassification {
 		  System.out.println("bands: " + bands);
 		  System.out.println("knn: " + knn);		  
 		  
+		  if (args[0].equals("drugbank")) {
+			  GenerateSetsFromExamples.generateDataDrugBank();
+		  }
+		  
 		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsFromExamples.generateAll();
 			  testSemEval();

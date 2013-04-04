@@ -66,9 +66,36 @@ public class GenerateSetsFromExamples {
    }
    out.flush();
    input.close();
-
-
  }
+ 
+ public static void processDrugBank( String file, PrintWriter out ) throws Exception {
+	   BufferedReader input = new BufferedReader( new FileReader(file) );
+	   String aux = null;
+	   String sentence = null;
+	   String type = null;
+	   while ( ( aux = input.readLine() ) != null ) {
+	     if ( aux.contains("\t") ) {
+	       String[] data = aux.split("\t");
+	       sentence = data[1];
+	       /*
+		   String before = sentence.substring(0,Math.min(sentence.indexOf("</e1>"),sentence.indexOf("</e2>"))).trim();
+		   String after = sentence.substring(Math.max(sentence.indexOf("<e2>")+4,sentence.indexOf("<e1>")+4)).trim();  	   
+		   String between = sentence.substring(Math.min(sentence.indexOf("</e1>")+5,sentence.indexOf("</e2>")+5),Math.max(sentence.indexOf("<e2>"),sentence.indexOf("<e1>"))).trim();  
+		   between = between.replaceAll("</?e[12] *>","");	   
+		   before = before.replaceAll("</?e[12] *>","") + " " + between;
+		   after = between + " " + after.replaceAll("</?e[12] *>","");
+		   */
+	       
+	       String temp = input.readLine();
+		   type = temp.substring(0,temp.indexOf("Comment:"));
+		   //processExample(before,after,between,type,out);
+	       System.out.println("sentence: " + sentence);
+	       System.out.println("type: " + type);
+	     }
+	   }
+	   out.flush();
+	   input.close();
+	 }
   
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
       
@@ -466,6 +493,28 @@ public class GenerateSetsFromExamples {
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
 	 System.out.println("\nGenerating test data...");
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
+}
+ 
+ public static void generateDataDrugBank() throws Exception, IOException {
+	 System.out.println("Generating DrugBank data...");
+	 /*
+	 entropyMap = null;
+	 System.out.println("Determining shingles entropy...");
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 entropyMap = getEntropyMap("train-data-semeval.txt");
+	 */
+	 /*
+	 frequencyMap = null;
+	 System.out.println("Determining shingles frequency...");
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 frequencyMap = getFrequencyMap("train-data-semeval.txt");
+	 */
+	 System.out.println("\nGenerating train data...");
+	 processDrugBank("Datasets/Francisco/DrugBank.txt", new PrintWriter(new FileWriter("train-data-drugbank.txt")));
+	 /*
+	 System.out.println("\nGenerating test data...");
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
+	 */
 }
 
  public static void generateDataWikiEn() throws Exception, IOException {
