@@ -173,8 +173,6 @@ public class TestClassification {
       //top 25 classes
       String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
           
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
-      
       //All except classes with no test instances
       //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law"};          
       
