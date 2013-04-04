@@ -5,11 +5,8 @@ import java.util.regex.*;
 import nlputils.EnglishNLP;
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
 
 import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
-
 
 public class GenerateSetsFromExamples {
 
@@ -53,17 +50,9 @@ public class GenerateSetsFromExamples {
    String aux = null;
    String sentence = null;
    String type = null;
-   List<Integer> sentences_size = new Vector<Integer>();
-   /*
-   Map<String,Integer> class_instances = new HashMap<String,Integer>();
-   Map<String,Integer> nominals = new HashMap<String,Integer>();
-   int num_terms = 0;
-   */
    while ( ( aux = input.readLine() ) != null ) {
      if ( aux.contains("\t\"") ) {
-       sentence = aux.substring(aux.indexOf("\"")+1,aux.lastIndexOf("\""));       
-       sentences_size.add(sentence.length());
-       //num_terms += sentence.split("\\s+").length;
+       sentence = aux.substring(aux.indexOf("\"")+1,aux.lastIndexOf("\""));
 	   String before = sentence.substring(0,Math.min(sentence.indexOf("</e1>"),sentence.indexOf("</e2>"))).trim();
 	   String after = sentence.substring(Math.max(sentence.indexOf("<e2>")+4,sentence.indexOf("<e1>")+4)).trim();  	   
 	   String between = sentence.substring(Math.min(sentence.indexOf("</e1>")+5,sentence.indexOf("</e2>")+5),Math.max(sentence.indexOf("<e2>"),sentence.indexOf("<e1>"))).trim();  
@@ -71,36 +60,6 @@ public class GenerateSetsFromExamples {
 	   before = before.replaceAll("</?e[12] *>","") + " " + between;
 	   after = between + " " + after.replaceAll("</?e[12] *>","");
 	   type = input.readLine().trim();
-	   	   
-	   //String entity1 = sentence.substring(sentence.indexOf("<e1>")+4,sentence.indexOf("</e1>")).trim();
-	   //String entity2 = sentence.substring(sentence.indexOf("<e2>")+4,sentence.indexOf("</e2>")).trim();
-	   
-	   /*
-	   try {
-		   int num = nominals.get(entity1);
-		   num++;
-		   nominals.put(type, num);
-	   } catch (Exception e) {
-		   nominals.put(entity1, 1);
-	   }
-	   
-	   try {
-		   int num = nominals.get(entity2);
-		   num++;
-		   nominals.put(type, num);
-	   } catch (Exception e) {
-		   nominals.put(entity2, 1);
-	   }
-	   
-	   try {
-		   int num = class_instances.get(type);
-		   num++;
-		   class_instances.put(type, num);
-	   } catch (Exception e) {
-		   class_instances.put(type, 1);
-	   }
-	   */
-	   
 	   if (!TestClassification.SemEvalAsymmetrical) type = type.split("\\(")[0];
 	   processExample(before,after,between,type,out); 
      }
@@ -108,95 +67,27 @@ public class GenerateSetsFromExamples {
    out.flush();
    input.close();
 
-   /*
-   int n_nominals = 0;
-   for (String e : nominals.keySet()) {
-	   n_nominals += nominals.get(e);
-   }
-   */
-   //System.out.println("#Nominals: " + nominals.keySet().size());   
-   //System.out.println("#Terms: " + num_terms);
-   
-   /* sentence length statistics 
-   System.out.println();
-   int total = 0; 
-   for (Integer s : sentences_size) { total += s;}
-   double average = (double) total / (double) sentences_size.size();   
-   System.out.println("Avg. sentence Length: " + average);   
-   List<Double> distance_to_average = new Vector<Double>();      
-   for (Integer s : sentences_size) { 
-	   double difference = (double) s - (average);
-	   distance_to_average.add(Math.pow(difference, 2));   
-   }   
-   double stdvt = 0.0;
-   for (Double d: distance_to_average) {stdvt += d;}   
-   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
-   
-   /* class instance statistics/
-   System.out.println();
-   total = 0;
-   for (String c : class_instances.keySet()) { total += class_instances.get(c);}
-   average = (double) total / (double) class_instances.keySet().size();
-   System.out.println("Avg. class instances: " + average);
-   
-   distance_to_average = new Vector<Double>();
-   for (String c : class_instances.keySet()) { 
-	   double difference = (double) class_instances.get(c) - (average);
-	   distance_to_average.add(Math.pow(difference, 2));
-   }   
-   stdvt = 0.0;
-   for (Double d: distance_to_average) {stdvt += d;}   
-   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));   
-   */
+
  }
   
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
       
-   BufferedReader input = new BufferedReader( new FileReader(file) );
-   
+   BufferedReader input = new BufferedReader( new FileReader(file) );   
    String aux = null;
    String entity1 = null;
    String type = null;
-   
-   //int numberOfOther = 0;
-   //int num_terms = 0;
-   List<String> avoidClasses = Arrays.asList("descendant","discovered","gpe_competition","grandmother","inventor","supported_person","uncle");
-      
-   int numberOfOther = 0;
-   int num_terms = 0;
-   
-   List<Integer> sentences_size = new Vector<Integer>();
-   Map<String,Integer> class_instances = new HashMap<String,Integer>();   
-   //int number_sentences = 0;
-   boolean debug = false;
-   
-   //Multimap<String, String> relation_sentences = LinkedListMultimap.create();
-   //Set<String >all_sentences = null;
-   
+   List<String> avoidClasses = Arrays.asList("descendant","discovered","gpe_competition","grandmother","inventor","supported_person","uncle");   
    //top15
-   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place");
-   
+   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place");   
    //top 25 classes
    List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation");
-  
-   
+     
    while ( ( aux = input.readLine() ) != null ) {	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 		   aux = aux.replaceAll("</?i>","").replaceAll("&amp;","&").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
 		   aux = aux.replaceAll("</?span[^>]*>","").replaceAll("</?sup[^>]*>","").replaceAll("<a [^>]*class='external autonumber'[^>]*>[^<]+</a>" , "");
-		   entity1 = entity1.replaceAll(" \\(.*","").replaceAll(",","").trim();		   
-		   //num_terms += aux.split("\\s+").length;		   
-		   
-		   /*
-		   relation_sentences = LinkedListMultimap.create();
-		   all_sentences = new HashSet<String>();
-		   debug=false;
-		   relations=0;
-		   if (aux.contains("relation=\"birthplace\"")) debug=true;
-		   */
-		   
-		   List<List<String>> new_sentences = new Vector<List<String>>();
-		   
+		   entity1 = entity1.replaceAll(" \\(.*","").replaceAll(",","").trim();		   		   
+		   List<List<String>> new_sentences = new Vector<List<String>>();		   
 		   List<List<String>> sentences = new ICU4JBreakIteratorSentenceSplitter().extractSentences(aux);		   		   
 		   /* fix extracted sentences */
 		   new_sentences = new Vector<List<String>>();
@@ -214,25 +105,13 @@ public class GenerateSetsFromExamples {
 			   new_sentences.add(new_sentence);
 			   i++;
 		   }   
-		   
-		   //number_sentences += new_sentences.size();
 		   String auxS[] = entity1.split(" +");
-		   
-		   /*
-		   if (auxS[auxS.length-1].equals("Jr.")) {
-			auxS[auxS.length-1] = auxS[auxS.length-2];
-		   }
-		   */
-		   
 		   for ( List<String> tokens : new_sentences ) {
 			String sentence = ""; for ( String auxT : tokens ) sentence += " " + auxT;
-			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");
-			sentences_size.add(sentence.length());
-			
+			sentence = sentence.trim().replaceAll("< a relation = \" ", "<a relation=\"").replaceAll(" \" > ", "\">").replaceAll(" < / a >", "</a>").replaceAll("< a > ", "<a>");			
 			if (sentence.contains("Franklins")) sentence = sentence.replaceFirst(" Franklins ", " <a>"+entity1+"</a> ");
 			if (sentence.contains("Einsteins")) sentence = sentence.replaceFirst(" Einsteins ", " <a>"+entity1+"</a> ");						
-			if (sentence.contains("Doles")) sentence = sentence.replaceFirst(" Doles ", " <a>"+entity1+"</a> ");
-			
+			if (sentence.contains("Doles")) sentence = sentence.replaceFirst(" Doles ", " <a>"+entity1+"</a> ");			
 			if ( sentence.replaceAll("<a[^>]+>[^<]+</a>","-").contains(" " + entity1 + " ")) sentence = sentence.replaceAll(" " + entity1 + " "," <a>"+entity1+"</a> ");  else {
 			   if ( sentence.startsWith(entity1 + " ")) {
 				 sentence = sentence.replaceFirst(entity1 + " ","<a>"+entity1+"</a> ");
@@ -300,9 +179,6 @@ public class GenerateSetsFromExamples {
 				   	 sentence = sentence.replaceFirst(" him "," <a>"+entity1+"</a> ");
 			   }
 	   	    }
-			
-			//if (debug==true) all_sentences.add(sentence);
-			
 		    Pattern pattern = Pattern.compile("<a[^>]*>[^<]+</a>");
 		    Matcher matcher = pattern.matcher(sentence);
 		    while (matcher.find()) {
@@ -310,8 +186,7 @@ public class GenerateSetsFromExamples {
 			   if ( !type1.contains(" relation=") ) type1 = "OTHER"; else { 
 				   type1 = type1.substring(type1.indexOf(" relation=")+11); 
 			       type1 = type1.substring(0, type1.indexOf("\"")); 
-			   }
-			   String before1 = sentence.substring(0,matcher.start());
+			   }			   
 			   String after1 = sentence.substring(matcher.end());
 			   Matcher matcher2 = pattern.matcher(after1);
 		   	   while (matcher2.find()) {
@@ -336,116 +211,17 @@ public class GenerateSetsFromExamples {
 				   else if ( type1.equals("OTHER") && matcher.group().contains(">"+entity1+"<")) type = type2;
 				   else if ( type2.equals("OTHER") && matcher2.group().contains(">"+entity1+"<")) type = type1;
 				   
-				   if (avoidClasses.contains(type)) type="OTHER";
-				   
-				   if ( (type.equals("OTHER") && Math.random() < 0.975 )) continue;
-				   
+				   if (avoidClasses.contains(type)) type="OTHER";				   
+				   if ( (type.equals("OTHER") && Math.random() < 0.975 )) continue;				   
 				   if (!classesWikiEn.contains(type)) continue;
 				   
-				   try {
-					   int num = class_instances.get(type);
-					   num++;
-					   class_instances.put(type, num);
-				   } catch (Exception e) {
-					   class_instances.put(type, 1);
-				   }
-				   
-				   //if (debug==true) all_sentences.put(type,sentence);
-					   /*
-					   System.out.println("\nentity1: " + entity1);				   
-					   System.out.println();
-					   System.out.println("sentence: " + sentence);
-					   System.out.println();
-					   System.out.println("* before: " + before);
-					   System.out.println("* between: " + between);
-					   System.out.println("* after: " + after);
-					   System.out.println();
-					   System.out.println("type: " + type);
-					   System.out.println("==================");
-					   */
-				   
-				   if ( type.equals("OTHER")) numberOfOther++;
 				   processExample(before,after,between,type,out); 
 			   }   
 		     }
 		   }
-		   /*
-		   if (debug==true && relation_sentences.get("visited").size()==0) {
-		    	System.out.println("==================================");		    	
-		    	if (!relation_sentences.keySet().contains("visited")) {
-		    		System.out.println("entity: " + entity1);
-		    		
-		    		for (String n : entity1.split("\\s+")) {
-						System.out.print(n+'\t');
-					}
-		    		System.out.println();
-		    		
-		    		System.out.println("paragrah: " + aux);
-		    		System.out.println("");
-		    		System.out.println("sentences: ");
-		    		for (List<String> x : new_sentences) System.out.println(x+"\n");
-		    		System.out.println("sentences replaced: ");
-		    		for (String x : all_sentences) System.out.println(x+"\n");
-		    		
-		    		System.out.println("relations/sentences: ");
-		    		for (String t : relation_sentences.keySet()) {
-						System.out.println("* " + t + "\n");
-						for (String s : relation_sentences.get(t)) {
-							System.out.println(s);
-						}
-						System.out.println();
-					}
-					
-		    	}
-			    System.out.println("==================================");		    	
-		    }
-		    */
 	   }
    }
    out.flush();
-   System.err.println("Number of elements of class OTHER : " + numberOfOther);   
-   //System.err.println("Number of sentences : " + number_sentences);
-   System.out.println("total number of classes: " + class_instances.size());   
-   int acc_class_instances = 0;
-   for (String c : class_instances.keySet()) {
-	   acc_class_instances += class_instances.get(c);
-   }
-   System.out.println();
-   System.out.println("total number of class instances: " + acc_class_instances);
-   
-   /* statistics  */
-   System.out.println("#Terms: " + num_terms);    
-   System.out.println();
-   
-   int total = 0; 
-   for (Integer s : sentences_size) { total += s;}
-   double average = (double) total / (double) sentences_size.size();   
-   System.out.println("Avg. sentence Length: " + average);   
-   List<Double> distance_to_average = new Vector<Double>();      
-   for (Integer s : sentences_size) { 
-	   double difference = (double) s - (average);
-	   distance_to_average.add(Math.pow(difference, 2));   
-   }   
-   double stdvt = 0.0;
-   for (Double d: distance_to_average) {stdvt += d;}   
-   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
-   
-   /* class instance statistics 
-   System.out.println();
-   total = 0;
-   for (String c : class_instances.keySet()) { total += class_instances.get(c);}
-   average = (double) total / (double) class_instances.keySet().size();
-   System.out.println("Avg. class instances: " + average);
-   
-   distance_to_average = new Vector<Double>();
-   for (String c : class_instances.keySet()) { 
-	   double difference = (double) class_instances.get(c) - (average);
-	   distance_to_average.add(Math.pow(difference, 2));
-   }   
-   stdvt = 0.0;
-   for (Double d: distance_to_average) {stdvt += d;}   
-   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
-   */
    input.close();
  }
  
@@ -453,10 +229,7 @@ public class GenerateSetsFromExamples {
 	 
 	 Set<String> dataFiles = new HashSet<String>();
 	 BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
-	 String aux = null; String original = null;
-	 //List<Integer> sentences_size = new Vector<Integer>();	 
-	 //Map<String,Integer> class_instances = new HashMap<String,Integer>();
-	 //int num_terms = 0;
+	 String aux = null;
 	 while ( ( aux = inputAux.readLine() ) != null ) dataFiles.add(aux);
 	   inputAux.close();
 	   for ( File file : new File(directory).listFiles() ) if ( dataFiles.contains(file.getName()) ){ 
@@ -466,12 +239,9 @@ public class GenerateSetsFromExamples {
 	    while ( ( aux = input.readLine() ) != null ) {
 	   	 Set<String> positiveExamples = new HashSet<String>();	 
 		 Set<String> negativeExamples = new HashSet<String>();
-	     original = aux;
-	     int auxNum1 = 1, auxNum2 = 1;
-	     
+	     int auxNum1 = 1, auxNum2 = 1;	     
 	     for ( int num = 25 ; num <= 50 ; num++ ) aux = aux.replaceFirst("([\\-a-zA-Z0-9] +)<prot>([^<]+)</prot>", "$1<p3  pair=" + num + " >$2</p >");
-		 aux = aux.replaceAll("</?prot>","").replaceAll("  +"," ");
-		 
+		 aux = aux.replaceAll("</?prot>","").replaceAll("  +"," ");		 
 		 while ( aux.indexOf("<p") != -1 ) {
 			 String aux1 = aux.substring(0,aux.indexOf("<p")) + ("<P" + auxNum1++);
 		     String aux2 = aux.substring(aux.indexOf("<p")+3);
@@ -493,26 +263,9 @@ public class GenerateSetsFromExamples {
 		 }
 	     aux = aux.replaceAll("<P","<p").replaceAll("<-P","</p");
 	     sentence = aux;
-	     //sentences_size.add(sentence.length());
-	     //num_terms += sentence.split("\\s+").length;	     
-	     		   
-		// System.out.println("==================");
-		// System.out.println("original: " + original);
-		// System.out.println("sentence: " + sentence);
 	     for ( int i = 1; i < 50; i++ ) for ( int j = 1; j < 50; j++ ) for ( int k = j + 1 ; k < 50; k++ ) {
 		  if ( aux.contains("<p" + j + " pair="+i+" ") || aux.contains("<p" + k + " pair="+i+" ") ) {
 		   type = ( aux.contains("<p" + j + " pair="+i+" ") && aux.contains("<p" + k + " pair="+i+" ") ) ? "related" : "not-related";
-		   
-		   /*
-		   try {
-			   int num = class_instances.get(type);
-			   num++;
-			   class_instances.put(type, num);
-		   } catch (Exception e) {
-			   class_instances.put(type, 1);
-		   }
-		   */
-		   
 	       if ( sentence.indexOf("</p" + j + ">") < 0 || sentence.indexOf("</p" + k + ">") <= sentence.indexOf("</p" + j + ">")) continue;   
 	       String before = sentence.substring(0,sentence.indexOf("</p" + j + ">")+5).trim();
 		   String after = sentence.substring(sentence.indexOf("<p" + k + " pair=" + ( type.equals("related") ? i + " " : "" ) )).trim(); 
@@ -529,50 +282,14 @@ public class GenerateSetsFromExamples {
 	     for ( String auxStr : positiveExamples) {
 	    	  String auxStr2[] = auxStr.split("\t");
 	    	  processExample(auxStr2[0],auxStr2[1],auxStr2[2],"related",out);
-		      //System.out.println();
-			  //System.out.println("before: " + auxStr2[0]);
-			  //System.out.println("between: " + auxStr2[1]);
-			  //System.out.println("after: " + auxStr2[2]);
-			  //System.out.println("type: related");
-		      //System.out.println();
 	     }
 	     for ( String auxStr : negativeExamples) if ( !positiveExamples.contains(auxStr) ) {
 	    	  String auxStr2[] = auxStr.split("\t");
 	    	  processExample(auxStr2[0],auxStr2[1],auxStr2[2],"not-related",out);
-		      //System.out.println();
-			  //System.out.println("before: " + auxStr2[0]);
-			  //System.out.println("between: " + auxStr2[1]);
-			  //System.out.println("after: " + auxStr2[2]);
-			  //System.out.println("type: not-related");
-		      //System.out.println();
 	     }
-		 //System.out.println("==================");
 	    }
 	    input.close();
 	   }
-	   
-	   /*
-	   System.out.println();
-	   System.out.println("#Terms: " + num_terms);
-	   
-	   int total = 0; 
-	   for (Integer s : sentences_size) { total += s;}
-	   double average = (double) total / (double) sentences_size.size();
-	   
-	   System.out.println("Avg. sentence Length: " + average);   
-	   List<Double> distance_to_average = new Vector<Double>();   
-	   
-	   for (Integer s : sentences_size) { 
-		   double difference = (double) s - (average);
-		   distance_to_average.add(Math.pow(difference, 2));   
-	   }
-	   
-	   double stdvt = 0.0;
-	   for (Double d: distance_to_average) {
-		   stdvt += d;
-	   }   
-	   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
-		*/
 	   out.flush();
  }
 
@@ -661,13 +378,6 @@ public class GenerateSetsFromExamples {
 			  
 			//Levin classes
 			//if (EnglishNLP.levin_verb_classes!=null) for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
-			
-			  /*
-			//ReVerb inspired: um verbo seguido de uma preposição
-		  	if (i < aux.length - 1 && (auxPOS[i+1].startsWith("pp") || auxPOS[i+1].equals("p-acp") || auxPOS[i+1].startsWith("pf"))) {
-		  	  	  set.add( normalized[i] + "_" + normalized[i+1] + "_RVB_" + prefix);
-		  	}
-		  	*/
 			  
 	  	    //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
 	  		  if (i < aux.length - 2) {
@@ -725,10 +435,6 @@ public class GenerateSetsFromExamples {
 } 
  
  public static void generateDataAIMED() throws Exception, IOException {
-	
-	 //Process AIMED
-	 //line below is only for gathering statistics concerning the whole dataset
-	 //processAIMED("Datasets/aimed", "Datasets/aimed/full/full.txt", new PrintWriter(new FileWriter("full-dataset-processed.txt")));
 	 
 	 for ( int f = 1 ; f <= 1; f++) {
 		System.out.println("Generating AIMED data fold " + f );
@@ -743,7 +449,6 @@ public class GenerateSetsFromExamples {
 }
 
  public static void generateDataSemEval() throws Exception, IOException {
-	//Process SemEval
 	 System.out.println("Generating SemEval data...");
 	 /*
 	 entropyMap = null;
@@ -764,7 +469,6 @@ public class GenerateSetsFromExamples {
 }
 
  public static void generateDataWikiEn() throws Exception, IOException {
-	//WikiEn
 	 System.out.println("Generating Wikipedia data...");
 	 /*entropyMap = null;
 	 System.out.println("Determining shingles entropy...");
