@@ -161,7 +161,7 @@ public class GenerateSetsFromExamples {
    //int numberOfOther = 0;
    //int num_terms = 0;
    List<String> avoidClasses = Arrays.asList("descendant","discovered","gpe_competition","grandmother","inventor","supported_person","uncle");
-   
+      
    int numberOfOther = 0;
    int num_terms = 0;
    
@@ -173,8 +173,12 @@ public class GenerateSetsFromExamples {
    //Multimap<String, String> relation_sentences = LinkedListMultimap.create();
    //Set<String >all_sentences = null;
    
-   //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place"};
-   String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
+   //top15
+   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place");
+   
+   //top 25 classes
+   List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation");
+  
    
    while ( ( aux = input.readLine() ) != null ) {	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
@@ -333,8 +337,10 @@ public class GenerateSetsFromExamples {
 				   else if ( type2.equals("OTHER") && matcher2.group().contains(">"+entity1+"<")) type = type1;
 				   
 				   if (avoidClasses.contains(type)) type="OTHER";
-
+				   
 				   if ( (type.equals("OTHER") && Math.random() < 0.975 )) continue;
+				   
+				   if (!classesWikiEn.contains(type)) continue;
 				   
 				   try {
 					   int num = class_instances.get(type);
