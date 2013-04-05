@@ -3,6 +3,8 @@ package datasets;
 import java.io.*;
 import java.util.*;
 
+import datasets.WikiPT.GenerateSets;
+
 import nlputils.EnglishNLP;
 
 import minhash.LocalitySentitiveHashing;
@@ -58,7 +60,7 @@ public class TestClassification {
   }
   		
   public static LinkedList<Pair<String,String>> evaluateTestData ( String file, int number) throws Exception {
-	if ( number > 0 ) readTrainData(file,number); 	
+	if ( number > 0 ) readTrainData(file,number);
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;    
 	LinkedList<Pair<String,String>> results = new LinkedList<Pair<String,String>>();
@@ -223,6 +225,38 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3] );
   }
 
+  public static void testDrugBank() throws Exception{
+	  System.out.println();
+	  System.out.println("Test classification on DrugBank...");
+	  System.out.println("Reading train data DrugBank...");
+      readTrainData("train-data-drugbank.txt");
+      System.out.println("Reading test data DrugBank...");
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-drugbank.txt");	      
+      double[] results = { 0.0, 0.0, 0.0, 0.0 };
+      
+      String[] classes = {"advise(e0,e1)",
+    		  "effect(e0,e1)",
+    		  "int(e0,e1)",
+    		  "mechanism(e0,e1)",
+    		  "Other"};
+      
+      for ( String c : classes  ) {		  
+    	  System.out.println();		  		  
+    	  double[] results_aux = evaluateResults(all_results,c);		  
+    	  for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
+    	  results[0] = results_aux[0];
+      }    
+      for (int i = 1; i < results.length; i++) results[i] = results[i] / classes.length;
+      System.out.println();
+      System.out.println("Total train instances : " + trainInstances);
+      System.out.println("Total test instances : " + testInstances);
+      System.out.println("Macro-Average results for all classes...");	
+      System.out.println("Accuracy : " + results[0] );
+  	  System.out.println("Precision : " + results[1]);
+  	  System.out.println("Recall : " + results[2]);
+  	  System.out.println("F1 : " + results[3]);	  
+  }
+  
   public static void main ( String args[] ) throws Exception {
 	  
 	  if (args.length != 6) {
@@ -246,7 +280,12 @@ public class TestClassification {
 		  System.out.println("knn: " + knn);		  
 		  
 		  if (args[0].equals("drugbank")) {
-			  GenerateSetsFromExamples.generateDataDrugBank();
+			  if (args[1].equals("true")) GenerateSetsFromExamples.generateDataDrugBank();
+			  testDrugBank();
+		  }
+		  
+		  if (args[0].equals("wikipt")) {
+			  GenerateSets.generateWikiPT();
 		  }
 		  
 		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {

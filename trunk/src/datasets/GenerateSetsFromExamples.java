@@ -68,33 +68,58 @@ public class GenerateSetsFromExamples {
    input.close();
  }
  
- public static void processDrugBank( String file, PrintWriter out ) throws Exception {
-	   BufferedReader input = new BufferedReader( new FileReader(file) );
-	   String aux = null;
-	   String sentence = null;
-	   String type = null;
-	   while ( ( aux = input.readLine() ) != null ) {
-	     if ( aux.contains("\t") ) {
-	       String[] data = aux.split("\t");
-	       sentence = data[1];
-	       /*
-		   String before = sentence.substring(0,Math.min(sentence.indexOf("</e1>"),sentence.indexOf("</e2>"))).trim();
-		   String after = sentence.substring(Math.max(sentence.indexOf("<e2>")+4,sentence.indexOf("<e1>")+4)).trim();  	   
-		   String between = sentence.substring(Math.min(sentence.indexOf("</e1>")+5,sentence.indexOf("</e2>")+5),Math.max(sentence.indexOf("<e2>"),sentence.indexOf("<e1>"))).trim();  
-		   between = between.replaceAll("</?e[12] *>","");	   
-		   before = before.replaceAll("</?e[12] *>","") + " " + between;
-		   after = between + " " + after.replaceAll("</?e[12] *>","");
-		   */
-	       
-	       String temp = input.readLine();
-		   type = temp.substring(0,temp.indexOf("Comment:"));
-		   //processExample(before,after,between,type,out);
-	       System.out.println("sentence: " + sentence);
-	       System.out.println("type: " + type);
-	     }
-	   }
-	   out.flush();
-	   input.close();
+ public static void processDrugBank( Map<String,String> instance, PrintWriter out ) throws Exception {
+	 String sentence = instance.get("sentence");
+	 String type = instance.get("type");
+	 String before = sentence.substring(0,Math.min(sentence.indexOf("</e0>"),sentence.indexOf("</e1>"))).trim();
+	 String after = sentence.substring(Math.max(sentence.indexOf("<e0>") + 4,sentence.indexOf("<e0>") + 4)).trim();
+	 String between = sentence.substring(Math.min(sentence.indexOf("</e0>") + 5,sentence.indexOf("</e1>") + 5),Math.max(sentence.indexOf("<e1>"),sentence.indexOf("<e0>"))).trim();	
+	 between = between.replaceAll("</?e[01] *>", "");
+	 before = before.replaceAll("</?e[01] *>", "") + " " + between;
+	 after = between + " " + after.replaceAll("</?e[01] *>", "");	
+	 processExample(before,after,between,type,out);
+}
+
+ 
+ public static void createTestTrain( String file, float test_portion ) throws Exception {
+	 	List<Map<String,String>> instances = new LinkedList<Map<String,String>>();
+	   	BufferedReader input = new BufferedReader( new FileReader(file) );
+	   	String aux = null;
+	   	String sentence = null;
+	   	String type = null;	   	
+		while ( ( aux = input.readLine() ) != null ) {
+			if (aux.contains("\t")) {
+				String[] data = aux.split("\t");
+				sentence = data[1];				
+				String tmp = input.readLine();
+				type = tmp.split("Comment:")[0];
+				Map<String,String> instance = new HashMap<String, String>();
+				instance.put("type", type);
+				instance.put("sentence",sentence);
+				instances.add(instance);
+			}
+		}
+		input.close();
+		
+		System.out.println(instances.size()  + " instances loaded");		
+		System.out.println("Using " + test_portion + " for test");
+		
+		//generate train data
+		System.out.println("Generating train instances from 0 to " +  Math.round(test_portion*instances.size()) );
+		PrintWriter train = new PrintWriter(new FileWriter("train-data-drugbank.txt"));
+		for (int i = 0; i < Math.round(test_portion*instances.size()); i++) {			
+			processDrugBank(instances.get(i), train);
+		}
+		train.close();
+		
+		
+		//generate test data		
+		System.out.println("Generating test instances from " + (int) (test_portion*instances.size()) + " to " + (int) ((instances.size())));
+		PrintWriter test = new PrintWriter(new FileWriter("test-data-drugbank.txt"));
+		for (int i = Math.round(test_portion*instances.size()); i < instances.size(); i++) {
+			processDrugBank(instances.get(i), test);			
+		}
+		test.close();
 	 }
   
  public static void processWikipediaEN ( String file, PrintWriter out ) throws Exception {
@@ -320,6 +345,7 @@ public class GenerateSetsFromExamples {
 	   out.flush();
  }
 
+
  public static Map<String,Integer> getFrequencyMap ( String file ) throws Exception {
    	 final Map<String,Integer> shingles = new HashMap<String,Integer>(); //for each shingle store all the classes where it occurs
    	 BufferedReader input = new BufferedReader(new FileReader(file));
@@ -337,6 +363,7 @@ public class GenerateSetsFromExamples {
    	 return shingles;	 
  }
  
+
  public static Map<String,Integer> getEntropyMap ( String file ) throws Exception {
 	 final Set<String> classes = new HashSet<String>();	//stores all possible classes
    	 final Map<String,String[]> shingles = new HashMap<String,String[]>(); //for each shingle store all the classes where it occurs
@@ -386,6 +413,7 @@ public class GenerateSetsFromExamples {
    	 return result;	 
  }
  
+
  public static String generateNGrams(String source, String prefix2, int betweenLenght , int window ) {
     String prefix = ( prefix2.equals("BEF") || prefix2.equals("AFT") ) ? prefix2 + "_" + window : prefix2;
 	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
@@ -405,20 +433,32 @@ public class GenerateSetsFromExamples {
 			  
 			//Levin classes
 			//if (EnglishNLP.levin_verb_classes!=null) for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
-			  
+			
+			  /*
 	  	    //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
 	  		  if (i < aux.length - 2) {
 	  			String pattern = normalized[i];
 	  			int j = i+1;				
-				while ( (j < aux.length - 2) && (auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j")) || auxPOS[j].startsWith("n")) {	  				
-					pattern += "_" + normalized[j];
-					j++;				
+				try {
+					while ( (j < aux.length - 2) && (auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j")) || auxPOS[j].startsWith("n")) {	  				
+						pattern += "_" + normalized[j];
+						j++;				
+					}
+				} catch (Exception e) {
+					for (int k = 0; k < auxPOS.length; k++) {
+						System.out.println();
+					}
+					System.out.println("i:" + i);
+					e.printStackTrace();
+					System.exit(0);
 				}					
 				if (auxPOS[j].startsWith("pp") || auxPOS[j].equals("p-acp") || auxPOS[j].startsWith("pf")) {
 						pattern += "_" + normalized[j];
 						set.add(pattern + "_RVB_" + prefix);
 					}
 	  		  }
+	  		  */
+			  
 			//preposições normalizadas 
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
@@ -495,26 +535,9 @@ public class GenerateSetsFromExamples {
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
 }
  
+ 
  public static void generateDataDrugBank() throws Exception, IOException {
-	 System.out.println("Generating DrugBank data...");
-	 /*
-	 entropyMap = null;
-	 System.out.println("Determining shingles entropy...");
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 entropyMap = getEntropyMap("train-data-semeval.txt");
-	 */
-	 /*
-	 frequencyMap = null;
-	 System.out.println("Determining shingles frequency...");
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 frequencyMap = getFrequencyMap("train-data-semeval.txt");
-	 */
-	 System.out.println("\nGenerating train data...");
-	 processDrugBank("Datasets/Francisco/DrugBank.txt", new PrintWriter(new FileWriter("train-data-drugbank.txt")));
-	 /*
-	 System.out.println("\nGenerating test data...");
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
-	 */
+	 createTestTrain("Datasets/Francisco/DrugBank.txt", (float) 0.7);	 
 }
 
  public static void generateDataWikiEn() throws Exception, IOException {
