@@ -13,13 +13,11 @@ public class GenerateSets {
 		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",new PrintWriter(new FileWriter("train-data-wikipt.txt")));
 	}
 	
-	public static int countWords(String sentence, String entity) {
+	public static int countWords(String entity, String sentence) {
 		int count = 0;
-		String s = sentence;
-		String w = entity;
-		int result = s.indexOf(w);
+		int result = sentence.indexOf(entity);
 		while (result != -1) {
-			result = s.indexOf(w, result + 1);
+			result = sentence.indexOf(entity, result + 1);
 			count++;
 		}
 		return count;
