@@ -6,14 +6,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-import nlputils.PortugueseNLP;
+import utils.nlp.PortugueseNLP;
+
+import datasets.TestClassification;
+
 
 public class GenerateSets {
 
 	public static void generateWikiPT() throws Exception, IOException {
 		System.out.println("Generating WikiPT data...");
-		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",new PrintWriter(new FileWriter("train-data-wikipt.txt")));
+		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
+		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
+		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
+		String[] classes =  {"birthPlace","state","city","deathPlace","country","leader","location","member","party","neighboringMunicipality","capital"};
+		TestClassification.testWikiPT(classes);
 	}
 	
 	public static int countWords(String entity, String sentence) {
@@ -26,7 +35,7 @@ public class GenerateSets {
 		return count;
 	}
 
-	public static void processWikiPT(String file, PrintWriter out) throws Exception {
+	public static void processWikiPT(String file, PrintWriter outTrain, PrintWriter outTest) throws Exception {
 		BufferedReader input = new BufferedReader(new FileReader(file));
 		String aux = null;
 		String sentence = null;
@@ -40,7 +49,10 @@ public class GenerateSets {
 		String before = null;
 		String between = null;
 		String after = null;
-		while ((aux = input.readLine()) != null) {
+		
+		int num_test = 0;
+		
+		while ((aux = input.readLine()) != null && num_test < 500) {
 			if (aux.startsWith("SENTENCE")) {
 				sentence = aux.split(": ")[1];
 				aux = input.readLine();
@@ -59,8 +71,8 @@ public class GenerateSets {
 				int e1_count = countWords(e1,sentence);
 				int e2_count = countWords(e2,sentence);
 				
-				if (checked && !e2.equals("Lima") && !e2.equals("Terceira") && (e1_count==1) && (e2_count==1)) {
-						
+				if ( (!(e1.contains(e2) || e2.contains(e1))) && (!e2.equals(e1)) && (e1_count==1) && (e2_count==1)) {
+					
 					int e1_start = sentence.indexOf(e1);
 					int e1_finish = sentence.indexOf(e1)+e1.length();
 					
@@ -72,34 +84,40 @@ public class GenerateSets {
 						if (e1_finish < e2_start) direction = "(e1,e2)";
 						else if (e1_start > e2_finish) direction = "(e2,e1)";
 
-						/*
-						System.out.println(sentence);
-						System.out.println("e1: " + e1 + '\t' + e1_type + '\t' + "("+e1_start+","+e1_finish+")" + '\t' + e1_count);
-						System.out.println("e2: " + e2 + '\t' + e2_type + '\t' + "("+e2_start+","+e2_finish+")" + '\t' + e2_count);
-						System.out.println(type + direction);
-						*/
-						
-						before = sentence.substring(0,Math.min(e1_finish, e2_finish));
-						between = sentence.substring(Math.min(e1_finish, e2_finish),Math.max(e1_start,e2_start));
-						after = sentence.substring(Math.max(e1_start, e2_start),sentence.length()-1);
-							
-						before = before + " " + between;
-						after = between + " " + after;
-						
-						/*
-						System.out.println();
-						System.out.println("before: " + before);
-						System.out.println("between: " + between);
-						System.out.println("after: " + after);
-						System.out.println();						
-						System.out.println("\n========");
-						*/
+						try {
+							before = sentence.substring(0,Math.min(e1_finish, e2_finish));
+							between = sentence.substring(Math.min(e1_finish, e2_finish),Math.max(e1_start,e2_start));
+							after = sentence.substring(Math.max(e1_start, e2_start),sentence.length()-1);
+							before = before + " " + between;
+							after = between + " " + after;
+						} catch (Exception e) {
+							System.out.println(sentence);
+							System.out.println("e1: " + e1 + '\t' + e1_type + '\t' + "("+e1_start+","+e1_finish+")" + '\t' + e1_count);
+							System.out.println("e2: " + e2 + '\t' + e2_type + '\t' + "("+e2_start+","+e2_finish+")" + '\t' + e2_count);
+							System.out.println(type + direction);
+							System.out.println();
+							System.out.println("before: " + before);
+							System.out.println("between: " + between);
+							System.out.println("after: " + after);
+							System.out.println();						
+							System.out.println("\n========");
+							e.printStackTrace();
+							System.exit(0);
+						}
 					}
-					processExample(before,after,between,type,out); 
+					
+					if (checked) processExample(before,after,between,type,outTrain);
+					else {
+						processExample(before,after,between,type,outTest);
+						num_test++;
+					}
 				}
 			}
 		}
-		out.flush();
+		outTrain.flush();
+		outTrain.close();
+		outTest.flush();
+		outTest.close();
 		input.close();
 	}
 	
@@ -108,21 +126,16 @@ public class GenerateSets {
 	     
 	     if ( before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.lastIndexOf(between) ) before = before.substring(before.lastIndexOf(",") + 1);
 	     if ( after.indexOf(",") != -1 && after.indexOf(",") > between.length()) after = after.substring(0,after.lastIndexOf(","));
-	     
 	     int betweenLength = between.split(" +").length;     
 	     int beforeLength = before.split(" +").length;
 	     int afterLength = after.split(" +").length;
-	     
 	     if ( beforeLength >= Math.max(betweenLength, afterLength) ) out.print(" " + "LARGER_BEF"); 
 	     if ( afterLength >= Math.max(betweenLength, beforeLength) ) out.print(" " + "LARGER_AFT"); 
 	     if ( betweenLength >= Math.max(afterLength, beforeLength) ) out.print(" " + "LARGER_BET");
-	     
 	     if ( beforeLength == 0 ) out.print(" " + "EMPTY_BEF"); 
 	     if ( afterLength == 0 ) out.print(" " + "EMPTY_AFT"); 
 	     if ( betweenLength == 0 ) out.print(" " + "EMPTY_BET");
-	     
 	     ArrayList<String> someCollection = new ArrayList<String>();     
-	     
 	     for ( String aux : new String[]{ "BEF\t" + before, "BET\t" + between, "AFT\t" + after } ) someCollection.add(aux);
 	     for ( String obj : someCollection ) {
 	    			String suffix = obj.substring(0,obj.indexOf("\t"));
