@@ -3,12 +3,10 @@ package datasets;
 import java.io.*;
 import java.util.*;
 
+import utils.misc.Pair;
+import utils.nlp.EnglishNLP;
 import datasets.WikiPT.GenerateSets;
-
-import nlputils.EnglishNLP;
-
 import minhash.LocalitySentitiveHashing;
-import minhash.Pair;
 
 public class TestClassification {
 
@@ -257,6 +255,32 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3]);	  
   }
   
+  public static void testWikiPT(String[] classes) throws Exception{
+	  System.out.println();
+	  System.out.println("Test classification on WikiPT...");
+	  System.out.println("Reading train data WikiPT...");
+	  readTrainData("train-data-wikipt.txt");
+      System.out.println("Reading test data WikiPT...");
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-wikipt.txt");	      
+      double[] results = { 0.0, 0.0, 0.0, 0.0 };
+      
+      for ( String c : classes  ) {
+    	  System.out.println();		  		  
+    	  double[] results_aux = evaluateResults(all_results,c);		  
+    	  for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
+    	  results[0] = results_aux[0];
+      }    
+      for (int i = 1; i < results.length; i++) results[i] = results[i] / classes.length;
+      System.out.println();
+      System.out.println("Total train instances : " + trainInstances);
+      System.out.println("Total test instances : " + testInstances);
+      System.out.println("Macro-Average results for all classes...");	
+      System.out.println("Accuracy : " + results[0] );
+  	  System.out.println("Precision : " + results[1]);
+  	  System.out.println("Recall : " + results[2]);
+  	  System.out.println("F1 : " + results[3]);	  
+  }
+  
   public static void main ( String args[] ) throws Exception {
 	  
 	  if (args.length != 6) {
@@ -286,6 +310,7 @@ public class TestClassification {
 		  
 		  if (args[0].equals("wikipt")) {
 			  GenerateSets.generateWikiPT();
+			  
 		  }
 		  
 		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {

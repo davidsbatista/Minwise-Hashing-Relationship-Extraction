@@ -2,9 +2,12 @@ package datasets;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-import nlputils.EnglishNLP;
+
+import utils.nlp.EnglishNLP;
+
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
+
 
 import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
 
