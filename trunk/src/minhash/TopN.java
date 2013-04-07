@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import utils.misc.Pair;
+
 // A simple utilitary class for keeping the top-n most frequent results
 public class TopN<T> {
 	
