@@ -80,7 +80,6 @@ public class GenerateSetsFromExamples {
 	 processExample(before,after,between,type,out);
 }
 
- 
  public static void createTestTrain( String file, float test_portion ) throws Exception {
 	 	List<Map<String,String>> instances = new LinkedList<Map<String,String>>();
 	   	BufferedReader input = new BufferedReader( new FileReader(file) );
@@ -345,7 +344,6 @@ public class GenerateSetsFromExamples {
 	   out.flush();
  }
 
-
  public static Map<String,Integer> getFrequencyMap ( String file ) throws Exception {
    	 final Map<String,Integer> shingles = new HashMap<String,Integer>(); //for each shingle store all the classes where it occurs
    	 BufferedReader input = new BufferedReader(new FileReader(file));
@@ -363,7 +361,6 @@ public class GenerateSetsFromExamples {
    	 return shingles;	 
  }
  
-
  public static Map<String,Integer> getEntropyMap ( String file ) throws Exception {
 	 final Set<String> classes = new HashSet<String>();	//stores all possible classes
    	 final Map<String,String[]> shingles = new HashMap<String,String[]>(); //for each shingle store all the classes where it occurs

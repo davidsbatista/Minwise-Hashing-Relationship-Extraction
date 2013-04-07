@@ -72,8 +72,7 @@ public class PortugueseNLP {
 		Set<String> set = new HashSet<String>();
 		
 		if (casing == 2)
-			for (String s : generateNGrams(source, prefix, n, weight, 1).split(
-					" "))
+			for (String s : generateNGrams(source, prefix, n, weight, 1).split(" "))
 				set.add(s);
 		// word unigrams
 		if (n == 1)
@@ -92,12 +91,10 @@ public class PortugueseNLP {
 		if (n == 3)
 			for (int j = 0; j <= aux.length + 1; j++) {
 				String tok1 = j - 2 >= 0 ? aux[j - 2] : "_";
-				String tok2 = j - 1 >= 0 && j - 1 < aux.length ? aux[j - 1]
-						: "_";
+				String tok2 = j - 1 >= 0 && j - 1 < aux.length ? aux[j - 1]: "_";
 				String tok3 = j < aux.length ? aux[j] : "_";
 				for (int i = 1; i <= weight; i++)
-					set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + prefix + "_"
-							+ i);
+					set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + prefix + "_" + i);
 			}
 		
 		// word bigrams with gaps
@@ -107,8 +104,7 @@ public class PortugueseNLP {
 				String tok2 = "GAP";
 				String tok3 = aux[j];
 				for (int i = 1; i <= weight; i++)
-					set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + prefix + "_"
-							+ i);
+					set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + prefix + "_" + i);
 			}
 		
 		// character trigrams
@@ -116,8 +112,7 @@ public class PortugueseNLP {
 			for (int j = 0; j < source.length() + 3; j++) {
 				String tok = "";
 				for (int i = -3; i <= 0; i++) {
-					char ch = (j + i) < 0 || (j + i) >= source.length() ? '_'
-							: source.charAt(j + i);
+					char ch = (j + i) < 0 || (j + i) >= source.length() ? '_' : source.charAt(j + i);
 					tok += ch == ' ' ? '_' : ch;
 				}
 				for (int i = 1; i <= weight; i++)
@@ -127,10 +122,8 @@ public class PortugueseNLP {
 		if (n == 6)
 			for (int j = 0; j <= aux.length + 2; j++) {
 				String tok1 = j - 3 >= 0 ? aux[j - 3] : "_";
-				String tok2 = j - 2 >= 0 && j - 2 < aux.length ? aux[j - 2]
-						: "_";
-				String tok3 = j - 1 >= 0 && j - 1 < aux.length ? aux[j - 1]
-						: "_";
+				String tok2 = j - 2 >= 0 && j - 2 < aux.length ? aux[j - 2] : "_";
+				String tok3 = j - 1 >= 0 && j - 1 < aux.length ? aux[j - 1] : "_";
 				String tok4 = j < aux.length ? aux[j] : "_";
 				for (int i = 1; i <= weight; i++)
 					set.add(tok1 + "_" + tok2 + "_" + tok3 + "_" + tok4 + "_"
