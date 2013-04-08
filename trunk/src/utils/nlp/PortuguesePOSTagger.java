@@ -20,20 +20,64 @@ import opennlp.tools.util.InvalidFormatException;
 
 public class PortuguesePOSTagger {
 	
+	static POSModel model = null;
+	static TokenizerModel tModel = null; 
+	static SentenceModel sModel = null;
+	static POSTaggerME tagger = null; 
+	static TokenizerME token = null;
+	static SentenceDetector sent = null;
+	static String RESOURCES = "/home/dsbatista/relations-minhash/resources/";
+	
+	public static void initialize() throws InvalidFormatException, FileNotFoundException, IOException {
+		
+		model = new POSModelLoader().load(new File(RESOURCES + "pt.postagger.model"));
+        tModel = new TokenizerModel(new FileInputStream(RESOURCES + "pt.tokenizer.model")); 
+        sModel = new SentenceModel(new FileInputStream(RESOURCES + "pt.sentdetect.model"));
+        tagger = new POSTaggerME(model); 
+        token = new TokenizerME(tModel);
+        sent = new SentenceDetectorME(sModel);
+	}
+	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
-		PrintWriter out = new PrintWriter(new FileWriter("sample.txt"));
-		tag("A polícia de Manchester quer que os crimes cometidos contra elementos de subculturas alternativas, como góticos, punks ou emos, sejam registados como crimes de ódio, da mesma forma que são consideradas as agressões de origem racista, religiosa ou homofóbica.",out);
+		
+		model = new POSModelLoader().load(new File("resources/pt.postagger.model"));
+        tModel = new TokenizerModel(new FileInputStream("resources/pt.tokenizer.model")); 
+        sModel = new SentenceModel(new FileInputStream("resources/pt.sentdetect.model"));
+        tagger = new POSTaggerME(model); 
+        token = new TokenizerME(tModel);
+        sent = new SentenceDetectorME(sModel);
+		
+        String text = "Margaret Thatcher não gostava de consensos. Porque haveria então de se preocupar com o que diziam dela? E com o que, a favor dela ou contra ela, os artistas britânicos produziram entre o dia em que chegou ao poder, 4 de Maio de 1979, até ao dia em que o abandonou, em Novembro de 1990?";
+		
+        String[] sentences = sent.sentDetect(text);
+        for (int i = 0; i < sentences.length; i++) {
+        	posTags(sentences[i]);
+		}        
+	}
+	
+	public static String[] tokenize(String text){
+		String whitespaceTokenizerLine[] = token.tokenize(text);
+		return whitespaceTokenizerLine;		
+	}
+	
+	public static String[] posTags(String text) {
+		String tags[] = null;
+		for (String s: sent.sentDetect(text)) {			
+			String whitespaceTokenizerLine[] = token.tokenize(s);			
+			String[] mTags = tagger.tag(whitespaceTokenizerLine);
+			POSSample sample = new POSSample(whitespaceTokenizerLine, mTags);
+			String sentence = sample.toString();
+			String pairs[] = sentence.split(" ");
+			tags = new String[pairs.length];
+			for ( int i = 0; i < pairs.length; i++) {				
+				tags[i] = pairs[i].substring(pairs[i].indexOf("_")+1);				 
+			}
+		}		
+		return tags;
 	}
 	
 	public static void tag(String doc, PrintWriter out) throws InvalidFormatException, FileNotFoundException, IOException {
-		
-		POSModel model = new POSModelLoader().load(new File("resources/pt.postagger.model"));
-		TokenizerModel tModel = new TokenizerModel(new FileInputStream("resources/pt.tokenizer.model")); 
-		SentenceModel sModel = new SentenceModel(new FileInputStream("resources/pt.sentdetect.model"));
-		POSTaggerME tagger = new POSTaggerME(model); 
-		TokenizerME token = new TokenizerME(tModel);
-		SentenceDetector sent = new SentenceDetectorME(sModel);
-	
+				
 		for ( String s : sent.sentDetect(doc) ) {
 			String whitespaceTokenizerLine[] = token.tokenize(s);
 			String[] mTags = tagger.tag(whitespaceTokenizerLine);
@@ -49,5 +93,6 @@ public class PortuguesePOSTagger {
 			}
 			out.close();
 		}
+
 	}
 }
