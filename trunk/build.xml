@@ -8,7 +8,7 @@
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
                 <attribute name="Rsrc-Main-Class" value="datasets.TestClassification"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ icu4j.jar mapdb-0.9.1-20130402.222402-1.jar morphadorner.jar conja-1.07-SNAPSHOT.jar log4j-1.2-1.2.15.jar guava-14.0.1.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ opennlp-uima-1.5.2-incubating.jar opennlp-maxent-3.0.2-incubating.jar opennlp-tools-1.5.2-incubating.jar icu4j.jar mapdb-0.9.1-20130402.222402-1.jar morphadorner.jar conja-1.07-SNAPSHOT.jar log4j-1.2-1.2.15.jar guava-14.0.1.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="/home/dsbatista/workspace/relations-minhash/bin"/>
@@ -18,6 +18,9 @@
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="conja-1.07-SNAPSHOT.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="log4j-1.2-1.2.15.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="guava-14.0.1.jar"/>
+        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-tools-1.5.2-incubating.jar"/>        	
+        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-maxent-3.0.2-incubating.jar"/>
+        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-uima-1.5.2-incubating.jar"/>
         </jar>
     </target>
 </project>

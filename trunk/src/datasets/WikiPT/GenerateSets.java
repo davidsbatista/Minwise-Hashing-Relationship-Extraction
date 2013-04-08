@@ -5,11 +5,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import utils.nlp.PortugueseNLP;
+import utils.nlp.PortuguesePOSTagger;
 
 import datasets.TestClassification;
 
@@ -17,11 +20,12 @@ import datasets.TestClassification;
 public class GenerateSets {
 
 	public static void generateWikiPT() throws Exception, IOException {
-		System.out.println("Generating WikiPT data...");
+		System.out.println("Generating WikiPT data...");		
+		PortuguesePOSTagger.initialize();		
+		String[] classes = {"affiliation","birthPlace","capital","capitalCountry","city","country","county","currentMember","deathPlace","district","doctoralAdvisor","foundedBy","founder","headquarter","hometown","knownFor","leader","leaderName","locatedInArea","location","member","municipality","nationality","neighboringMunicipality","parent","parentOrganisation","party","pastMember","patron","predecessor","province","region","riverMouth","state","team","university","youthClub"};		
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
-		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
-		String[] classes =  {"birthPlace","state","city","deathPlace","country","leader","location","member","party","neighboringMunicipality","capital"};
+		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest,classes);		
 		TestClassification.testWikiPT(classes);
 	}
 	
@@ -35,7 +39,7 @@ public class GenerateSets {
 		return count;
 	}
 
-	public static void processWikiPT(String file, PrintWriter outTrain, PrintWriter outTest) throws Exception {
+	public static void processWikiPT(String file, PrintWriter outTrain, PrintWriter outTest, String[] classes) throws Exception {		
 		BufferedReader input = new BufferedReader(new FileReader(file));
 		String aux = null;
 		String sentence = null;
@@ -50,9 +54,10 @@ public class GenerateSets {
 		String between = null;
 		String after = null;
 		
-		int num_test = 0;
-		
-		while ((aux = input.readLine()) != null && num_test < 500) {
+		Map<String,Integer> train = new HashMap<String, Integer>();
+		Map<String,Integer> test = new HashMap<String, Integer>();
+
+		while ((aux = input.readLine()) != null) {
 			if (aux.startsWith("SENTENCE")) {
 				sentence = aux.split(": ")[1];
 				aux = input.readLine();
@@ -106,10 +111,27 @@ public class GenerateSets {
 						}
 					}
 					
-					if (checked) processExample(before,after,between,type,outTrain);
-					else {
-						processExample(before,after,between,type,outTest);
-						num_test++;
+					if (checked) {
+						processExample(before,after,between,type,outTrain);						
+						try {
+							int tmp = train.get(type);
+							train.put(type, tmp+1);
+						} catch (Exception e) {
+							train.put(type, 1);
+						}
+					}					
+					else {						
+						if (train.containsKey(type)) {
+							if ( (!test.containsKey(type)) || test.get(type) < Math.round(train.get(type) * 0.66)) {
+								processExample(before,after,between,type,outTest);
+								try {
+									int tmp = test.get(type);
+									test.put(type, tmp+1);
+								} catch (Exception e) {
+									test.put(type, 1);
+								}	
+							}							
+						}
 					}
 				}
 			}
@@ -121,27 +143,34 @@ public class GenerateSets {
 		input.close();
 	}
 	
-	public static void processExample ( String before, String after, String between, String type, PrintWriter out ) {
-	     out.print(type);
-	     
-	     if ( before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.lastIndexOf(between) ) before = before.substring(before.lastIndexOf(",") + 1);
-	     if ( after.indexOf(",") != -1 && after.indexOf(",") > between.length()) after = after.substring(0,after.lastIndexOf(","));
-	     int betweenLength = between.split(" +").length;     
-	     int beforeLength = before.split(" +").length;
-	     int afterLength = after.split(" +").length;
-	     if ( beforeLength >= Math.max(betweenLength, afterLength) ) out.print(" " + "LARGER_BEF"); 
-	     if ( afterLength >= Math.max(betweenLength, beforeLength) ) out.print(" " + "LARGER_AFT"); 
-	     if ( betweenLength >= Math.max(afterLength, beforeLength) ) out.print(" " + "LARGER_BET");
-	     if ( beforeLength == 0 ) out.print(" " + "EMPTY_BEF"); 
-	     if ( afterLength == 0 ) out.print(" " + "EMPTY_AFT"); 
-	     if ( betweenLength == 0 ) out.print(" " + "EMPTY_BET");
-	     ArrayList<String> someCollection = new ArrayList<String>();     
-	     for ( String aux : new String[]{ "BEF\t" + before, "BET\t" + between, "AFT\t" + after } ) someCollection.add(aux);
-	     for ( String obj : someCollection ) {
-	    			String suffix = obj.substring(0,obj.indexOf("\t"));
-	    			String str = obj.substring(obj.indexOf("\t")+1);
-	    			out.print(" " + PortugueseNLP.generateNGrams(str, suffix, 5, 1, 0));
-	     }
-	     out.println();
+	public static void processExample(String before, String after,String between, String type, PrintWriter out) {
+		
+		int window = 3;
+		int casing = 1;
+		
+		out.print(type);
+		if (before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.lastIndexOf(between)) before = before.substring(before.lastIndexOf(",") + 1);		
+		if (after.indexOf(",") != -1 && after.indexOf(",") > between.length()) after = after.substring(0, after.lastIndexOf(","));				
+		
+		int betweenLength = PortuguesePOSTagger.tokenize(between).length;
+		int beforeLength = PortuguesePOSTagger.tokenize(before).length;
+		int afterLength = PortuguesePOSTagger.tokenize(after).length;		
+		
+		if (beforeLength >= Math.max(betweenLength, afterLength)) out.print(" " + "LARGER_BEF");
+		if (afterLength >= Math.max(betweenLength, beforeLength)) out.print(" " + "LARGER_AFT");
+		if (betweenLength >= Math.max(afterLength, beforeLength)) out.print(" " + "LARGER_BET");
+		
+		if (beforeLength == 0) out.print(" " + "EMPTY_BEF");
+		if (afterLength == 0) out.print(" " + "EMPTY_AFT");
+		if (betweenLength == 0) out.print(" " + "EMPTY_BET");
+		ArrayList<String> someCollection = new ArrayList<String>();
+		for (String aux : new String[] { "BEF\t" + before, "BET\t" + between, "AFT\t" + after })
+			someCollection.add(aux);
+		for (String obj : someCollection) {
+			String prefix = obj.substring(0, obj.indexOf("\t"));
+			String str = obj.substring(obj.indexOf("\t") + 1);
+			out.print(" " + PortugueseNLP.generateNGrams(str, prefix, betweenLength, casing, window));
+		}
+		out.println();
 	}
 }
