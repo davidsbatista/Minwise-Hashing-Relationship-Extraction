@@ -111,31 +111,11 @@ public class GenerateSets {
 						}
 					}
 					
-					if (checked) {
-						processExample(before,after,between,type,outTrain);						
-						try {
-							int tmp = train.get(type);
-							train.put(type, tmp+1);
-						} catch (Exception e) {
-							train.put(type, 1);
-						}
-					}					
-					else {						
-						if (train.containsKey(type)) {
-							if ( (!test.containsKey(type)) || test.get(type) < Math.round(train.get(type) * 0.66)) {
-								processExample(before,after,between,type,outTest);
-								try {
-									int tmp = test.get(type);
-									test.put(type, tmp+1);
-								} catch (Exception e) {
-									test.put(type, 1);
-								}	
-							}							
-						}
+					if (!checked) processExample(before,after,between,type,outTrain);
+					else processExample(before,after,between,type,outTest);											
 					}
 				}
 			}
-		}
 		outTrain.flush();
 		outTrain.close();
 		outTest.flush();

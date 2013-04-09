@@ -5,7 +5,7 @@ import java.io.*;
 import java.lang.reflect.Array;
 import org.mapdb.*;
 
-/** This class implements a simple Locality Sensitive Hashing (LSH) strategy, relying on min-hash for measuring similarity between instances */
+
 public class BHTree {
 	
  // The tree indexing the norms

@@ -413,7 +413,6 @@ public class GenerateSetsFromExamples {
    	 return result;	 
  }
  
-
  public static String generateNGrams(String source, String prefix2, int betweenLenght , int window ) {
     String prefix = ( prefix2.equals("BEF") || prefix2.equals("AFT") ) ? prefix2 + "_" + window : prefix2;
 	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
@@ -423,8 +422,7 @@ public class GenerateSetsFromExamples {
     for ( int i = 0 ; i < aux.length; i++ ) {
 		if ( prefix.startsWith("BEF") && aux.length - i > betweenLenght + window ) continue;
 		if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
-		source = (i == 0) ? aux[i] : source + " " + aux[i];
-		
+		source = (i == 0) ? aux[i] : source + " " + aux[i];		
 		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {		
 			if ( auxPOS[i].startsWith("v") ) { 
 			  set.add(normalized[i] + "_" + ( i < aux.length - 1 ? normalized[i+1] + "_" : "" ) + prefix);
