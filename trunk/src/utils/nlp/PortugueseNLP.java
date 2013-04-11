@@ -1,14 +1,13 @@
 package utils.nlp;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ptstemmer.Stemmer;
-import ptstemmer.implementations.OrengoStemmer;
-import ptstemmer.support.PTStemmerUtilities;
+import org.apache.lucene.analysis.pt.PortugueseLightStemmer;
+
+
 
 public class PortugueseNLP {
 
@@ -150,7 +149,7 @@ public class PortugueseNLP {
 			 */
 			
 		} else {
-			System.out.println("source: " + source);
+			System.out.println("tokens[]!=tokensPOS : " + source);
 		}
 		
 		String result = "";

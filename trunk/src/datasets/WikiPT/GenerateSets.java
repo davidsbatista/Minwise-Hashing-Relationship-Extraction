@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import java.util.Map;
 
 import utils.nlp.PortugueseNLP;
 import utils.nlp.PortuguesePOSTagger;
-
 import datasets.TestClassification;
 
 
@@ -22,11 +20,11 @@ public class GenerateSets {
 	public static void generateWikiPT() throws Exception, IOException {
 		System.out.println("Generating WikiPT data...");		
 		PortuguesePOSTagger.initialize();		
-		String[] classes = {"affiliation","birthPlace","capital","capitalCountry","city","country","county","currentMember","deathPlace","district","doctoralAdvisor","foundedBy","founder","headquarter","hometown","knownFor","leader","leaderName","locatedInArea","location","member","municipality","nationality","neighboringMunicipality","parent","parentOrganisation","party","pastMember","patron","predecessor","province","region","riverMouth","state","team","university","youthClub"};		
+		Relations.initialize();				
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
-		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest,classes);		
-		TestClassification.testWikiPT(classes);
+		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);		
+		TestClassification.testWikiPT();
 	}
 	
 	public static int countWords(String entity, String sentence) {
@@ -38,8 +36,59 @@ public class GenerateSets {
 		}
 		return count;
 	}
+	
+	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, String direction, PrintWriter outTrain, PrintWriter outTest) {
+		
+		String before = null;
+		String between = null;
+		String after = null;
+		
+		int e1_count = countWords(e1,sentence);
+		int e2_count = countWords(e2,sentence);
+		
+		if ( (!(e1.contains(e2) || e2.contains(e1))) && (!e2.equals(e1)) && (e1_count==1) && (e2_count==1)) {
+			
+			int e1_start = sentence.indexOf(e1);
+			int e1_finish = sentence.indexOf(e1)+e1.length();
+			
+			int e2_start = sentence.indexOf(e2);
+			int e2_finish = sentence.indexOf(e2)+e2.length();
+			
+			if (e1_start!=-1 && e2_start!=-1) {
+				
+				if (e1_finish < e2_start) direction = "(e1,e2)";
+				else if (e1_start > e2_finish) direction = "(e2,e1)";
 
-	public static void processWikiPT(String file, PrintWriter outTrain, PrintWriter outTest, String[] classes) throws Exception {		
+				
+				try {
+					before = sentence.substring(0,Math.min(e1_finish, e2_finish));
+					between = sentence.substring(Math.min(e1_finish, e2_finish),Math.max(e1_start,e2_start));
+					after = sentence.substring(Math.max(e1_start, e2_start),sentence.length()-1);
+					before = before + " " + between;
+					after = between + " " + after;
+					
+				} catch (Exception e) {
+					System.out.println(sentence);
+					System.out.println("e1: " + e1 + '\t' + '\t' + "("+e1_start+","+e1_finish+")" + '\t' + e1_count);
+					System.out.println("e2: " + e2 + '\t' + '\t' + "("+e2_start+","+e2_finish+")" + '\t' + e2_count);
+					System.out.println(type + direction);
+					System.out.println();
+					System.out.println("before: " + before);
+					System.out.println("between: " + between);
+					System.out.println("after: " + after);
+					System.out.println();						
+					System.out.println("\n========");
+					e.printStackTrace();
+					System.exit(0);
+				}
+			}
+			
+			if (!checked) processExample(before,after,between,type,outTrain);
+			else processExample(before,after,between,type,outTest);
+		}	
+	}
+
+	public static void processWikiPT(String file, PrintWriter outTrain, PrintWriter outTest) throws Exception {		
 		BufferedReader input = new BufferedReader(new FileReader(file));
 		String aux = null;
 		String sentence = null;
@@ -50,12 +99,6 @@ public class GenerateSets {
 		String e2_type = null;
 		String direction = null;
 		boolean checked = false;
-		String before = null;
-		String between = null;
-		String after = null;
-		
-		Map<String,Integer> train = new HashMap<String, Integer>();
-		Map<String,Integer> test = new HashMap<String, Integer>();
 
 		while ((aux = input.readLine()) != null) {
 			if (aux.startsWith("SENTENCE")) {
@@ -73,49 +116,58 @@ public class GenerateSets {
 					aux = input.readLine();
 				}
 				
-				int e1_count = countWords(e1,sentence);
-				int e2_count = countWords(e2,sentence);
-				
-				if ( (!(e1.contains(e2) || e2.contains(e1))) && (!e2.equals(e1)) && (e1_count==1) && (e2_count==1)) {
+				if (!Arrays.asList(Relations.ignore).contains(type)) {
 					
-					int e1_start = sentence.indexOf(e1);
-					int e1_finish = sentence.indexOf(e1)+e1.length();
+					String type_old = type;					
+					if (!Arrays.asList(Relations.changeDirection).contains(type)) {
+						//transform relationship type into aggregated type
+						type = Relations.aggregatedRelations.get(type);					
+						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
+					}
 					
-					int e2_start = sentence.indexOf(e2);
-					int e2_finish = sentence.indexOf(e2)+e2.length();
-					
-					if (e1_start!=-1 && e2_start!=-1) {
-						
-						if (e1_finish < e2_start) direction = "(e1,e2)";
-						else if (e1_start > e2_finish) direction = "(e2,e1)";
-
-						try {
-							before = sentence.substring(0,Math.min(e1_finish, e2_finish));
-							between = sentence.substring(Math.min(e1_finish, e2_finish),Math.max(e1_start,e2_start));
-							after = sentence.substring(Math.max(e1_start, e2_start),sentence.length()-1);
-							before = before + " " + between;
-							after = between + " " + after;
-						} catch (Exception e) {
-							System.out.println(sentence);
-							System.out.println("e1: " + e1 + '\t' + e1_type + '\t' + "("+e1_start+","+e1_finish+")" + '\t' + e1_count);
-							System.out.println("e2: " + e2 + '\t' + e2_type + '\t' + "("+e2_start+","+e2_finish+")" + '\t' + e2_count);
-							System.out.println(type + direction);
-							System.out.println();
-							System.out.println("before: " + before);
-							System.out.println("between: " + between);
-							System.out.println("after: " + after);
-							System.out.println();						
-							System.out.println("\n========");
-							e.printStackTrace();
-							System.exit(0);
+					try {
+						//more examples of "influencedBy"
+						if (type.equals("influenced") || type.equals("doctoralAdvisor")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "influencedBy";
+							processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
 						}
+					} catch (Exception e) {
+						System.out.println(type_old);
+						e.printStackTrace();
+					}
+
+					//more examples of "successor"
+					if (type.equals("predecessor")) {
+						String tmp = e2;
+						e2 = e1;
+						e1 = tmp;
+						type = "successor";
+						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
 					}
 					
-					if (!checked) processExample(before,after,between,type,outTrain);
-					else processExample(before,after,between,type,outTest);											
+					//more examples of "parent"
+					if (type.equals("child")) {
+						String tmp = e2;
+						e2 = e1;
+						e1 = tmp;
+						type = "parent";
+						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
 					}
-				}
+					
+					//more examples of "keyPerson"
+					if (type.equals("foundedBy")) {
+						String tmp = e2;
+						e2 = e1;
+						e1 = tmp;
+						type = "keyPerson";
+						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
+					}
+				}				
 			}
+		}
 		outTrain.flush();
 		outTrain.close();
 		outTest.flush();

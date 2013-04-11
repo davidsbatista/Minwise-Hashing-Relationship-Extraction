@@ -255,7 +255,7 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3]);	  
   }
   
-  public static void testWikiPT(String[] classes) throws Exception{
+  public static void testWikiPT() throws Exception{
 	  System.out.println();
 	  System.out.println("Test classification on WikiPT...");
 	  System.out.println("Reading train data WikiPT...");
@@ -263,6 +263,8 @@ public class TestClassification {
       System.out.println("Reading test data WikiPT...");
       LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-wikipt.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
+      
+      String[] classes = {"locatedInArea","origin","other","partOf","deathOrBurialPlace","successor","keyPerson","parent","influencedBy","partner"};
       
       for ( String c : classes  ) {
     	  System.out.println();		  		  
