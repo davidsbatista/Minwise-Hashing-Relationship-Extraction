@@ -11,7 +11,8 @@ public class Relations {
 	public static String[] ignore = {"picture","maintainedBy","politicGovernmentDepartment","regionServed","leader","owner"};
 	
 	public static String[] changeDirection = {"predecessor","doctoralAdvisor","influenced","child","foundedBy",
-											  "capitalCountry","currentMember","pastMember","keyPerson","president","leaderName"};
+											  "capitalCountry","currentMember","pastMember","keyPerson","president","leaderName",
+											  "successor"};
 	
 	public static void initialize() {
 		aggregatedRelations = new HashMap<String, String>();
@@ -42,7 +43,8 @@ public class Relations {
 		
 		String parent[] = {"parent"};
 		
-		String successor[] = {"successor"};		
+		//trocar direcção para encaixar em "e1, succesor of e2"
+		String successor[] = {"successor"};	
 		
 		String other[] = {"number","relative","crosses","neighboringMunicipality","sisterStation","portrayer","patron","knownFor","ground","tenant","appearancesInNationalTeam","riverMouth",};		
 		

@@ -12,12 +12,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import ptstemmer.Stemmer.StemmerType;
-import ptstemmer.exceptions.PTStemmerException;
-
 import utils.nlp.PortugueseNLP;
 import utils.nlp.PortuguesePOSTagger;
-import utils.nlp.Stemming;
 import datasets.TestClassification;
 
 public class GenerateSets {
@@ -27,11 +23,6 @@ public class GenerateSets {
 	
 	public static void generateWikiPT() throws Exception, IOException {				
 		PortuguesePOSTagger.initialize();		
-		/*
-		Stemming.initialize(StemmerType.SAVOY);
-		Stemming.initialize(StemmerType.PORTER);
-		*/
-		Stemming.initialize(StemmerType.ORENGO);
 		Relations.initialize();				
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
@@ -52,7 +43,7 @@ public class GenerateSets {
 		return count;
 	}
 	
-	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) throws PTStemmerException {
+	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) {
 		
 		String before = null;
 		String between = null;
@@ -135,9 +126,11 @@ public class GenerateSets {
 		
 		while ((aux = input.readLine()) != null) {
 			if (aux.startsWith("SENTENCE")) {
-				sentence = aux.split(": ")[1];				
-				sentence = sentence.replaceAll("&nbsp;", " ").replaceAll("----", "").replaceAll("[URLTOKEN]", "");				
-				sentence = sentence.replaceAll("\\[URLTOKEN [A-Za-z0-9]+\\]","");
+				sentence = aux.split(": ")[1];
+				System.out.println("sentence: " + sentence);
+				//sentence = sentence.replaceAll("&nbsp;", " ").replaceAll("----", "").replaceAll("&mdash;", "-");
+				//sentence = sentence.replaceAll("\\[URLTOKEN\\s?[A-Za-z0-9]+\\]","");
+				//.replaceAll("\\\\[URLTOKEN\\\\]", "")
 				System.out.println("sentence: " + sentence);
 				aux = input.readLine();
 				if (aux.equals("")) aux = input.readLine();
@@ -202,7 +195,7 @@ public class GenerateSets {
 						}
 
 						//more examples of "successor"
-						if (type.equals("predecessor")) {
+						if (type.equals("predecessor") || type.equals("successor")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
@@ -240,7 +233,7 @@ public class GenerateSets {
 		System.out.println(sentences_ignored.size() + " ignored sentences");
 	}
 	
-	public static void processExample(String before, String after,String between, String type, PrintWriter out) throws PTStemmerException {
+	public static void processExample(String before, String after,String between, String type, PrintWriter out) {
 		
 		int window = 3;
 		int casing = 1;
