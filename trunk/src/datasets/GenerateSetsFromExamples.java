@@ -17,37 +17,6 @@ public class GenerateSetsFromExamples {
  public static Map<String,Integer> frequencyMap;
  public static int minFreqThreshold = 2;
  
- public static void processWikipedia ( String file, PrintWriter out ) throws Exception {
-   BufferedReader input = new BufferedReader( new FileReader(file) );
-   String aux = null;
-   String sentence = null;
-   String entity1 = null;
-   String entity2 = null;
-   String type = null;
-   while ( ( aux = input.readLine() ) != null ) {
-     if ( aux.startsWith("SENTENCE : ") ) {
-       if ( sentence != null ) {
-		   if (sentence.indexOf(entity1) < 0 || sentence.indexOf(entity2) < 0) return;
-		   if (entity1.equals(entity2)) return;
-		   if (entity1.contains(entity2) || entity2.contains(entity1)) return;
-		   String before = sentence.substring(0,Math.min(sentence.indexOf(entity1),sentence.indexOf(entity2))).trim();
-		   String after = sentence.substring(Math.max(sentence.indexOf(entity1)+entity1.length(),sentence.indexOf(entity2)+entity2.length())).trim();   
-		   String between = sentence.substring(Math.min(sentence.indexOf(entity1)+entity1.length(),sentence.indexOf(entity2)+entity2.length()),
-		                                       Math.max(sentence.indexOf(entity1),sentence.indexOf(entity2))).trim();
-		   processExample(before,after,between,type,out); 
-	   }
-       sentence = aux.substring(11).trim();
-       entity1 = null;
-       entity2 = null;
-       type = null;
-     } else if ( aux.startsWith("ENTITY1 : ") ) entity1 = aux.substring(10).trim();
-       else if ( aux.startsWith("ENTITY2 : ") ) entity2 = aux.substring(10).trim();
-       else if ( aux.startsWith("REL TYPE : ") ) type = aux.substring(11).trim();
-   }
-   input.close();
-   out.flush();
- }
- 
  public static void processSemEval ( String file, PrintWriter out ) throws Exception {
    BufferedReader input = new BufferedReader( new FileReader(file) );
    String aux = null;

@@ -264,15 +264,25 @@ public class TestClassification {
       LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-wikipt.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
       
-      String[] classes = {"locatedInArea","origin","other","partOf","deathOrBurialPlace","successor","keyPerson","parent","influencedBy","partner"};
+      String[] classes_simmetrycal = {"locatedInArea","origin","other","partOf","deathOrBurialPlace","successor","keyPerson","parent","influencedBy","partner","other"};
       
-      for ( String c : classes  ) {
+      String[] classes_asymmetrical = {"locatedInArea(e1,e2)","locatedInArea(e2,e1)",
+    		  							"origin(e1,e2)","origin(e2,e1)",    		  							
+    		  							"partOf(e1,e2)","partOf(e2,e1)",
+    		  							"deathOrBurialPlace(e1,e2)","deathOrBurialPlace(e2,e1)",
+    		  							"successor(e1,e2)","successor(e2,e1)",
+    		  							"keyPerson(e1,e2)","keyPerson(e2,e1)",
+    		  							"parent(e1,e2)","parent(e2,e1)",
+    		  							"influencedBy(e1,e2)","influencedBy(e2,e1)",
+    		  							"partner","other"};
+      
+      for ( String c : classes_asymmetrical  ) {
     	  System.out.println();		  		  
     	  double[] results_aux = evaluateResults(all_results,c);		  
     	  for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
     	  results[0] = results_aux[0];
       }    
-      for (int i = 1; i < results.length; i++) results[i] = results[i] / classes.length;
+      for (int i = 1; i < results.length; i++) results[i] = results[i] / classes_asymmetrical.length;
       System.out.println();
       System.out.println("Total train instances : " + trainInstances);
       System.out.println("Total test instances : " + testInstances);
