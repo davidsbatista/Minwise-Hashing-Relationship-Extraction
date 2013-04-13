@@ -132,13 +132,12 @@ public class GenerateSets {
 				
 				//eliminar alguns pontos devido ao erro to SentenceDetector
 				sentence = sentence.replaceAll(" ca\\. "," ca ").replaceAll(" etc\\. ", " etc ").replaceAll("\\(c\\. ", "(c ").replaceAll(" c\\. ", " c ");				
-				sentence = sentence.replaceAll(" Mrs\\. "," Mrs  ").replaceAll("Ph\\.D\\.", "PhD").replaceAll("LL\\.D\\.","LLD").replaceAll("Sc\\.D\\.","ScD").replaceAll("Inc\\.","Inc").replaceAll(" Mr\\. "," Mr ");				
+				sentence = sentence.replaceAll(" Mrs\\. "," Mrs  ").replaceAll("Ph\\.D\\.", "PhD").replaceAll("LL\\.D\\.","LLD").replaceAll("Sc\\.D\\.","ScD").replaceAll(" Mr\\. "," Mr ");				
 				sentence = sentence.replaceAll("([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)","$1 $2 $3 $4");
 				sentence = sentence.replaceAll("([0-9]+)\\.([0-9]+)\\.([0-9]+)","$1 $2 $3");
 				sentence = sentence.replaceAll("([0-9]+)\\.([0-9]+)","$1 $2");
 				sentence = sentence.replaceAll(" Lei nº\\. "," Lei nº ").replaceAll(" n°\\. ", " nº ").replaceAll(" nº\\. ", "  nº ").replaceAll("\\(n. ", "(nº ");
-				sentence = sentence.replaceAll(" S\\.A\\. "," SA ");		
-				System.out.println(sentence);				
+				sentence = sentence.replaceAll(" S\\.A\\. "," SA ").replaceAll("Inc\\.","Inc");
 								
 				if (sentence.contains("URLTOKEN")) {
 					System.out.println("Erro: " + sentence);
