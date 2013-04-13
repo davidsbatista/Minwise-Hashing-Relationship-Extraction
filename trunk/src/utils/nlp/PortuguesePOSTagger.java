@@ -3,9 +3,7 @@ package utils.nlp;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import opennlp.tools.cmdline.postag.POSModelLoader;
 import opennlp.tools.postag.POSModel;
@@ -27,32 +25,35 @@ public class PortuguesePOSTagger {
 	static TokenizerME token = null;
 	static SentenceDetector sent = null;
 	static String RESOURCES = "/home/dsbatista/relations-minhash/resources/";
+	//static String RESOURCES = "/home/dsbatista/workspace/relations-minhash/resources/";
 	
 	public static void initialize() throws InvalidFormatException, FileNotFoundException, IOException {
 		
+		/* normal model */
+		/*
 		model = new POSModelLoader().load(new File(RESOURCES + "pt.postagger.model"));
         tModel = new TokenizerModel(new FileInputStream(RESOURCES + "pt.tokenizer.model")); 
         sModel = new SentenceModel(new FileInputStream(RESOURCES + "pt.sentdetect.model"));
+        */
+		
+        /* with VPP tag */
+        model = new POSModelLoader().load(new File(RESOURCES + "pt.postaggerVerbPP.model"));
+        tModel = new TokenizerModel(new FileInputStream(RESOURCES + "pt.tokenizerVerbPP.model")); 
+        sModel = new SentenceModel(new FileInputStream(RESOURCES + "pt.sentDetectVerbPP.model"));
+                
         tagger = new POSTaggerME(model); 
         token = new TokenizerME(tModel);
         sent = new SentenceDetectorME(sModel);
 	}
 	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
+		initialize();		
+		String[] tags = posTags("A decisão foi anunciada por Jeroen Dijsselbloem, ministro da finanças da Holanda que preside às reuniões do Eurogrupo e refere-se aos 26 mil milhões de euros dos empréstimos do Fundo Europeu de Estabilidade Financeira (FEEF) garantidos pelos países do euro");
+		System.out.println("A decisão foi anunciada por Jeroen Dijsselbloem, ministro da finanças da Holanda que preside às reuniões do Eurogrupo e refere-se aos 26 mil milhões de euros dos empréstimos do Fundo Europeu de Estabilidade Financeira (FEEF) garantidos pelos países do euro");
+		for (int i = 0; i < tags.length; i++) {
+			System.out.print(tags[i] + '\t');
+		}
 		
-		model = new POSModelLoader().load(new File("resources/pt.postagger.model"));
-        tModel = new TokenizerModel(new FileInputStream("resources/pt.tokenizer.model")); 
-        sModel = new SentenceModel(new FileInputStream("resources/pt.sentdetect.model"));
-        tagger = new POSTaggerME(model); 
-        token = new TokenizerME(tModel);
-        sent = new SentenceDetectorME(sModel);
-		
-        String text = "Margaret Thatcher não gostava de consensos. Porque haveria então de se preocupar com o que diziam dela? E com o que, a favor dela ou contra ela, os artistas britânicos produziram entre o dia em que chegou ao poder, 4 de Maio de 1979, até ao dia em que o abandonou, em Novembro de 1990?";
-		
-        String[] sentences = sent.sentDetect(text);
-        for (int i = 0; i < sentences.length; i++) {
-        	posTags(sentences[i]);
-		}        
 	}
 	
 	public static String[] tokenize(String text){
@@ -74,25 +75,5 @@ public class PortuguesePOSTagger {
 			}
 		}		
 		return tags;
-	}
-	
-	public static void tag(String doc, PrintWriter out) throws InvalidFormatException, FileNotFoundException, IOException {
-				
-		for ( String s : sent.sentDetect(doc) ) {
-			String whitespaceTokenizerLine[] = token.tokenize(s);
-			String[] mTags = tagger.tag(whitespaceTokenizerLine);
-			POSSample sample = new POSSample(whitespaceTokenizerLine, mTags);
-			String sentence = sample.toString();
-			String pairs[] = sentence.split(" ");
-			String words[] = new String[pairs.length];
-			String tags[] = new String[pairs.length];
-			for ( int i = 0; i < pairs.length; i++) {
-				words[i] = pairs[i].substring(0,pairs[i].indexOf("_"));
-				tags[i] = pairs[i].substring(pairs[i].indexOf("_")+1);
-				out.write( "  <token number='" + (i+1) +"' word='" + words[i] + "' pos='" + tags[i] + "' " + "/>\n" );
-			}
-			out.close();
-		}
-
-	}
+	}	
 }
