@@ -127,11 +127,23 @@ public class GenerateSets {
 		while ((aux = input.readLine()) != null) {
 			if (aux.startsWith("SENTENCE")) {
 				sentence = aux.split(": ")[1];
-				System.out.println("sentence: " + sentence);
-				//sentence = sentence.replaceAll("&nbsp;", " ").replaceAll("----", "").replaceAll("&mdash;", "-");
-				//sentence = sentence.replaceAll("\\[URLTOKEN\\s?[A-Za-z0-9]+\\]","");
-				//.replaceAll("\\\\[URLTOKEN\\\\]", "")
-				System.out.println("sentence: " + sentence);
+				sentence = sentence.replaceAll("&nbsp;", "").replaceAll("&mdash;", "—").replaceAll("&ndash", "–").replaceAll("&bull;", "•");
+				sentence = sentence.replaceAll("\\[?URLTOKEN\\s?([A-Za-z0-9íÍÌìàÀáÁâÂâÂãÃçÇéÉêÊóÓõÕôÔúÚüÜ\\.\\s,\\+\\(\\)\\-]+)?\\]?", "");
+				
+				//eliminar alguns pontos devido ao erro to SentenceDetector
+				sentence = sentence.replaceAll(" ca\\. "," ca ").replaceAll(" etc\\. ", " etc ").replaceAll("\\(c\\. ", "(c ").replaceAll(" c\\. ", " c ");				
+				sentence = sentence.replaceAll(" Mrs\\. "," Mrs  ").replaceAll("Ph\\.D\\.", "PhD").replaceAll("LL\\.D\\.","LLD").replaceAll("Sc\\.D\\.","ScD").replaceAll("Inc\\.","Inc").replaceAll(" Mr\\. "," Mr ");				
+				sentence = sentence.replaceAll("([0-9]+)\\.([0-9]+)\\.([0-9]+)\\.([0-9]+)","$1 $2 $3 $4");
+				sentence = sentence.replaceAll("([0-9]+)\\.([0-9]+)\\.([0-9]+)","$1 $2 $3");
+				sentence = sentence.replaceAll("([0-9]+)\\.([0-9]+)","$1 $2");
+				sentence = sentence.replaceAll(" Lei nº\\. "," Lei nº ").replaceAll(" n°\\. ", " nº ").replaceAll(" nº\\. ", "  nº ").replaceAll("\\(n. ", "(nº ");
+				sentence = sentence.replaceAll(" S\\.A\\. "," SA ");		
+				System.out.println(sentence);				
+								
+				if (sentence.contains("URLTOKEN")) {
+					System.out.println("Erro: " + sentence);
+				}
+				
 				aux = input.readLine();
 				if (aux.equals("")) aux = input.readLine();
 				if (aux.startsWith("MANUALLY CHECKED : TRUE")) checked = true; else checked = false;
@@ -181,7 +193,7 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "locatedinArea";
+							type = "locatedInArea";
 							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						

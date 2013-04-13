@@ -12,7 +12,5 @@
 	<classpathentry kind="lib" path="/home/dsbatista/workspace/relations-minhash/jars/opennlp-maxent-3.0.2-incubating.jar"/>
 	<classpathentry kind="lib" path="/home/dsbatista/workspace/relations-minhash/jars/opennlp-uima-1.5.2-incubating.jar"/>
 	<classpathentry kind="lib" path="/home/dsbatista/workspace/relations-minhash/jars/PTStemmer_v2.jar"/>
-	<classpathentry kind="lib" path="/home/dsbatista/workspace/relations-minhash/jars/lucene-analyzers-common-4.2.1.jar"/>
-	<classpathentry kind="lib" path="/home/dsbatista/workspace/relations-minhash/jars/lucene-core-4.2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
