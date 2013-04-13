@@ -22,7 +22,6 @@
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-maxent-3.0.2-incubating.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-uima-1.5.2-incubating.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="PTStemmer_v2.jar"/>
-        	
         </jar>
     </target>
 </project>
