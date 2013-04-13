@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ptstemmer.exceptions.PTStemmerException;
-
 
 
 public class PortugueseNLP {
@@ -22,7 +20,7 @@ public class PortugueseNLP {
 
 	
 
-	public static String generateNGrams(String source, String prefix, int betweenLenght, int casing, int window) throws PTStemmerException {
+	public static String generateNGrams(String source, String prefix, int betweenLenght, int casing, int window) {
 		
 		String[] sourcePOS = PortuguesePOSTagger.posTags(source);
 		String[] sourceTokens = PortuguesePOSTagger.tokenize(source);
