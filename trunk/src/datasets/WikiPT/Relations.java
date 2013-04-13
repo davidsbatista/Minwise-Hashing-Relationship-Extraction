@@ -8,24 +8,42 @@ import java.util.Set;
 public class Relations {
 	
 	public static Map<String, String> aggregatedRelations = null; 		
-	public static String[] ignore = {"picture","maintainedBy","politicGovernmentDepartment","regionServed"}; 	
+	public static String[] ignore = {"picture","maintainedBy","politicGovernmentDepartment","regionServed","leader","owner"};
 	
-	public static String[] changeDirection = {"predecessor","doctoralAdvisor","influenced","child","foundedBy"};
+	public static String[] changeDirection = {"predecessor","doctoralAdvisor","influenced","child","foundedBy",
+											  "capitalCountry","currentMember","pastMember","keyPerson","president","leaderName"};
 	
 	public static void initialize() {
-		aggregatedRelations = new HashMap<String, String>();				
-		String locatedInArea[] = {"locatedInArea","archipelago","locatedInArea","locatedInArea","locatedInArea","location", "locationCity",
-								  "locationCountry","capitalCountry","municipality","subregion","federalState","capital","district","region",
-								  "city","country","province","state","county", "locatedInArea","map","campus","garrison"};				
-		String partOf[] = {"type","parentOrganisation","department","distributingCompany","broadcastNetwork","sportCountry","affiliation",
-						   "university","youthClub","currentMember","party","pastMember","team","associatedMusicalArtist","member"};				
-		String origin[] = {"origin","birthPlace","foundationPlace","sourcePlace","headquarter","nationality","residence","hometown"};				
-		String deathOrBurialPlace[] = {"deathPlace","placeOfBurial"}; 		
-		String partner[] = {"spouse","partner"};		
-		String keyPerson[] = {"keyPerson","president","monarch","leader", "leaderName","owner","founder"};		
+		aggregatedRelations = new HashMap<String, String>();
+		
+		//trocar a direcção para encaixar em "locatedinArea"
+		//capitalCountry				
+		String locatedInArea[] = {"locatedInArea","archipelago","location", "locationCity",
+								  "locationCountry","municipality","subregion","federalState","capital","district","region",
+								  "city","country","province","state","county", "map","campus","garrison","department"};		
+		
+		//trocar a direccao para encaixar em "partOf"
+		//currentMember
+		//pastMember
+		String partOf[] = {"type","parentOrganisation","distributingCompany","broadcastNetwork","affiliation",
+						   "university","youthClub","party","pastMember","team","associatedMusicalArtist","member"};						
+		
+		String origin[] = {"origin","birthPlace","foundationPlace","sourcePlace","headquarter","nationality","residence","hometown","sportCountry"};						
+		String deathOrBurialPlace[] = {"deathPlace","placeOfBurial"};		
+		String partner[] = {"spouse","partner"};
+
+		//trocar direcção para encaixar em "e1, keyperson in e2"
+		//keyPerson
+		//president
+		//leaderName
+		String keyPerson[] = {"keyPerson","president","monarch","leader","leaderName","founder"};		
+		
 		String influencedBy[] = {"influencedBy"};
+		
 		String parent[] = {"parent"};
+		
 		String successor[] = {"successor"};		
+		
 		String other[] = {"number","relative","crosses","neighboringMunicipality","sisterStation","portrayer","patron","knownFor","ground","tenant","appearancesInNationalTeam","riverMouth",};		
 		
 		addRelations(locatedInArea,"locatedInArea");

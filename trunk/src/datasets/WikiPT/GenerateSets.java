@@ -8,23 +8,38 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import ptstemmer.Stemmer.StemmerType;
+import ptstemmer.exceptions.PTStemmerException;
 
 import utils.nlp.PortugueseNLP;
 import utils.nlp.PortuguesePOSTagger;
+import utils.nlp.Stemming;
 import datasets.TestClassification;
-
 
 public class GenerateSets {
 
-	public static void generateWikiPT() throws Exception, IOException {
-		System.out.println("Generating WikiPT data...");		
+	static Map<String,Integer> sentences = new HashMap<String, Integer>();
+	static Set<String> sentences_ignored = new HashSet<String>();
+	
+	public static void generateWikiPT() throws Exception, IOException {				
 		PortuguesePOSTagger.initialize();		
+		/*
+		Stemming.initialize(StemmerType.SAVOY);
+		Stemming.initialize(StemmerType.PORTER);
+		*/
+		Stemming.initialize(StemmerType.ORENGO);
 		Relations.initialize();				
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
-		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);		
+		System.out.println("Generating WikiPT data...");
+		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
+		System.out.println("Testing WikiPT data...");
 		TestClassification.testWikiPT();
+		System.out.println("Sentences processed: " + sentences.keySet().size());
 	}
 	
 	public static int countWords(String entity, String sentence) {
@@ -37,11 +52,12 @@ public class GenerateSets {
 		return count;
 	}
 	
-	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, String direction, PrintWriter outTrain, PrintWriter outTest) {
+	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) throws PTStemmerException {
 		
 		String before = null;
 		String between = null;
 		String after = null;
+		String direction = null;
 		
 		int e1_count = countWords(e1,sentence);
 		int e2_count = countWords(e2,sentence);
@@ -55,10 +71,22 @@ public class GenerateSets {
 			int e2_finish = sentence.indexOf(e2)+e2.length();
 			
 			if (e1_start!=-1 && e2_start!=-1) {
-				
-				if (e1_finish < e2_start) direction = "(e1,e2)";
-				else if (e1_start > e2_finish) direction = "(e2,e1)";
 
+				///test if relationships as a direction
+				if (!(type.equals("other") || type.equals("partner"))) {
+					
+					if (e1_finish < e2_start) direction = "(e1,e2)";
+					else if (e1_start > e2_finish) direction = "(e2,e1)";					
+					type = type + direction;
+					
+					if (direction==null) {
+						System.out.println("direction null:" + sentence);					
+						System.out.println("e1 start: " + e1_start);
+						System.out.println("e1 finish: " + e1_finish);					
+						System.out.println("e2 start: " + e2_start);
+						System.out.println("e2 finish: " + e2_finish);						
+					}	
+				}				
 				
 				try {
 					before = sentence.substring(0,Math.min(e1_finish, e2_finish));
@@ -85,6 +113,14 @@ public class GenerateSets {
 			
 			if (!checked) processExample(before,after,between,type,outTrain);
 			else processExample(before,after,between,type,outTest);
+			
+			
+			try {
+				int count = sentences.get(sentence); 
+				sentences.put(sentence,count+1);
+			} catch (Exception e) {
+				sentences.put(sentence,1);
+			}
 		}	
 	}
 
@@ -95,75 +131,102 @@ public class GenerateSets {
 		String type = null;
 		String e1 = null;
 		String e2 = null;
-		String e1_type = null;
-		String e2_type = null;
-		String direction = null;
 		boolean checked = false;
-
+		
 		while ((aux = input.readLine()) != null) {
 			if (aux.startsWith("SENTENCE")) {
-				sentence = aux.split(": ")[1];
+				sentence = aux.split(": ")[1];				
+				sentence = sentence.replaceAll("&nbsp;", " ").replaceAll("----", "").replaceAll("[URLTOKEN]", "");				
+				sentence = sentence.replaceAll("\\[URLTOKEN [A-Za-z0-9]+\\]","");
+				System.out.println("sentence: " + sentence);
 				aux = input.readLine();
 				if (aux.equals("")) aux = input.readLine();
 				if (aux.startsWith("MANUALLY CHECKED : TRUE")) checked = true; else checked = false;
+				if (aux.startsWith("MANUALLY CHECKED : IGNORE")) {
+					sentences_ignored.add(sentence); 
+					continue;
+				}
 				aux = input.readLine();
 				while (!aux.startsWith("*")) {
-					if (aux.startsWith("ENTITY1")) e1 = aux.split(": ")[1];
-					if (aux.startsWith("ENTITY2")) e2 = aux.split(": ")[1];
-					if (aux.startsWith("TYPE1")) e1_type = aux.split(": ")[1];
-					if (aux.startsWith("TYPE2")) e2_type = aux.split(": ")[1];
+					if (aux.startsWith("ENTITY1")) e1 = aux.split(": ")[1].trim();
+					if (aux.startsWith("ENTITY2")) e2 = aux.split(": ")[1].trim();
 					if (aux.startsWith("REL TYPE")) type = aux.split(": ")[1];
 					aux = input.readLine();
 				}
 				
 				if (!Arrays.asList(Relations.ignore).contains(type)) {
-					
-					String type_old = type;					
+										
 					if (!Arrays.asList(Relations.changeDirection).contains(type)) {
-						//transform relationship type into aggregated type
+						
+						//transform relationship type into a top aggregated type
 						type = Relations.aggregatedRelations.get(type);					
-						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
+						processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 					}
 					
-					try {
+					else {
+						
+						//keyPerson, president, leaderName to keyPerson
+						if (type.equals("keyPerson") || type.equals("president") || type.equals("leaderName")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "keyPerson";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+						}
+
+						//currentMember and pastMember to partOf  
+						if (type.equals("currentMember") || type.equals("pastMember")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "partOf";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+						}
+						
+						//capitalCountry to locatedinArea
+						if (type.equals("capitalCountry")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "locatedinArea";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+						}
+						
 						//more examples of "influencedBy"
 						if (type.equals("influenced") || type.equals("doctoralAdvisor")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "influencedBy";
-							processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
-					} catch (Exception e) {
-						System.out.println(type_old);
-						e.printStackTrace();
-					}
 
-					//more examples of "successor"
-					if (type.equals("predecessor")) {
-						String tmp = e2;
-						e2 = e1;
-						e1 = tmp;
-						type = "successor";
-						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
-					}
-					
-					//more examples of "parent"
-					if (type.equals("child")) {
-						String tmp = e2;
-						e2 = e1;
-						e1 = tmp;
-						type = "parent";
-						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
-					}
-					
-					//more examples of "keyPerson"
-					if (type.equals("foundedBy")) {
-						String tmp = e2;
-						e2 = e1;
-						e1 = tmp;
-						type = "keyPerson";
-						processRelations(sentence,e1,e2,type,checked,direction,outTrain,outTest);
+						//more examples of "successor"
+						if (type.equals("predecessor")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "successor";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+						}
+						
+						//more examples of "parent"
+						if (type.equals("child")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "parent";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+						}
+						
+						//more examples of "keyPerson"
+						if (type.equals("foundedBy")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "keyPerson";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+						}
 					}
 				}				
 			}
@@ -173,9 +236,11 @@ public class GenerateSets {
 		outTest.flush();
 		outTest.close();
 		input.close();
+		
+		System.out.println(sentences_ignored.size() + " ignored sentences");
 	}
 	
-	public static void processExample(String before, String after,String between, String type, PrintWriter out) {
+	public static void processExample(String before, String after,String between, String type, PrintWriter out) throws PTStemmerException {
 		
 		int window = 3;
 		int casing = 1;
