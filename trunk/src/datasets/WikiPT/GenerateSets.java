@@ -28,9 +28,6 @@ public class GenerateSets {
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
 		System.out.println("Generating WikiPT data...");
 		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
-		System.out.println("Testing WikiPT data...");
-		TestClassification.testWikiPT();
-		System.out.println("Sentences processed: " + sentences.keySet().size());
 	}
 	
 	public static int countWords(String entity, String sentence) {
@@ -127,6 +124,7 @@ public class GenerateSets {
 		while ((aux = input.readLine()) != null) {
 			if (aux.startsWith("SENTENCE")) {
 				sentence = aux.split(": ")[1];
+				//System.out.println("sentence: " + sentence);
 				sentence = sentence.replaceAll("&nbsp;", "").replaceAll("&mdash;", "—").replaceAll("&ndash", "–").replaceAll("&bull;", "•");
 				sentence = sentence.replaceAll("\\[?URLTOKEN\\s?([A-Za-z0-9íÍÌìàÀáÁâÂâÂãÃçÇéÉêÊóÓõÕôÔúÚüÜ\\.\\s,\\+\\(\\)\\-]+)?\\]?", "");
 				

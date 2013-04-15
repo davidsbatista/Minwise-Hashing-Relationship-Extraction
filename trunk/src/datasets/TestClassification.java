@@ -297,7 +297,7 @@ public class TestClassification {
 	  
 	  if (args.length != 6) {
 		  System.out.println("usage is: dataset true|false true|false knn signature bands");
-		  System.out.println("dataset: semeval wiki aimed");
+		  System.out.println("dataset: semeval wiki aimed wikipt drugbank");
 		  System.out.println("generate examples: true|false");
 		  System.out.println("use Levin classes: true|false");
 	      System.exit(0);
@@ -320,9 +320,14 @@ public class TestClassification {
 			  testDrugBank();
 		  }
 		  
-		  if (args[0].equals("wikipt")) {
+		  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSets.generateWikiPT();
-			  
+			  System.out.println("Testing WikiPT data...");
+			  TestClassification.testWikiPT();
+		  }
+		  
+		  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) {
+			  TestClassification.testWikiPT();
 		  }
 		  
 		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {

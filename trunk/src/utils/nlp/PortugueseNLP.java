@@ -28,30 +28,34 @@ public class PortugueseNLP {
 		 */
 		
 		Set<String> set = new HashSet<String>();
-		
+		//verb
 		if ((sourcePOS!=null && sourceTokens!=null) && sourceTokens.length == sourcePOS.length) {
+			
 			for ( int i = 0 ; i < sourceTokens.length; i++ ) {				
 				if ( prefix.startsWith("BEF") && sourceTokens.length - i > betweenLenght + window ) continue;
 				if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;				
 				if ( sourcePOS[i].startsWith("verb") ) { 
 					  set.add(sourceTokens[i] + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1] + "_VERB_" : "" ) + prefix);
-		  	      //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
-		  		  if (i < sourceTokens.length - 2) {
-		  			String pattern = sourceTokens[i];
-		  			int j = i+1;				
-					while ( ((j < sourceTokens.length - 2)) && ((sourcePOS[j].startsWith("adverb") || sourcePOS[j].startsWith("adjective")) || sourcePOS[j].startsWith("noun"))) {	  				
-						pattern += "_" + sourceTokens[j];
-						j++;				
-					}
-					if (sourcePOS[j].startsWith("preposition")) {
+					  /*
+					  //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+			  		  if (i < sourceTokens.length - 2) {
+			  			String pattern = sourceTokens[i];
+			  			int j = i+1;				
+						while ( ((j < sourceTokens.length - 2)) && ((sourcePOS[j].startsWith("adverb") || sourcePOS[j].startsWith("adjective")) || sourcePOS[j].startsWith("noun"))) {	  				
+							pattern += "_" + sourceTokens[j];
+							j++;				
+						}
+						if (sourcePOS[j].startsWith("preposition")) {
 							pattern += "_" + sourceTokens[j];
 							set.add(pattern + "_RVB_" + prefix);
 						}
-		  		  }
-		  		  //proposições
-		  		  else if (sourcePOS[i].startsWith("preposition")) set.add(sourceTokens[i] + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1] + "_PREP_" : "" ) + prefix);					  
+			  		  }
+			  		  */
 				}
+				//proposições
+		  	    else if (sourcePOS[i].startsWith("preposition")) set.add(sourceTokens[i] + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1] + "_PREP_" : "" ) + prefix);
 			}
+
 			// character trigrams
 			for (int j = 0; j < source.length() + 3; j++) {
 					String tok = "";
@@ -61,9 +65,7 @@ public class PortugueseNLP {
 					}
 					set.add(tok + "_" + prefix + "_");
 				}
-		} else {
-			System.out.println("tokens[]!=tokensPOS : " + source);
-		}		
+		}	
 		String result = "";
 		for (String tok : set)
 			result += " " + tok;
