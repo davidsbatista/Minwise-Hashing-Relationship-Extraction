@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 
 import utils.nlp.PortugueseNLP;
 import utils.nlp.PortuguesePOSTagger;
@@ -28,6 +30,11 @@ public class GenerateSets {
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
 		System.out.println("Generating WikiPT data...");
 		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
+		/*
+		System.out.println("Testing WikiPT data...");
+		TestClassification.testWikiPT();
+		System.out.println("Sentences processed: " + sentences.keySet().size());
+		*/
 	}
 	
 	public static int countWords(String entity, String sentence) {
@@ -67,6 +74,12 @@ public class GenerateSets {
 					else if (e1_start > e2_finish) direction = "(e2,e1)";					
 					type = type + direction;
 					
+					
+					if ( type.equals("placeOfBurial") && direction.equals("(e2,e1)") ) {
+						System.out.println("sentence: " + sentence);
+					}
+					
+					
 					if (direction==null) {
 						System.out.println("direction null:" + sentence);					
 						System.out.println("e1 start: " + e1_start);
@@ -76,6 +89,7 @@ public class GenerateSets {
 					}	
 				}				
 				
+				/*
 				try {
 					before = sentence.substring(0,Math.min(e1_finish, e2_finish));
 					between = sentence.substring(Math.min(e1_finish, e2_finish),Math.max(e1_start,e2_start));
@@ -97,8 +111,10 @@ public class GenerateSets {
 					e.printStackTrace();
 					System.exit(0);
 				}
+				*/
 			}
 			
+			/*
 			if (!checked) processExample(before,after,between,type,outTrain);
 			else processExample(before,after,between,type,outTest);
 			
@@ -109,7 +125,9 @@ public class GenerateSets {
 			} catch (Exception e) {
 				sentences.put(sentence,1);
 			}
+			*/
 		}	
+
 	}
 
 	public static void processWikiPT(String file, PrintWriter outTrain, PrintWriter outTest) throws Exception {		
@@ -121,10 +139,21 @@ public class GenerateSets {
 		String e2 = null;
 		boolean checked = false;
 		
+		Map<String,Integer> relations_train = new HashMap<String, Integer>();
+		Map<String,Integer> relations_test  = new HashMap<String, Integer>();
+		
+		int sentences_train = 0;
+		int words_train = 0;		
+		
+		int sentences_test = 0;
+		int words_test = 0;
+		
+		Vector<Integer> sentences_train_size = new Vector<Integer>();
+		Vector<Integer> sentences_test_size = new Vector<Integer>();
+		
 		while ((aux = input.readLine()) != null) {
 			if (aux.startsWith("SENTENCE")) {
-				sentence = aux.split(": ")[1];
-				//System.out.println("sentence: " + sentence);
+				sentence = aux.split(": ")[1];				
 				sentence = sentence.replaceAll("&nbsp;", "").replaceAll("&mdash;", "—").replaceAll("&ndash", "–").replaceAll("&bull;", "•");
 				sentence = sentence.replaceAll("\\[?URLTOKEN\\s?([A-Za-z0-9íÍÌìàÀáÁâÂâÂãÃçÇéÉêÊóÓõÕôÔúÚüÜ\\.\\s,\\+\\(\\)\\-]+)?\\]?", "");
 				
@@ -161,7 +190,7 @@ public class GenerateSets {
 					if (!Arrays.asList(Relations.changeDirection).contains(type)) {
 						
 						//transform relationship type into a top aggregated type
-						type = Relations.aggregatedRelations.get(type);					
+						type = Relations.aggregatedRelations.get(type);												
 						processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 					}
 					
@@ -172,7 +201,7 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "keyPerson";
+							type = "keyPerson";							
 							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 
@@ -181,7 +210,7 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "partOf";
+							type = "partOf";							
 							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
@@ -190,7 +219,7 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "locatedInArea";
+							type = "locatedInArea";							
 							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
@@ -199,7 +228,7 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "influencedBy";
+							type = "influencedBy";							
 							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 
@@ -230,16 +259,135 @@ public class GenerateSets {
 							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 					}
+					
+					if (checked) {
+						sentences_test++;
+						sentences_test_size.add(sentence.split("\\s+").length);
+						words_test += sentence.split("\\s+").length;
+						try {							
+							int count = relations_test.get(type);
+							count++;							
+							relations_test.put(type, count);							
+						} catch (Exception e) {
+							relations_test.put(type, 1);
+						}		
+						
+					} else if (!checked) {
+						sentences_train++;
+						sentences_train_size.add(sentence.split("\\s+").length);
+						words_train += sentence.split("\\s+").length;
+						try {
+							int count = relations_train.get(type);
+							count++;
+							relations_train.put(type, count);
+						} catch (Exception e) {
+							relations_train.put(type, 1);
+						}	
+					}
 				}				
 			}
 		}
+		
+		//System.out.println(sentences + " total of sentences");		
+		/*
 		outTrain.flush();
 		outTrain.close();
 		outTest.flush();
 		outTest.close();
 		input.close();
+		*/
 		
-		System.out.println(sentences_ignored.size() + " ignored sentences");
+		System.out.println("Sentences TRAIN: " + sentences_train);
+		System.out.println("Sentences TEST: " + sentences_test);
+		System.out.println();
+		System.out.println("Words TRAIN: " + words_train);
+		System.out.println("Words TEST: " + words_test);
+		System.out.println();
+		
+		/* class instance statistics */ 
+		System.out.println("Statistics relations TRAIN");
+		classStatistics(relations_train);
+		System.out.println();		
+		System.out.println("Statistics relations TEST");
+		classStatistics(relations_test);
+		System.out.println();
+		Map<String,Integer> relations_total = new HashMap<String, Integer>();		
+		System.out.println("Statistics relations TOTAL");
+		for (String r : relations_test.keySet()) {
+			int count_train = relations_test.get(r);
+			int count_test  = relations_train.get(r);
+			relations_total.put(r, count_test+count_train);			
+		}
+		classStatistics(relations_total);
+		System.out.println();
+		
+		/* sentence length statistics */		
+		System.out.println("Statistics sentences TRAIN");
+		sentenceStatistics(sentences_train_size);
+		System.out.println();
+		System.out.println("Statistics sentences TEST");
+		sentenceStatistics(sentences_test_size);
+		System.out.println();
+		System.out.println("Statistics sentences TOTAL");
+		Vector<Integer> total_sentences = new Vector<Integer>();
+		total_sentences.addAll(sentences_test_size);
+		total_sentences.addAll(sentences_train_size);
+		sentenceStatistics(total_sentences);	   
+	}
+
+	static void sentenceStatistics(Vector<Integer> sentences_size) {
+		int total = 0;
+		for (Integer s : sentences_size) { total += s;}
+			double average = (double) total / (double) sentences_size.size();   
+			System.out.println("Avg. sentence Length: " + average);   
+			List<Double> distance_to_average = new Vector<Double>();      
+			for (Integer s : sentences_size) { 
+	           double difference = (double) s - (average);
+	           distance_to_average.add(Math.pow(difference, 2));   
+			}
+	   double stdvt = 0.0;
+	   for (Double d: distance_to_average) {stdvt += d;}   
+	   System.out.println("StDev. sentence Length: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+	}
+
+	static void classStatistics(Map<String, Integer> relations) { int total = 0;
+		   for (String c : relations.keySet()) { total += relations.get(c);}
+		   double average = (double) total / (double) relations.keySet().size();
+		   System.out.println("Avg. class instances: " + average);
+		   
+		   Vector<Double> distance_to_average = new Vector<Double>();
+		   for (String c : relations.keySet()) { 
+		           double difference = (double) relations.get(c) - (average);
+		           distance_to_average.add(Math.pow(difference, 2));
+		   }   
+		   double stdvt = 0.0;
+		   for (Double d: distance_to_average) {stdvt += d;}   
+		   System.out.println("StDev. class instances: " +  Math.sqrt(stdvt / (double) distance_to_average.size()));
+	}
+
+	static void statsRelations(String type, boolean checked,Map<String, Integer> relations_train, Map<String, Integer> relations_test, int sentences_train, int sentences_test, String sentence, int words_train, int words_test, Vector<Integer> sentences_train_size, Vector<Integer> sentences_test_size) {
+		if (checked) {
+			sentences_test++;
+			sentences_test_size.add(sentence.split("\\s+").length);
+			words_test += sentence.split("\\s+").length;
+			try {
+				int count = relations_test.get(type);
+				relations_test.put(type, count++);
+			} catch (Exception e) {
+				relations_test.put(type, 1);
+			}		
+			
+		} else if (!checked) {
+			sentences_train++;
+			sentences_train_size.add(sentence.split("\\s+").length);
+			words_train += sentence.split("\\s+").length;
+			try {
+				int count = relations_train.get(type);
+				relations_train.put(type, count++);
+			} catch (Exception e) {
+				relations_train.put(type, 1);
+			}	
+		}
 	}
 	
 	public static void processExample(String before, String after,String between, String type, PrintWriter out) {
