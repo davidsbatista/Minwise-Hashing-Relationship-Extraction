@@ -36,7 +36,6 @@ public class GenerateSets {
 		*/
 		System.out.println("Testing WikiPT data...");
 		TestClassification.testWikiPT();
-		System.out.println("Sentences processed: " + sentences.keySet().size());
 	}
 	
 	public static int countWords(String entity, String sentence) {
