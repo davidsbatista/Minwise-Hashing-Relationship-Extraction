@@ -28,35 +28,33 @@ public class PortugueseNLP {
 		 */
 		
 		Set<String> set = new HashSet<String>();
-		//verb
+		
 		if ((sourcePOS!=null && sourceTokens!=null) && sourceTokens.length == sourcePOS.length) {
-			
 			for ( int i = 0 ; i < sourceTokens.length; i++ ) {				
 				if ( prefix.startsWith("BEF") && sourceTokens.length - i > betweenLenght + window ) continue;
-				if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;				
-				if ( sourcePOS[i].startsWith("verb") ) { 
-					  set.add(sourceTokens[i] + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1] + "_VERB_" : "" ) + prefix);
-					  /*
-					  //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
-			  		  if (i < sourceTokens.length - 2) {
-			  			String pattern = sourceTokens[i];
-			  			int j = i+1;				
-						while ( ((j < sourceTokens.length - 2)) && ((sourcePOS[j].startsWith("adverb") || sourcePOS[j].startsWith("adjective")) || sourcePOS[j].startsWith("noun"))) {	  				
-							pattern += "_" + sourceTokens[j];
-							j++;				
-						}
-						if (sourcePOS[j].startsWith("preposition")) {
-							pattern += "_" + sourceTokens[j];
+				if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
+				
+				if ( sourcePOS[i].startsWith("verb") || sourcePOS[i].startsWith("pp") ) {
+				  set.add(sourceTokens[i].toLowerCase() + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1].toLowerCase() + "_" : "" ) +  prefix);
+				  set.add(sourceTokens[i].toLowerCase() + "_" + prefix);
+				  if ( sourcePOS[i].startsWith("pp")  ) set.add(sourceTokens[i].toLowerCase() + "_PP_" + prefix);
+				  
+				  //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+				  if (i < sourceTokens.length - 2) {
+		  			String pattern = sourceTokens[i].toLowerCase();
+		  			int j = i+1;				
+					while ( ((j < sourceTokens.length - 2)) && ((sourcePOS[j].startsWith("adverb") || sourcePOS[j].startsWith("adjective")) || sourcePOS[j].startsWith("noun"))) {	  				
+						pattern += "_" + sourceTokens[j].toLowerCase();
+						j++;				
+					}
+					if (sourcePOS[j].startsWith("preposition")) {
+							pattern += "_" + sourceTokens[j].toLowerCase();
 							set.add(pattern + "_RVB_" + prefix);
-						}
-			  		  }
-			  		  */
-				}
-				//proposições
-		  	    else if (sourcePOS[i].startsWith("preposition")) set.add(sourceTokens[i] + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1] + "_PREP_" : "" ) + prefix);
+					}
+		  		  }		  	
+				} else if (sourcePOS[i].startsWith("preposition")) set.add(sourceTokens[i].toLowerCase() + "_PREP_" + prefix);
 			}
-
-			// character trigrams
+			// character quadgrams
 			for (int j = 0; j < source.length() + 3; j++) {
 					String tok = "";
 					for (int i = -3; i <= 0; i++) {
@@ -65,7 +63,7 @@ public class PortugueseNLP {
 					}
 					set.add(tok + "_" + prefix + "_");
 				}
-		}	
+		} 
 		String result = "";
 		for (String tok : set)
 			result += " " + tok;
