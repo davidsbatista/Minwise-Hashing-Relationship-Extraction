@@ -387,7 +387,7 @@ public class GenerateSetsFromExamples {
 	String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
 	String normalized[] = EnglishNLP.adornText(source,3).split(" +");
     String aux[] = EnglishNLP.adornText(source,0).split(" +");
-    Set<String> set = new HashSet<String>();
+    List<String> set = new ArrayList<String>();
     for ( int i = 0 ; i < aux.length; i++ ) {
 		if ( prefix.startsWith("BEF") && aux.length - i > betweenLenght + window ) continue;
 		if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
