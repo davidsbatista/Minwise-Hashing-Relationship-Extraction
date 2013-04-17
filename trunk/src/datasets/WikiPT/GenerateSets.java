@@ -74,12 +74,6 @@ public class GenerateSets {
 					else if (e1_start > e2_finish) direction = "(e2,e1)";					
 					type = type + direction;
 					
-					
-					if ( type.equals("placeOfBurial") && direction.equals("(e2,e1)") ) {
-						System.out.println("sentence: " + sentence);
-					}
-					
-					
 					if (direction==null) {
 						System.out.println("direction null:" + sentence);					
 						System.out.println("e1 start: " + e1_start);
@@ -89,7 +83,6 @@ public class GenerateSets {
 					}	
 				}				
 				
-				/*
 				try {
 					before = sentence.substring(0,Math.min(e1_finish, e2_finish));
 					between = sentence.substring(Math.min(e1_finish, e2_finish),Math.max(e1_start,e2_start));
@@ -111,10 +104,8 @@ public class GenerateSets {
 					e.printStackTrace();
 					System.exit(0);
 				}
-				*/
 			}
 			
-			/*
 			if (!checked) processExample(before,after,between,type,outTrain);
 			else processExample(before,after,between,type,outTest);
 			
@@ -125,9 +116,7 @@ public class GenerateSets {
 			} catch (Exception e) {
 				sentences.put(sentence,1);
 			}
-			*/
-		}	
-
+		}
 	}
 
 	public static void processWikiPT(String file, PrintWriter outTrain, PrintWriter outTest) throws Exception {		
