@@ -14,27 +14,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import datasets.TestClassification;
+
 import utils.nlp.PortugueseNLP;
 import utils.nlp.PortuguesePOSTagger;
-import datasets.TestClassification;
 
 public class GenerateSets {
 
 	static Map<String,Integer> sentences = new HashMap<String, Integer>();
-	static Set<String> sentences_ignored = new HashSet<String>();
+	static Set<String> sentences_ignored = new HashSet<String>();	
+	static Map<String,List<Instance>> instances_per_class = new HashMap<String, List<Instance>>();
 	
 	public static void generateWikiPT() throws Exception, IOException {				
 		PortuguesePOSTagger.initialize();		
-		Relations.initialize();				
+		Relations.initialize();
+		/*
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
-		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));
+		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));		
 		System.out.println("Generating WikiPT data...");
 		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
-		/*
+		*/
 		System.out.println("Testing WikiPT data...");
 		TestClassification.testWikiPT();
 		System.out.println("Sentences processed: " + sentences.keySet().size());
-		*/
 	}
 	
 	public static int countWords(String entity, String sentence) {
@@ -54,9 +56,10 @@ public class GenerateSets {
 		String after = null;
 		String direction = null;
 		
+		
 		int e1_count = countWords(e1,sentence);
 		int e2_count = countWords(e2,sentence);
-		
+				
 		if ( (!(e1.contains(e2) || e2.contains(e1))) && (!e2.equals(e1)) && (e1_count==1) && (e2_count==1)) {
 			
 			int e1_start = sentence.indexOf(e1);
@@ -106,9 +109,15 @@ public class GenerateSets {
 				}
 			}
 			
+			
 			if (!checked) processExample(before,after,between,type,outTrain);
 			else processExample(before,after,between,type,outTest);
 			
+			
+			/*
+			Instance i = new Instance(type, before, after, between);
+			instances_per_class.
+			*/
 			
 			try {
 				int count = sentences.get(sentence); 
@@ -127,6 +136,8 @@ public class GenerateSets {
 		String e1 = null;
 		String e2 = null;
 		boolean checked = false;
+		
+		String[] classes = {"deathOrBurialPlace(e1,e2)","deathOrBurialPlace(e2,e1)","influencedBy(e1,e2)","influencedBy(e2,e1)","keyPerson(e1,e2)","keyPerson(e2,e1)","locatedInArea(e1,e2)","locatedInArea(e2,e1)","origin(e1,e2)","origin(e2,e1)","other","parent(e1,e2)","parent(e2,e1)","partner","partOf(e1,e2)","partOf(e2,e1)","successor(e1,e2)","successor(e2,e1)"};
 		
 		Map<String,Integer> relations_train = new HashMap<String, Integer>();
 		Map<String,Integer> relations_test  = new HashMap<String, Integer>();
@@ -190,8 +201,7 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "keyPerson";							
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+							type = "keyPerson";
 						}
 
 						//currentMember and pastMember to partOf  
@@ -200,7 +210,6 @@ public class GenerateSets {
 							e2 = e1;
 							e1 = tmp;
 							type = "partOf";							
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//capitalCountry to locatedinArea
@@ -209,7 +218,6 @@ public class GenerateSets {
 							e2 = e1;
 							e1 = tmp;
 							type = "locatedInArea";							
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//more examples of "influencedBy"
@@ -218,7 +226,6 @@ public class GenerateSets {
 							e2 = e1;
 							e1 = tmp;
 							type = "influencedBy";							
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 
 						//more examples of "successor"
@@ -227,7 +234,6 @@ public class GenerateSets {
 							e2 = e1;
 							e1 = tmp;
 							type = "successor";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//more examples of "parent"
@@ -235,9 +241,9 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "parent";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
-						}
+							type = "parent";							
+						}						
+						processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						
 						//more examples of "keyPerson"
 						if (type.equals("foundedBy")) {
