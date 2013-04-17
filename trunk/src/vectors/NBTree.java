@@ -5,14 +5,16 @@ import java.io.*;
 import java.lang.reflect.Array;
 import org.mapdb.*;
 
+import utils.misc.TopN;
 
-public class BHTree {
+
+public class NBTree {
 	
  // The tree indexing the norms
  private NavigableMap<Double,Set<Integer>> index;
  
  // The vector representions for each example in the database
- private Map<Integer,double[]> representation;
+ private Map<Integer,Double[]> representation;
  
  // The class assigned to each example in the database
  private Map<Integer,String> value;
@@ -20,12 +22,12 @@ public class BHTree {
  private int norm;
  
  // A constructor that initializes the LSH index with a given number of hash functions for the min-hash signatures, and with a given number of bands
- public BHTree ( int norm ) {
+ public NBTree ( int norm ) {
 	 this(createTempFile("bh-tree"), norm);
  }
   
  // A constructor that initializes the LSH index with a given number of hash functions for the min-hash signatures, and with a given number of bands
- public BHTree( File file, int norm ) {
+ public NBTree( File file, int norm ) {
 	 if ( norm != 0 ) throw new Error("Unknown norm.");
      try {
   	   DB db = DBMaker.newFileDB(file).closeOnJvmShutdown().make();
@@ -38,9 +40,16 @@ public class BHTree {
  
  // Returns the number of examples that are currently indexed
  public int indexSize ( ) { return value.size(); }
-  
+
+ // Returns the number of examples that are currently indexed that are of a particular type
+ public int indexSize ( String type ) { 
+	 int counter = 0;
+	 for ( Integer key : value.keySet() ) if( value.get(key).equals(type)) counter++; 
+	 return counter;
+ }
+ 
  // Adds a new example to the index
- public void index ( Integer id, double[] data , String result ) {
+ public void index ( Integer id, Double[] data , String result ) {
      try {
          double code = norm(data);
 		 HashSet<Integer> auxSet = new HashSet<Integer>();			 
@@ -53,7 +62,7 @@ public class BHTree {
  }
  
  // Returns all instances whose norm is within a given range
- public Set<Integer> queryRange( double[] data , double low, double high ) {
+ public Set<Integer> queryRange( Double[] data , double low, double high ) {
 		 HashSet<Integer> auxSet = new HashSet<Integer>();
 		 double code = norm(data);
 		 for ( Set<Integer> entry : index.subMap(low, true, high, true).values() ) auxSet.addAll(entry);
@@ -61,7 +70,7 @@ public class BHTree {
  }
  
  // Returns the top-k most similar examples in the database
- public TopN<String> queryNearest ( double[] data , int k ) {
+ public TopN<String> queryNearest ( Double[] data , int k ) {
 	 TopN<String> result = new TopN<String>(k);
 	 double code = norm(data);
 	 k = Math.min(k,indexSize());
@@ -70,7 +79,7 @@ public class BHTree {
 		 Set<Integer> auxSet = queryRange(data, code - range, code + range);
 		 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
 			 String value = this.value.get(candidate);
-			 double data2[] = this.representation.get(candidate);
+			 Double data2[] = this.representation.get(candidate);
 		  	 if ( norm == 0 ) result.add(value, MinkowskiDistances.distanceEuclidean(data,data2));
 		 	 if ( norm == 1 ) result.add(value, MinkowskiDistances.distanceManhattan(data,data2));
 		 	 if ( norm == 2 ) result.add(value, MinkowskiDistances.distanceFractional(data,data2));
@@ -82,7 +91,7 @@ public class BHTree {
  }
  
  // Returns the norm for a given feature vector
- private double norm ( double[] data ) {
+ private double norm ( Double[] data ) {
  	if ( norm == 0 ) return MinkowskiDistances.normEuclidean(data);
 	if ( norm == 1 ) return MinkowskiDistances.normManhattan(data);
 	if ( norm == 2 ) return MinkowskiDistances.normFractional(data);
