@@ -403,7 +403,7 @@ public class GenerateSetsFromExamples {
 	  			String pattern = normalized[i];
 	  			int j = i+1;				
 				try {
-					while ( (j < aux.length - 2) && (auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j")) || auxPOS[j].startsWith("n")) {	  				
+					while ( ((j < aux.length - 2)) && ((auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j")) || auxPOS[j].startsWith("n"))) {	  				
 						pattern += "_" + normalized[j];
 						j++;				
 					}
