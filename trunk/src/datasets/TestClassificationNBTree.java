@@ -7,8 +7,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import nbtree.NBTree;
+
 import utils.misc.Pair;
-import vectors.NBTree;
 import datasets.WikiPT.GenerateSets;
 
 public class TestClassificationNBTree {
@@ -27,10 +28,8 @@ public class TestClassificationNBTree {
   }
   		
   public static void readTrainData ( String file, int number ) throws Exception {
-	File dbfile = new File("mapdb-relations-index");
-	File dbfile2 = new File("mapdb-directions-index");
+	File dbfile = new File("mapdb-relations-index-nbtree");
 	dbfile.deleteOnExit();
-    dbfile2.deleteOnExit();
     dataIndex = new NBTree( dbfile, 0 );
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;
@@ -298,41 +297,30 @@ public class TestClassificationNBTree {
 		  knn = Integer.parseInt(args[2]);  
 		  System.out.println("knn: " + knn);		  
 		  
-		  if (args[0].equals("drugbank")) {
-			  if (args[1].equals("true")) GenerateSetsFromExamples.generateDataDrugBank();
-			  testDrugBank();
-		  }
 		  
 		  if (args[0].equals("wikipt")) {
 			  GenerateSets.generateWikiPT();
 			  
 		  }
 		  
-		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateAll();
-			  testSemEval();
-			  testAIMED();
-			  testWikiEN();
-		  }
-		  
-		  else if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("false")) {
+		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("false")) {
 			  testSemEval();
 			  testAIMED();
 			  testWikiEN();
 		  }
 		  
 		  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateDataSemEval();
+			  GenerateVectorsFromSets.generateDataSemEval();
 			  testSemEval();
 		  }
 		  
 		  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateDataAIMED();
+			  GenerateVectorsFromSets.generateDataAIMED();
 			  testAIMED();
 		  }
 		  
 		  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateDataWikiEn();
+			  GenerateVectorsFromSets.generateDataWikiEn();
 			  testWikiEN();
 		  }
 		  

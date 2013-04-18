@@ -398,11 +398,7 @@ public class GenerateSetsFromExamples {
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			  
 			  
-			//Levin classes
-			//if (EnglishNLP.levin_verb_classes!=null) for (String levin_class : EnglishNLP.getVerbClass(normalized[i])) set.add(levin_class.substring(0,12) + "_" + prefix );
-			
-			  /*
-	  	    //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+	  	      //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
 	  		  if (i < aux.length - 2) {
 	  			String pattern = normalized[i];
 	  			int j = i+1;				
@@ -424,7 +420,6 @@ public class GenerateSetsFromExamples {
 						set.add(pattern + "_RVB_" + prefix);
 					}
 	  		  }
-	  		  */
 			  
 			//preposições normalizadas 
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
