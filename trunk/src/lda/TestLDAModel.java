@@ -2,7 +2,6 @@ package lda;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,16 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-
 import com.aliasi.stats.Statistics;
 import com.aliasi.symbol.SymbolTable;
 import com.aliasi.util.Files;
 
-
-public class TopicModelDocumentRepresentation {
+public class TestLDAModel {
 
 	private static boolean DEBUG = true;
 
@@ -41,8 +35,8 @@ public class TopicModelDocumentRepresentation {
 	                }
 			String data[] = dataset.toArray(new String[0]);
 			short numTopics = 3;
-		        int minTokenCount = 1;
-			TopicModel model = args[0].equals("-lda") ? new LDAModel(data,numTopics,minTokenCount) : new HDPModel(data,numTopics,minTokenCount);
+		    int minTokenCount = 1;
+		    LDAModel model = new LDAModel(data,numTopics,minTokenCount);
 			model.write(args[2]);
 			if ( DEBUG ) {
 				System.out.println("Number of topics : " + model.numTopics());
@@ -65,12 +59,12 @@ public class TopicModelDocumentRepresentation {
 			File file = new File(args[1].substring(6));
 			if ( args.length < 3 || !args[1].startsWith("-words=") ) throw new Exception("Invalid arguments!");
 			File file2 = new File(args[2].substring(7));
-			TopicModel ldaModel = new LDAModel( file.getAbsolutePath(), file2.getAbsolutePath() );
+			LDAModel ldaModel = new LDAModel( file.getAbsolutePath(), file2.getAbsolutePath() );
 			ldaModel.write(args[2]);
 		} else throw new Exception("Invalid arguments!");
 	}
 
-	public static double[] documentTopics ( TopicModel ldaModel , String doc ) {
+	public static double[] documentTopics ( LDAModel ldaModel , String doc ) {
 	        int numSamples = 200;
 	        long randomSeed = 6474835;
 	        int burnin = 0;
@@ -80,26 +74,22 @@ public class TopicModelDocumentRepresentation {
 		return ldaModel.bayesTopicEstimate(tokens, numSamples, burnin, sampleLag, new Random(randomSeed));
 	}
 
-	public static double documentSimilarity ( TopicModel model , String doc1, String doc2, int metric ) {
+	public static double documentSimilarity ( LDAModel model , String doc1, String doc2, int metric ) {
 	        double docTopics1[] = documentTopics(model,doc1);
 	        double docTopics2[] = documentTopics(model,doc2);
 		return distributionSimilarity(docTopics1,docTopics2,metric);
 	};
 
-	public static double perplexity( TopicModel ldaModel , String documents[] ) {
-
+	public static double perplexity( LDAModel ldaModel , String documents[] ) {
 	        int numSamples = 20;
 	        long randomSeed = 6474835;
 	        int burnin = 0;
 	        int sampleLag = 1;
-
     		double perplexity = 0, corpusLog2Prob = 0, crossEntropy = 0;
     		double size = 0;
     		for ( String doc : documents ) {
-
     			String cleanDoc = getAnalyzedText(doc);
     			int[] tokens = tokenizeDocument(cleanDoc, ldaModel.symbolTable);
-
     			double docTopics[] = ldaModel.bayesTopicEstimate(tokens, numSamples, burnin, sampleLag, new Random(randomSeed));
     			for ( int i = 0 ; i < tokens.length; i++ ) {
     				double wordProb = 0.0;
@@ -108,10 +98,8 @@ public class TopicModelDocumentRepresentation {
     				}
     				corpusLog2Prob += com.aliasi.util.Math.log2(wordProb);
     			}
-
     			size += tokens.length;
     		}
-
     		crossEntropy = corpusLog2Prob / size;
     		perplexity = Math.pow(2, (-crossEntropy));
     		return perplexity;
@@ -154,34 +142,12 @@ public class TopicModelDocumentRepresentation {
      * @throws IOException
      */
     public static String getAnalyzedText(String text) {
-
-    	StringBuilder sb = new StringBuilder();
-
-    	try {
-    		MyAnalyzer a = MyAnalyzerPool.getInstance().acquireTextAnalyzer();
-
-    		TokenStream ts = a.tokenStream( null, new StringReader(text));
-    		CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
-
-    		ts.reset();
-    		while (ts.incrementToken()) {
-    			sb.append(termAtt.buffer(), 0, termAtt.length());
-    			sb.append(' ');
-    		}
-
-    		ts.end();
-    		ts.close();
-    		MyAnalyzerPool.getInstance().releaseTextAnazyzer(a);
-
-    	} catch(Exception e) {
-    		e.printStackTrace();
-    	}
-
+    	StringBuilder sb = new StringBuilder(text);
     	return sb.toString();
     }
 
 
-	public static Map<String,Double> topWords ( TopicModel ldaModel , int k, int t ) {
+	public static Map<String,Double> topWords ( LDAModel ldaModel , int k, int t ) {
 		double words[] = ldaModel.wordProbabilities(t-1);
 		Map<String,Double> map = new HashMap<String,Double>();
 		for ( int i = 0; i<words.length; i++) map.put(ldaModel.symbolTable.idToSymbol(i),words[i]);
@@ -208,7 +174,7 @@ public class TopicModelDocumentRepresentation {
 
 	public static double distributionSimilarity ( double docTopics1[], double docTopics2[], int metric ) {
 		switch ( metric ) {
-			case 1  : 			double cosine = 0;
+			case 1  : 		double cosine = 0;
 							double aux1 = 0;
 							double aux2 = 0;
 							for ( int i = 0 ; i<docTopics1.length ; i++ ) {

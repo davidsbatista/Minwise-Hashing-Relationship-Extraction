@@ -6,12 +6,15 @@ import com.aliasi.tokenizer.*;
 import com.aliasi.symbol.*;
 import com.aliasi.util.ObjectToCounterMap;
 import com.aliasi.util.Strings;
-import com.aliasi.stats.Statistics;
 import java.util.zip.*;
 import java.util.*;
 import java.io.*;
 
-public class LDAModel extends TopicModel {
+public class LDAModel {
+	
+    public SymbolTable symbolTable = new MapSymbolTable();
+
+    static final TokenizerFactory WORMBASE_TOKENIZER_FACTORY = new RegExTokenizerFactory("[^ ]+");
 
     public LatentDirichletAllocation model = null;
 
@@ -20,11 +23,11 @@ public class LDAModel extends TopicModel {
     public int numWords() { return model.numWords(); }
 
     public static int[] tokenizeDocument(CharSequence text, TokenizerFactory tokenizerFactory, SymbolTable symbolTable) {
-	return LatentDirichletAllocation.tokenizeDocument(text,tokenizerFactory,symbolTable);
+    	return LatentDirichletAllocation.tokenizeDocument(text,tokenizerFactory,symbolTable);
     }
 
     public static int[][] tokenizeDocuments(CharSequence[] texts, TokenizerFactory tokenizerFactory, SymbolTable symbolTable, int minCount) {
-	return LatentDirichletAllocation.tokenizeDocuments(texts,tokenizerFactory,symbolTable,minCount);
+    	return LatentDirichletAllocation.tokenizeDocuments(texts,tokenizerFactory,symbolTable,minCount);
     }
 
     public double[] wordProbabilities (int topic) { return model.wordProbabilities(topic); }
@@ -32,22 +35,21 @@ public class LDAModel extends TopicModel {
     public double wordProbability(int topic, int word) { return model.wordProbability(topic,word); }
 
     public double[] bayesTopicEstimate(int[] tokens, int numSamples, int burnin, int sampleLag, Random random) {
-	return model.bayesTopicEstimate(tokens,numSamples,burnin,sampleLag,random);
+    	return model.bayesTopicEstimate(tokens,numSamples,burnin,sampleLag,random);
     }
     
     public LDAModel ( String probs, String words ) throws Exception {
-	readFromText(probs,words);
+    	readFromText(probs,words);
     }
 
-    public LDAModel ( String[] data , short numTopics, int minTokenCount ) throws Exception {
+    public LDAModel ( CharSequence[] articleTexts , short numTopics, int minTokenCount ) throws Exception {
         double topicPrior = 0.1;
         double wordPrior = 0.01;
         int burninEpochs = 0;
         int sampleLag = 1;
         int numSamples = 2000;
         long randomSeed = 6474835;
-        CharSequence[] articleTexts = readCorpus(data);        
-	for ( CharSequence a : articleTexts) System.out.println(a);
+        for ( CharSequence a : articleTexts) System.out.println(a);
         int[][] docTokens = LatentDirichletAllocation.tokenizeDocuments(articleTexts,WORMBASE_TOKENIZER_FACTORY,symbolTable,minTokenCount);
         int numTokens = 0;
         for (int[] tokens : docTokens) numTokens += tokens.length;
@@ -77,23 +79,23 @@ public class LDAModel extends TopicModel {
     }
 
     public void readFromText ( String fileP , String fileW ) throws IOException {
-	Set<double[]> set = new HashSet<double[]>();
-	BufferedReader prob = new BufferedReader(new FileReader(fileP));
-	BufferedReader words = new BufferedReader(new FileReader(fileW));
-	String line = null;
-	Map<String,Integer> symbolToIdMap = new HashMap<String,Integer>();
-	while ( (line=words.readLine()) != null ) {
-		String aux[] = line.split("(\t| )+");
-		if (aux.length > 1) symbolToIdMap.put(aux[0],new Integer(aux[1]));
-	}
-	symbolTable = new MapSymbolTable(symbolToIdMap);
-	while ( (line=prob.readLine()) != null ) {
-		String aux[] = line.split(" ");
-		double vals[] = new double[aux.length];
-		for ( int i=0; i<aux.length; i++ ) vals[i] = new Double(aux[i]).doubleValue();
-		set.add(vals);
-	}
-	model = new LatentDirichletAllocation(0.5, set.toArray(new double[0][0]));
+    	Set<double[]> set = new HashSet<double[]>();
+    	BufferedReader prob = new BufferedReader(new FileReader(fileP));
+    	BufferedReader words = new BufferedReader(new FileReader(fileW));
+    	String line = null;
+    	Map<String,Integer> symbolToIdMap = new HashMap<String,Integer>();
+    	while ( (line=words.readLine()) != null ) {
+    		String aux[] = line.split("(\t| )+");
+    		if (aux.length > 1) symbolToIdMap.put(aux[0],new Integer(aux[1]));
+    	}
+    	symbolTable = new MapSymbolTable(symbolToIdMap);
+    	while ( (line=prob.readLine()) != null ) {
+    		String aux[] = line.split(" ");
+    		double vals[] = new double[aux.length];
+    		for ( int i=0; i<aux.length; i++ ) vals[i] = new Double(aux[i]).doubleValue();
+    		set.add(vals);
+    	}
+    	model = new LatentDirichletAllocation(0.5, set.toArray(new double[0][0]));
     }
  
 }
