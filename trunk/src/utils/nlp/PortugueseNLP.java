@@ -21,10 +21,10 @@ public class PortugueseNLP {
 		String[] sourcePOS = PortuguesePOSTagger.posTags(source);
 		String[] sourceTokens = PortuguesePOSTagger.tokenize(source);
 
-		/* - tri-gramas de caracteres
-		 * - tri-gramas de caracteres + verbos 
-		 * - tri-gramas de caracteres + verbos + preposições 
-		 * - tri-gramas de caracteres + verbos + preposições + padrão_reverb
+		/* - quadgrams de caracteres
+		 * - quadgrams de caracteres + verbos 
+		 * - quadgrams de caracteres + verbos + preposições 
+		 * - quadgrams de caracteres + verbos + preposições + padrão_reverb
 		 */
 		
 		Set<String> set = new HashSet<String>();

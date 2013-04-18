@@ -7,12 +7,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 
 import datasets.TestClassification;
 
@@ -23,17 +29,15 @@ public class GenerateSets {
 
 	static Map<String,Integer> sentences = new HashMap<String, Integer>();
 	static Set<String> sentences_ignored = new HashSet<String>();	
-	static Map<String,List<Instance>> instances_per_class = new HashMap<String, List<Instance>>();
+	static Multimap<String, Instance> instances_per_class = LinkedListMultimap.create();
 	
 	public static void generateWikiPT() throws Exception, IOException {				
 		PortuguesePOSTagger.initialize();		
 		Relations.initialize();
-		/*
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));		
 		System.out.println("Generating WikiPT data...");
 		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
-		*/
 		System.out.println("Testing WikiPT data...");
 		TestClassification.testWikiPT();
 	}
@@ -54,7 +58,6 @@ public class GenerateSets {
 		String between = null;
 		String after = null;
 		String direction = null;
-		
 		
 		int e1_count = countWords(e1,sentence);
 		int e2_count = countWords(e2,sentence);
@@ -107,23 +110,23 @@ public class GenerateSets {
 					System.exit(0);
 				}
 			}
-			
-			
+					
+			/*
 			if (!checked) processExample(before,after,between,type,outTrain);
 			else processExample(before,after,between,type,outTest);
-			
-			
-			/*
-			Instance i = new Instance(type, before, after, between);
-			instances_per_class.
 			*/
 			
+			Instance i = new Instance(type, before, after, between);
+			instances_per_class.put(type, i);
+			
+			/*
 			try {
 				int count = sentences.get(sentence); 
 				sentences.put(sentence,count+1);
 			} catch (Exception e) {
 				sentences.put(sentence,1);
 			}
+			*/
 		}
 	}
 
@@ -135,8 +138,6 @@ public class GenerateSets {
 		String e1 = null;
 		String e2 = null;
 		boolean checked = false;
-		
-		String[] classes = {"deathOrBurialPlace(e1,e2)","deathOrBurialPlace(e2,e1)","influencedBy(e1,e2)","influencedBy(e2,e1)","keyPerson(e1,e2)","keyPerson(e2,e1)","locatedInArea(e1,e2)","locatedInArea(e2,e1)","origin(e1,e2)","origin(e2,e1)","other","parent(e1,e2)","parent(e2,e1)","partner","partOf(e1,e2)","partOf(e2,e1)","successor(e1,e2)","successor(e2,e1)"};
 		
 		Map<String,Integer> relations_train = new HashMap<String, Integer>();
 		Map<String,Integer> relations_test  = new HashMap<String, Integer>();
@@ -165,10 +166,6 @@ public class GenerateSets {
 				sentence = sentence.replaceAll(" Lei nº\\. "," Lei nº ").replaceAll(" n°\\. ", " nº ").replaceAll(" nº\\. ", "  nº ").replaceAll("\\(n. ", "(nº ");
 				sentence = sentence.replaceAll(" S\\.A\\. "," SA ").replaceAll("Inc\\.","Inc");
 								
-				if (sentence.contains("URLTOKEN")) {
-					System.out.println("Erro: " + sentence);
-				}
-				
 				aux = input.readLine();
 				if (aux.equals("")) aux = input.readLine();
 				if (aux.startsWith("MANUALLY CHECKED : TRUE")) checked = true; else checked = false;
@@ -201,6 +198,7 @@ public class GenerateSets {
 							e2 = e1;
 							e1 = tmp;
 							type = "keyPerson";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 
 						//currentMember and pastMember to partOf  
@@ -208,7 +206,8 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "partOf";							
+							type = "partOf";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//capitalCountry to locatedinArea
@@ -216,7 +215,8 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "locatedInArea";							
+							type = "locatedInArea";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//more examples of "influencedBy"
@@ -224,7 +224,8 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "influencedBy";							
+							type = "influencedBy";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 
 						//more examples of "successor"
@@ -233,6 +234,7 @@ public class GenerateSets {
 							e2 = e1;
 							e1 = tmp;
 							type = "successor";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//more examples of "parent"
@@ -240,9 +242,9 @@ public class GenerateSets {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
-							type = "parent";							
+							type = "parent";
+							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}						
-						processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						
 						//more examples of "keyPerson"
 						if (type.equals("foundedBy")) {
@@ -252,8 +254,10 @@ public class GenerateSets {
 							type = "keyPerson";
 							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
+						
 					}
 					
+					/*
 					if (checked) {
 						sentences_test++;
 						sentences_test_size.add(sentence.split("\\s+").length);
@@ -278,19 +282,44 @@ public class GenerateSets {
 							relations_train.put(type, 1);
 						}	
 					}
+					*/
 				}				
 			}
 		}
 		
-		//System.out.println(sentences + " total of sentences");		
-		/*
+		//precorrer instances_per_classe, para cada classe gerar:  75% treino, restantes 25% para teste
+		for (String class_type : instances_per_class.keySet()) {
+			Collection<Instance> instances = instances_per_class.get(class_type);
+			int total = instances.size();						
+			int num_train_examples = 0;
+			int num_test_examples = 0;
+			Iterator<Instance> instIter = instances.iterator();
+			while (instIter.hasNext()) {	
+				Instance i = instIter.next();
+				if (num_train_examples<Math.round((total * 0.75))) {						
+					//treino
+					processExample(i.before,i.after,i.between,i.rel_type,outTrain);
+					num_train_examples++;
+				}				
+				else {
+					//teste
+					processExample(i.before,i.after,i.between,i.rel_type,outTest);
+					num_test_examples++;
+				}
+			}
+			
+			System.out.println("Class: " + class_type);
+			System.out.println("Train: " + num_train_examples);
+			System.out.println("Test:  " + num_test_examples);
+		}
+		
 		outTrain.flush();
 		outTrain.close();
 		outTest.flush();
 		outTest.close();
 		input.close();
-		*/
 		
+		/*
 		System.out.println("Sentences TRAIN: " + sentences_train);
 		System.out.println("Sentences TEST: " + sentences_test);
 		System.out.println();
@@ -299,6 +328,7 @@ public class GenerateSets {
 		System.out.println();
 		
 		/* class instance statistics */ 
+		/*
 		System.out.println("Statistics relations TRAIN");
 		classStatistics(relations_train);
 		System.out.println();		
@@ -315,7 +345,8 @@ public class GenerateSets {
 		classStatistics(relations_total);
 		System.out.println();
 		
-		/* sentence length statistics */		
+		/* sentence length statistics */	
+		/*
 		System.out.println("Statistics sentences TRAIN");
 		sentenceStatistics(sentences_train_size);
 		System.out.println();
@@ -326,7 +357,8 @@ public class GenerateSets {
 		Vector<Integer> total_sentences = new Vector<Integer>();
 		total_sentences.addAll(sentences_test_size);
 		total_sentences.addAll(sentences_train_size);
-		sentenceStatistics(total_sentences);	   
+		sentenceStatistics(total_sentences);
+		*/
 	}
 
 	static void sentenceStatistics(Vector<Integer> sentences_size) {
