@@ -22,7 +22,6 @@ import com.google.common.collect.Multimap;
 
 import datasets.TestClassification;
 
-import utils.nlp.PortugueseNLP;
 import utils.nlp.PortuguesePOSTagger;
 
 public class GenerateSets {
@@ -50,6 +49,60 @@ public class GenerateSets {
 			count++;
 		}
 		return count;
+	}
+	
+public static String generateNGrams(String source, String prefix, int betweenLenght, int casing, int window) {
+		
+		String[] sourcePOS = PortuguesePOSTagger.posTags(source);
+		String[] sourceTokens = PortuguesePOSTagger.tokenize(source);
+
+		/* - quadgrams de caracteres
+		 * - quadgrams de caracteres + verbos 
+		 * - quadgrams de caracteres + verbos + preposições 
+		 * - quadgrams de caracteres + verbos + preposições + padrão_reverb
+		 */
+		
+		Set<String> set = new HashSet<String>();
+		
+		if ((sourcePOS!=null && sourceTokens!=null) && sourceTokens.length == sourcePOS.length) {
+			for ( int i = 0 ; i < sourceTokens.length; i++ ) {				
+				if ( prefix.startsWith("BEF") && sourceTokens.length - i > betweenLenght + window ) continue;
+				if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
+				
+				if ( sourcePOS[i].startsWith("verb") || sourcePOS[i].startsWith("pp") ) {
+				  set.add(sourceTokens[i].toLowerCase() + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1].toLowerCase() + "_" : "" ) +  prefix);
+				  set.add(sourceTokens[i].toLowerCase() + "_" + prefix);
+				  if ( sourcePOS[i].startsWith("pp")  ) set.add(sourceTokens[i].toLowerCase() + "_PP_" + prefix);
+				  
+				  //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+				  if (i < sourceTokens.length - 2) {
+		  			String pattern = sourceTokens[i].toLowerCase();
+		  			int j = i+1;				
+					while ( ((j < sourceTokens.length - 2)) && ((sourcePOS[j].startsWith("adverb") || sourcePOS[j].startsWith("adjective")) || sourcePOS[j].startsWith("noun"))) {	  				
+						pattern += "_" + sourceTokens[j].toLowerCase();
+						j++;				
+					}
+					if (sourcePOS[j].startsWith("preposition")) {
+							pattern += "_" + sourceTokens[j].toLowerCase();
+							set.add(pattern + "_RVB_" + prefix);
+					}
+		  		  }		  	
+				} else if (sourcePOS[i].startsWith("preposition")) set.add(sourceTokens[i].toLowerCase() + "_PREP_" + prefix);
+			}
+			// character quadgrams
+			for (int j = 0; j < source.length() + 3; j++) {
+					String tok = "";
+					for (int i = -3; i <= 0; i++) {
+						char ch = (j + i) < 0 || (j + i) >= source.length() ? '_' : source.charAt(j + i);
+						tok += ch == ' ' ? '_' : ch;
+					}
+					set.add(tok + "_" + prefix + "_");
+				}
+		} 
+		String result = "";
+		for (String tok : set)
+			result += " " + tok;
+		return result.trim();
 	}
 	
 	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) {
@@ -442,7 +495,7 @@ public class GenerateSets {
 		for (String obj : someCollection) {
 			String prefix = obj.substring(0, obj.indexOf("\t"));
 			String str = obj.substring(obj.indexOf("\t") + 1);
-			out.print(" " + PortugueseNLP.generateNGrams(str, prefix, betweenLength, casing, window));
+			out.print(" " + generateNGrams(str, prefix, betweenLength, casing, window));
 		}
 		out.println();
 	}
