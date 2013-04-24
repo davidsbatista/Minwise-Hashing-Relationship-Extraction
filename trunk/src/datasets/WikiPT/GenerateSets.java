@@ -125,6 +125,7 @@ public static String generateNGrams(String source, String prefix, int betweenLen
 			
 			if (e1_start!=-1 && e2_start!=-1) {
 
+				/*
 				///test if relationships as a direction
 				if (!(type.equals("other") || type.equals("partner"))) {
 					
@@ -139,7 +140,8 @@ public static String generateNGrams(String source, String prefix, int betweenLen
 						System.out.println("e2 start: " + e2_start);
 						System.out.println("e2 finish: " + e2_finish);						
 					}	
-				}				
+				}
+				*/				
 				
 				try {
 					before = sentence.substring(0,Math.min(e1_finish, e2_finish));
