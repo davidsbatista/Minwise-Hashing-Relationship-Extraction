@@ -264,7 +264,7 @@ public class TestClassification {
       LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-wikipt.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
       
-      String[] classes_simmetrycal = {"locatedInArea","origin","other","partOf","deathOrBurialPlace","successor","keyPerson","parent","influencedBy","partner","other"};
+      String[] classes_simmetrycal = {"locatedInArea","origin","partOf","deathOrBurialPlace","successor","keyPerson","parent","influencedBy","partner","other"};
       
       String[] classes_asymmetrical = {"locatedInArea(e1,e2)","locatedInArea(e2,e1)",
     		  							"origin(e1,e2)","origin(e2,e1)",    		  							
