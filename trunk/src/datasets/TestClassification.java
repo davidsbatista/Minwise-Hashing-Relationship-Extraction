@@ -13,7 +13,6 @@ public class TestClassification {
   private static int knn = 5;
   private static int signature = 400;	
   private static int bands = 50;
-  private static boolean levin = false;
   private static boolean separateDirection = false;
   public static boolean SemEvalAsymmetrical = true;
  
@@ -295,8 +294,8 @@ public class TestClassification {
   
   public static void main ( String args[] ) throws Exception {
 	  
-	  if (args.length != 6) {
-		  System.out.println("usage is: dataset true|false true|false knn signature bands");
+	  if (args.length != 5) {
+		  System.out.println("usage is: dataset true|false knn signature bands");
 		  System.out.println("dataset: semeval wiki aimed");
 		  System.out.println("generate examples: true|false");
 		  System.out.println("use Levin classes: true|false");
@@ -304,12 +303,9 @@ public class TestClassification {
 	  }
 	  
 	  else {
-		  levin =  (Boolean) Boolean.parseBoolean(args[3]);
-		  if (levin) EnglishNLP.readVerbClasses("/home/dsbatista/relations-minhash/resources/levin-verb-classes.txt");		  
-		  
-		  signature = Integer.parseInt(args[3]);
-		  bands = Integer.parseInt(args[4]);
-		  knn = Integer.parseInt(args[5]);
+		  signature = Integer.parseInt(args[2]);
+		  bands = Integer.parseInt(args[3]);
+		  knn = Integer.parseInt(args[4]);
 		  
 		  System.out.println("signature: " + signature);
 		  System.out.println("bands: " + bands);
@@ -322,7 +318,6 @@ public class TestClassification {
 		  
 		  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSets.generateWikiPT();
-			  TestClassification.testWikiPT();
 			  
 		  }
 		  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) {
