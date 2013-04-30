@@ -318,6 +318,7 @@ public class TestClassification {
 		  
 		  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSets.generateWikiPT();
+			  TestClassification.testWikiPT();
 			  
 		  }
 		  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) {

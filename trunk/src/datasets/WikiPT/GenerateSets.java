@@ -36,7 +36,7 @@ public class GenerateSets {
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));		
 		System.out.println("Generating WikiPT data...");
-		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);
+		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);		
 	}
 	
 	public static int countWords(String entity, String sentence) {
