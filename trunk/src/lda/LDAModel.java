@@ -47,7 +47,7 @@ public class LDAModel {
         double wordPrior = 0.01;
         int burninEpochs = 0;
         int sampleLag = 1;
-        int numSamples = 2000;
+        int numSamples = 500;
         long randomSeed = 6474835;
         for ( CharSequence a : articleTexts) System.out.println(a);
         int[][] docTokens = LatentDirichletAllocation.tokenizeDocuments(articleTexts,WORMBASE_TOKENIZER_FACTORY,symbolTable,minTokenCount);

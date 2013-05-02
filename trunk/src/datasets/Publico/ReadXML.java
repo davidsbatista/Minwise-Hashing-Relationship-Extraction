@@ -1,5 +1,8 @@
 package datasets.Publico;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -9,7 +12,9 @@ import org.xml.sax.helpers.DefaultHandler;
  
 public class ReadXML{
 	
-	public static void main(String[] args) {
+	static Set<String> paragraphs = new HashSet<String>();
+	
+	public static Set<String> parse(String xml) {
 			
 		try {
 			
@@ -19,8 +24,9 @@ public class ReadXML{
 			DefaultHandler handler = new DefaultHandler() {
  
 				boolean politica = false;
-				boolean extract = false;
+				boolean extract = false;				
 				boolean extractEntities = false;
+				StringBuffer paragraph = new StringBuffer();
 				
 				public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
 					int index = attributes.getIndex("category");
@@ -28,8 +34,10 @@ public class ReadXML{
 					if ((politica) && ( qName.equals("title_rembrandted") || qName.equals("subtitle_rembrandted") || qName.equals("newstext_rembrandted"))) {
 						extract = true;
 					}
-					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = true;
-					if (extractEntities) { System.out.print( "<" + qName + ">");}
+					
+					//if ((politica) && qName.equals("SUBALT")) insideSUBALT = true;
+					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = true; 
+					if (extractEntities) { paragraph.append( "<" + qName + ">");}
 				}
  
 				public void endElement(String uri, String localName, String qName) throws SAXException {
@@ -37,23 +45,31 @@ public class ReadXML{
 						extract=false;
 						politica=false;
 					}
-					if (extractEntities) { System.out.print( "</" + qName + ">");}
+					if (extractEntities) { paragraph.append( "</" + qName + ">");}
 					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = false;
 					
+					if ((extract) && (qName.equals("title_rembrandted") || qName.equals("subtitle_rembrandted") || qName.equals("newstext_rembrandted"))) {
+						System.out.println(new String(paragraph));
+						//sentences.add(new String(paragraph));						
+						paragraph = new StringBuffer();
+					}					
 				}
 				
 				public void characters(char ch[], int start, int length) throws SAXException {
 					if (politica && extract || extractEntities) {
 						String text = new String(ch, start, length);
-						System.out.print(text);
+						paragraph.append(text);
+						
 					}
 				}
 			};
 			
-			saxParser.parse(args[0], handler);
+			saxParser.parse(xml, handler);
  
 		} catch (Exception e) {
-       e.printStackTrace();
-     }
+			e.printStackTrace();
+		  }
+		
+		return paragraphs;
    }
 }

@@ -1,6 +1,7 @@
 package datasets;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+
+import opennlp.tools.util.InvalidFormatException;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
@@ -38,6 +41,17 @@ public class GenerateSets {
 		PrintWriter outTest = new PrintWriter(new FileWriter("test-data-wikipt.txt"));		
 		System.out.println("Generating WikiPT data...");
 		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);		
+	}
+	
+	public static void generatePublico() throws InvalidFormatException, FileNotFoundException, IOException {
+		PortuguesePOSTagger.initialize();
+		System.out.println("Extracting sentences from publico");
+		Set<String> sentences = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
+		System.out.println(sentences.size() + " extracted");
+		
+		for (String s : sentences) {
+			System.out.print(s);
+		}
 	}
 	
 	public static int countWords(String entity, String sentence) {

@@ -13,7 +13,6 @@ import org.mapdb.DBMaker;
 
 import utils.misc.TopN;
 
-
 public class NBTree {
 	
  // The tree indexing the norms
@@ -62,6 +61,7 @@ public class NBTree {
 		 if ( index.containsKey(code) ) auxSet.addAll(index.get(code));
 		 auxSet.add(id);
 		 index.put(code,Collections.unmodifiableSet(auxSet));
+		 System.out.println(" ** INDEXING NORM : " + code + " " + id + " " + result);
 	 } catch ( Exception ex ) { ex.printStackTrace(System.err); }
 	 representation.put(id,data);
 	 value.put(id,result);
@@ -79,7 +79,7 @@ public class NBTree {
 	 TopN<String> result = new TopN<String>(k);
 	 double code = norm(data);
 	 k = Math.min(k,indexSize());
-	 double range = 5;
+	 double range = 0.1;
 	 while ( result.size() != k ) {
 		 Set<Integer> auxSet = queryRange(code - range, code + range);
 		 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
