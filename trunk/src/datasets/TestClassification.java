@@ -5,7 +5,6 @@ import java.util.*;
 
 import utils.misc.Pair;
 import utils.nlp.EnglishNLP;
-import datasets.WikiPT.GenerateSets;
 import minhash.LocalitySentitiveHashing;
 
 public class TestClassification {

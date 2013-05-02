@@ -10,7 +10,6 @@ import java.util.List;
 import nbtree.NBTree;
 
 import utils.misc.Pair;
-import datasets.WikiPT.GenerateSets;
 
 public class TestClassificationNBTree {
 
