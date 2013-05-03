@@ -49,26 +49,26 @@ public class MinkowskiDistances {
 		return Math.pow(sum, 1.0 / p);
 	}
 	
-	public static double fastMap ( double[] p1 ) {
-		double pivot1[] = new double[p1.length];
-		double pivot2[] = new double[p1.length];
+	public static double fastMap ( Double[] p1 ) {
+		Double pivot1[] = new Double[p1.length];
+		Double pivot2[] = new Double[p1.length];
 		for ( int i = 0 ; i < Math.floor(p1.length / 2.0) ; i ++ ) pivot1[i] += 1.0 / Math.floor(p1.length / 2.0);
 		for ( int i = (int)Math.floor(p1.length / 2.0); i < p1.length; i ++ ) pivot2[i] += 1.0 / Math.floor( p1.length / 2.0 );
 		return (Math.pow(jensenShannonDivergence(p1,pivot1),2) + Math.pow(jensenShannonDivergence(pivot1,pivot2),2) - Math.pow(jensenShannonDivergence(p1,pivot2),2)) / 
 		       (2.0 * jensenShannonDivergence(pivot1,pivot2));
 	}
 
-    public static double jensenShannonDivergence( double[] p1, double[] p2 ) {
-      double[] average = new double[p1.length];
+    public static double jensenShannonDivergence( Double[] p1, Double[] p2 ) {
+      Double[] average = new Double[p1.length];
       for (int i = 0; i < p1.length; ++i) average[i] += (p1[i] + p2[i]) / 2.0;
       return Math.sqrt((klDivergence(p1, average) * 0.5) + (klDivergence(p2, average) * 0.5));
     }
     
-	public static double sklDivergence( double[] p1, double[] p2 ) {
+	public static double sklDivergence( Double[] p1, Double[] p2 ) {
 	  return Math.sqrt(( 0.5 * klDivergence(p1,p2) ) + ( 0.5 * klDivergence(p2,p1) ));
     }
 
-    public static double klDivergence( double[] p1, double[] p2 ) {
+    public static double klDivergence( Double[] p1, Double[] p2 ) {
       double klDiv = 0.0;
       for (int i = 0; i < p1.length; ++i) {
         if (p1[i] == 0.0) { continue; }

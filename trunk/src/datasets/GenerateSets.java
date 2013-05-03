@@ -22,7 +22,9 @@ import opennlp.tools.util.InvalidFormatException;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 
+import datasets.Publico.Paragraph;
 import datasets.WikiPT.Instance;
 import datasets.WikiPT.Relations;
 
@@ -46,11 +48,30 @@ public class GenerateSets {
 	public static void generatePublico() throws InvalidFormatException, FileNotFoundException, IOException {
 		PortuguesePOSTagger.initialize();
 		System.out.println("Extracting sentences from publico");
-		Set<String> sentences = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
-		System.out.println(sentences.size() + " extracted");
+		LinkedList<Paragraph> paragraphs = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
 		
-		for (String s : sentences) {
-			System.out.print(s);
+		System.out.println(paragraphs.size() + " paragraphs/sentences extracted");
+		
+		for (Paragraph p : paragraphs) {
+			p.text = p.text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
+			p.text = p.text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
+			p.text = p.text.replaceAll(" SLN "," <ORGANIZACAO>SLN<ORGANIZACAO> ");
+			p.text = p.text.replaceAll(" PS "," <ORGANIZACAO>PS<ORGANIZACAO> ");
+			p.text = p.text.replaceAll(" PSP "," <ORGANIZACAO>PSP<ORGANIZACAO> ");
+			p.text = p.text.replaceAll(" PSD "," <ORGANIZACAO>PSD<ORGANIZACAO> ");
+			p.text = p.text.replaceAll(" CDS/PP "," <ORGANIZACAO>CDS/PP<ORGANIZACAO> ");
+			
+			System.out.println(p.text);
+			
+			//TODO: Lingpipe Indio European Sentence Model
+			/*
+			String[] sentences = p.text.split("\\.");
+			
+			for (int i = 0; i < sentences.length; i++) {
+				System.out.println(sentences[i]);
+				System.out.println();
+			}
+			*/
 		}
 	}
 	

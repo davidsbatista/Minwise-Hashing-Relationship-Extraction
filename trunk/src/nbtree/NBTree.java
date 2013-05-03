@@ -57,11 +57,13 @@ public class NBTree {
  public void index ( Integer id, Double[] data , String result ) {
      try {
          double code = norm(data);
+         double fastMap = MinkowskiDistances.fastMap(data);
 		 HashSet<Integer> auxSet = new HashSet<Integer>();			 
 		 if ( index.containsKey(code) ) auxSet.addAll(index.get(code));
 		 auxSet.add(id);
 		 index.put(code,Collections.unmodifiableSet(auxSet));
-		 System.out.println(" ** INDEXING NORM : " + code + " " + id + " " + result);
+		 System.out.println(" ** INDEXING NORM (L2) 	 : " + code + " " + id + " " + result);
+		 System.out.println(" ** INDEXING NORM (FastMap) : " + fastMap + " " + id + " " + result);
 	 } catch ( Exception ex ) { ex.printStackTrace(System.err); }
 	 representation.put(id,data);
 	 value.put(id,result);
