@@ -313,17 +313,17 @@ public class TestClassification {
 		  System.out.println("knn: " + knn);		  
 		  
 		  if (args[0].equals("drugbank")) {
-			  if (args[1].equals("true")) GenerateSetsFromExamples.generateDataDrugBank();
+			  if (args[1].equals("true")) GenerateSetsEN.generateDataDrugBank();
 			  testDrugBank();
 		  }
 		  
 		  if (args[0].equals("publico") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSets.generatePublico();			  
+			  GenerateSetsPT.generatePublico();			  
 		  }
 
 		  
 		  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSets.generateWikiPT();
+			  GenerateSetsPT.generateWikiPT();
 			  TestClassification.testWikiPT();
 			  
 		  }
@@ -333,7 +333,7 @@ public class TestClassification {
 		  }
 		  
 		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateAll();
+			  GenerateSetsEN.generateAll();
 			  testSemEval();
 			  testAIMED();
 			  testWikiEN();
@@ -346,17 +346,17 @@ public class TestClassification {
 		  }
 		  
 		  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateDataSemEval();
+			  GenerateSetsEN.generateDataSemEval();
 			  testSemEval();
 		  }
 		  
 		  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateDataAIMED();
+			  GenerateSetsEN.generateDataAIMED();
 			  testAIMED();
 		  }
 		  
 		  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsFromExamples.generateDataWikiEn();
+			  GenerateSetsEN.generateDataWikiEn();
 			  testWikiEN();
 		  }
 		  

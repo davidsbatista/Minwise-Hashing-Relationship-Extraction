@@ -298,7 +298,7 @@ public class TestClassificationNBTree {
 		  
 		  
 		  if (args[0].equals("wikipt")) {
-			  GenerateSets.generateWikiPT();
+			  GenerateSetsPT.generateWikiPT();
 			  
 		  }
 		  

@@ -11,7 +11,7 @@ import com.davidsoergel.conja.Parallel;
 
 import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
 
-public class GenerateSetsFromExamples {
+public class GenerateSetsEN {
 
  public static Map<String,Integer> entropyMap;
  public static Map<String,Integer> frequencyMap;

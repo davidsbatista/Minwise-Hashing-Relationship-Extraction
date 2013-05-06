@@ -86,8 +86,8 @@ public class GenerateVectorsFromSets {
 	 public static void generateDataAIMED() throws Exception, IOException {
 		 for ( int f = 1 ; f <= 1; f++) {
 			System.out.println("Generating AIMED data fold " + f );
-			GenerateSetsFromExamples.processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt.aux." + f)));
-			GenerateSetsFromExamples.processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt.aux" + f)));
+			GenerateSetsEN.processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt.aux." + f)));
+			GenerateSetsEN.processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt.aux" + f)));
 			generateVectors("train-data-aimed.txt.aux." + f, "test-data-aimed.txt.aux." + f , "train-data-aimed.txt." + f , "test-data-aimed.txt." + f , (short)200);
 		 }
 	}
@@ -95,18 +95,18 @@ public class GenerateVectorsFromSets {
 	 public static void generateDataSemEval() throws Exception, IOException {
 		 System.out.println("Generating SemEval data...");
 		 System.out.println("\nGenerating train data...");
-		 GenerateSetsFromExamples.processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.aux.txt")));
+		 GenerateSetsEN.processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.aux.txt")));
 		 System.out.println("\nGenerating test data...");
-		 GenerateSetsFromExamples.processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.aux.txt")));
+		 GenerateSetsEN.processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.aux.txt")));
 		 generateVectors("train-data-semeval.aux.txt", "test-data-semeval.aux.txt" ,"train-data-semeval.txt" , "test-data-semeval.txt" , (short) 1000);
 	}
 	  
 	 public static void generateDataWikiEn() throws Exception, IOException {
 		 System.out.println("Generating Wikipedia data...");
 		 System.out.println("\nGenerating train data...");
-		 GenerateSetsFromExamples.processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("train-data-wikien.aux.txt")));
+		 GenerateSetsEN.processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("train-data-wikien.aux.txt")));
 		 System.out.println("\n\nGenerating test data...");
-		 GenerateSetsFromExamples.processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("test-data-wikien.aux.txt")));
+		 GenerateSetsEN.processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("test-data-wikien.aux.txt")));
 		 generateVectors("train-data-wikien.aux.txt", "test-data-wikien.aux.txt" ,"train-data-wikien.txt" , "test-data-wikien.txt" , (short)200);
 	}
 

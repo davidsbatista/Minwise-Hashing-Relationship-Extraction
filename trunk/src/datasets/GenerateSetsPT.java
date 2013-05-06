@@ -17,20 +17,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import opennlp.tools.util.InvalidFormatException;
 
+import com.aliasi.sentences.IndoEuropeanSentenceModel;
+import com.aliasi.sentences.SentenceModel;
+import com.aliasi.tokenizer.IndoEuropeanTokenizerFactory;
+import com.aliasi.tokenizer.Tokenizer;
+import com.aliasi.tokenizer.TokenizerFactory;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 
-import datasets.Publico.Paragraph;
+import datasets.Publico.Article;
 import datasets.WikiPT.Instance;
 import datasets.WikiPT.Relations;
 
 import utils.nlp.PortuguesePOSTagger;
 
-public class GenerateSets {
+public class GenerateSetsPT {
 
 	static Map<String,Integer> sentences = new HashMap<String, Integer>();
 	static Set<String> sentences_ignored = new HashSet<String>();	
@@ -48,33 +55,101 @@ public class GenerateSets {
 	public static void generatePublico() throws InvalidFormatException, FileNotFoundException, IOException {
 		PortuguesePOSTagger.initialize();
 		System.out.println("Extracting sentences from publico");
-		LinkedList<Paragraph> paragraphs = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
+		LinkedList<Article> articles = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
 		
-		System.out.println(paragraphs.size() + " paragraphs/sentences extracted");
+		PrintWriter out = new PrintWriter(new FileWriter("publico-relations.txt"));			
+		final TokenizerFactory TOKENIZER_FACTORY = IndoEuropeanTokenizerFactory.INSTANCE;
+		final SentenceModel SENTENCE_MODEL = new IndoEuropeanSentenceModel();
+				
+		System.out.println(articles.size() + " paragraphs/sentences extracted");
 		
-		for (Paragraph p : paragraphs) {
-			p.text = p.text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
-			p.text = p.text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
-			p.text = p.text.replaceAll(" SLN "," <ORGANIZACAO>SLN<ORGANIZACAO> ");
-			p.text = p.text.replaceAll(" PS "," <ORGANIZACAO>PS<ORGANIZACAO> ");
-			p.text = p.text.replaceAll(" PSP "," <ORGANIZACAO>PSP<ORGANIZACAO> ");
-			p.text = p.text.replaceAll(" PSD "," <ORGANIZACAO>PSD<ORGANIZACAO> ");
-			p.text = p.text.replaceAll(" CDS/PP "," <ORGANIZACAO>CDS/PP<ORGANIZACAO> ");
+		for (Article a : articles) {			
 			
-			System.out.println(p.text);
+			String text = a.getText();
 			
-			//TODO: Lingpipe Indio European Sentence Model
-			/*
-			String[] sentences = p.text.split("\\.");
+			text = text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
+			text = text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
+			text = text.replaceAll(" SLN "," <ORGANIZACAO>SLN<ORGANIZACAO> ");
+			text = text.replaceAll(" PS "," <ORGANIZACAO>PS<ORGANIZACAO> ");
+			text = text.replaceAll(" PSP "," <ORGANIZACAO>PSP<ORGANIZACAO> ");
+			text = text.replaceAll(" PSD "," <ORGANIZACAO>PSD<ORGANIZACAO> ");
+			text = text.replaceAll(" CDS/PP "," <ORGANIZACAO>CDS/PP<ORGANIZACAO> ");
+			text = text.replaceAll(" BE, "," <ORGANIZACAO>BE<ORGANIZACAO>, ");
+			text = text.replaceAll(" BPN, "," <ORGANIZACAO>BPN<ORGANIZACAO>, ");
+			text = text.replaceAll(" SLN, "," <ORGANIZACAO>SLN<ORGANIZACAO>, ");
+			text = text.replaceAll(" PS, "," <ORGANIZACAO>PS<ORGANIZACAO>, ");
+			text = text.replaceAll(" PSP, "," <ORGANIZACAO>PSP<ORGANIZACAO>, ");
+			text = text.replaceAll(" PSD, "," <ORGANIZACAO>PSD<ORGANIZACAO>, ");
+			text = text.replaceAll(" CDS/PP, "," <ORGANIZACAO>CDS/PP<ORGANIZACAO>, ");
+			text = text.replaceAll("&quot;","\"");
+
+			System.out.println(text);
 			
-			for (int i = 0; i < sentences.length; i++) {
-				System.out.println(sentences[i]);
-				System.out.println();
+			List<String> tokenList = new ArrayList<String>();
+			List<String> whiteList = new ArrayList<String>();
+			Tokenizer tokenizer = TOKENIZER_FACTORY.tokenizer(text.toCharArray(),0,text.length());
+			tokenizer.tokenize(tokenList,whiteList);			
+			String[] tokens = new String[tokenList.size()];
+			String[] whites = new String[whiteList.size()];
+			tokenList.toArray(tokens);
+			whiteList.toArray(whites);
+			int[] sentenceBoundaries = SENTENCE_MODEL.boundaryIndices(tokens,whites);			
+			int sentStartTok = 0;
+			int sentEndTok = 0;
+			
+			for (int i = 0; i < sentenceBoundaries.length; ++i) {
+				System.out.println("SENTENCE "+(i+1)+": ");
+			    sentEndTok = sentenceBoundaries[i];			    
+			    StringBuffer sentence =  new StringBuffer();
+			    for (int j=sentStartTok; j <= sentEndTok; j++) {
+			        sentence.append(tokens[j]+whites[j+1]);
+			    }			    
+			    sentStartTok = sentEndTok+1;
+			    Pattern pattern = Pattern.compile("<[^>]*>[^<]+</[^>]+>");
+			    Matcher matcher = pattern.matcher(sentence);
+
+			    System.out.println(sentence);
+			    
+			    while (matcher.find()) {
+			    	
+			    	String type1 = matcher.group();
+			    	String after1 = sentence.substring(matcher.end());
+			    	Matcher matcher2 = pattern.matcher(after1);
+			    	
+			    	while (matcher2.find()) {
+			    		String type2 = matcher2.group();
+					   
+						String before = sentence.substring(0,matcher.end()).replaceAll("<[^>]+>","");
+						String after = sentence.substring(matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
+						String between = sentence.substring(matcher.end(),matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
+		                
+						/*
+						System.out.println("type1: " + type1);
+						System.out.println("type2: " + type2);						
+						System.out.println("before: " + before);
+						System.out.println("between: " + between);
+						System.out.println("after: " + after);
+						*/
+						
+						before = before + " " + between;
+		                after = between + " " + after;
+		                   
+		                before = before.replaceAll(" +", " ").trim();
+		                after = after.replaceAll(" +", " ").trim();
+		                between = between.replaceAll(" +", " ").trim();
+		                
+						processExample(before,after,between,"UNK" ,out);
+						
+						/*
+						System.out.println(" ====== ");
+						System.out.println("");
+						*/
+			    	}   
+			    }
 			}
-			*/
 		}
 	}
-	
+				
 	public static int countWords(String entity, String sentence) {
 		int count = 0;
 		int result = sentence.indexOf(entity);
