@@ -13,9 +13,9 @@ import org.xml.sax.helpers.DefaultHandler;
  
 public class ReadXML{
 	
-	static LinkedList<Paragraph> paragraphs = new LinkedList<Paragraph>();
+	static LinkedList<Article> articles = new LinkedList<Article>();
 	
-	public static LinkedList<Paragraph> parse(String xml) {
+	public static LinkedList<Article> parse(String xml) {
 			
 		try {
 			
@@ -30,8 +30,11 @@ public class ReadXML{
 				boolean ALT = false;
 				boolean firstSUBALT = false;
 				boolean extractDate = false;
-				StringBuffer paragraph = new StringBuffer();
+				StringBuffer txt = new StringBuffer();
 				String date = "";
+				String lead = "";
+				String title = "";
+				String text = "";
 												
 				public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
 					int index = attributes.getIndex("category");
@@ -41,40 +44,45 @@ public class ReadXML{
 					if ((extract) && qName.equals("ALT")) ALT = true;
 					if ((ALT) && (!firstSUBALT) && (qName.equals("SUBALT"))) firstSUBALT = true;										
 					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = true; 
-					if (extractEntities) { paragraph.append( "<" + qName + ">");}
+					if (extractEntities) { txt.append( "<" + qName + ">");}
 				}
  
 				public void endElement(String uri, String localName, String qName) throws SAXException {
 					if ( qName.equals("article") && politica) {
 						extract=false;
 						politica=false;
-					}
-					
-					if (extractEntities) { paragraph.append( "</" + qName + ">");}
-					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = false;					
-					
+					}					
+					if (extractEntities) { txt.append( "</" + qName + ">");}
+					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = false;										
 					if (politica && qName.equals("date")) extractDate = false;
-					
 					if ((ALT) && (firstSUBALT) && (qName.equals("SUBALT"))) extract = false;;
-					
-					
-					if ((extract) && (qName.equals("title_rembrandted") || qName.equals("subtitle_rembrandted") || qName.equals("newstext_rembrandted"))) {												
-						
-						if (qName.equals("title_rembrandted")) paragraph.append(".");
-						Paragraph p = new Paragraph(paragraph.toString(),date);
-						paragraphs.add(p);						
-						paragraph = new StringBuffer();
-						date = "";
-					}
-					
-					if ((ALT) && (!extract) && qName.equals("ALT")) extract = true;
-					
+					if (extract) {
+						if (qName.equals("title_rembrandted")) {
+							lead = txt.toString();
+							txt = new StringBuffer();
+						}
+						else if (qName.equals("subtitle_rembrandted"))  {
+							title = txt.toString();
+							txt = new StringBuffer();
+						}
+						else if (qName.equals("newstext_rembrandted")) {
+							text = txt.toString();
+							Article a = new Article(lead,title,text,date);
+							articles.add(a);
+							txt = new StringBuffer();
+							date = "";
+							title = "";
+							lead = "";
+							text = "";						
+						}
+					}					
+					if ((ALT) && (!extract) && qName.equals("ALT")) extract = true;					
 				}
 				
 				public void characters(char ch[], int start, int length) throws SAXException {
 					if (politica && extract || extractEntities) {
 						String text = new String(ch, start, length);
-						paragraph.append(text);
+						txt.append(text);
 					}
 					
 					if (extractDate) {
@@ -91,6 +99,6 @@ public class ReadXML{
 			e.printStackTrace();
 		  }
 		
-		return paragraphs;
+		return articles;
    }
 }
