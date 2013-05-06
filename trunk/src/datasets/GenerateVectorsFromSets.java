@@ -98,7 +98,7 @@ public class GenerateVectorsFromSets {
 		 GenerateSetsEN.processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.aux.txt")));
 		 System.out.println("\nGenerating test data...");
 		 GenerateSetsEN.processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.aux.txt")));
-		 generateVectors("train-data-semeval.aux.txt", "test-data-semeval.aux.txt" ,"train-data-semeval.txt" , "test-data-semeval.txt" , (short) 1000);
+		 generateVectors("train-data-semeval.aux.txt", "test-data-semeval.aux.txt" ,"train-data-semeval.txt" , "test-data-semeval.txt" , (short) 400);
 	}
 	  
 	 public static void generateDataWikiEn() throws Exception, IOException {
