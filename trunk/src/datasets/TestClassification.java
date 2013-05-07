@@ -318,7 +318,8 @@ public class TestClassification {
 		  }
 		  
 		  if (args[0].equals("publico") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsPT.generatePublico();			  
+			  GenerateSetsPT.generatePublico();
+			  //TODO: TestClassification.classifyPublico();
 		  }
 
 		  

@@ -1,11 +1,15 @@
 package datasets;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,96 +61,97 @@ public class GenerateSetsPT {
 		System.out.println("Extracting sentences from publico");
 		LinkedList<Article> articles = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
 		
-		PrintWriter out = new PrintWriter(new FileWriter("publico-relations.txt"));			
+		Writer sentences = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-sentences.txt"), "UTF8"));
+		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-relations.txt"), "UTF8"));
+		
 		final TokenizerFactory TOKENIZER_FACTORY = IndoEuropeanTokenizerFactory.INSTANCE;
 		final SentenceModel SENTENCE_MODEL = new IndoEuropeanSentenceModel();
-				
+		
+		int id = 0;
+		
 		System.out.println(articles.size() + " paragraphs/sentences extracted");
 		
-		for (Article a : articles) {			
-			
-			String text = a.getText();
-			
-			text = text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
-			text = text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
-			text = text.replaceAll(" SLN "," <ORGANIZACAO>SLN<ORGANIZACAO> ");
-			text = text.replaceAll(" PS "," <ORGANIZACAO>PS<ORGANIZACAO> ");
-			text = text.replaceAll(" PSP "," <ORGANIZACAO>PSP<ORGANIZACAO> ");
-			text = text.replaceAll(" PSD "," <ORGANIZACAO>PSD<ORGANIZACAO> ");
-			text = text.replaceAll(" CDS/PP "," <ORGANIZACAO>CDS/PP<ORGANIZACAO> ");
-			text = text.replaceAll(" BE, "," <ORGANIZACAO>BE<ORGANIZACAO>, ");
-			text = text.replaceAll(" BPN, "," <ORGANIZACAO>BPN<ORGANIZACAO>, ");
-			text = text.replaceAll(" SLN, "," <ORGANIZACAO>SLN<ORGANIZACAO>, ");
-			text = text.replaceAll(" PS, "," <ORGANIZACAO>PS<ORGANIZACAO>, ");
-			text = text.replaceAll(" PSP, "," <ORGANIZACAO>PSP<ORGANIZACAO>, ");
-			text = text.replaceAll(" PSD, "," <ORGANIZACAO>PSD<ORGANIZACAO>, ");
-			text = text.replaceAll(" CDS/PP, "," <ORGANIZACAO>CDS/PP<ORGANIZACAO>, ");
-			text = text.replaceAll("&quot;","\"");
-
-			System.out.println(text);
-			
-			List<String> tokenList = new ArrayList<String>();
-			List<String> whiteList = new ArrayList<String>();
-			Tokenizer tokenizer = TOKENIZER_FACTORY.tokenizer(text.toCharArray(),0,text.length());
-			tokenizer.tokenize(tokenList,whiteList);			
-			String[] tokens = new String[tokenList.size()];
-			String[] whites = new String[whiteList.size()];
-			tokenList.toArray(tokens);
-			whiteList.toArray(whites);
-			int[] sentenceBoundaries = SENTENCE_MODEL.boundaryIndices(tokens,whites);			
-			int sentStartTok = 0;
-			int sentEndTok = 0;
-			
-			for (int i = 0; i < sentenceBoundaries.length; ++i) {
-				System.out.println("SENTENCE "+(i+1)+": ");
-			    sentEndTok = sentenceBoundaries[i];			    
-			    StringBuffer sentence =  new StringBuffer();
-			    for (int j=sentStartTok; j <= sentEndTok; j++) {
-			        sentence.append(tokens[j]+whites[j+1]);
-			    }			    
-			    sentStartTok = sentEndTok+1;
-			    Pattern pattern = Pattern.compile("<[^>]*>[^<]+</[^>]+>");
-			    Matcher matcher = pattern.matcher(sentence);
-
-			    System.out.println(sentence);
-			    
-			    while (matcher.find()) {
-			    	
-			    	String type1 = matcher.group();
-			    	String after1 = sentence.substring(matcher.end());
-			    	Matcher matcher2 = pattern.matcher(after1);
-			    	
-			    	while (matcher2.find()) {
-			    		String type2 = matcher2.group();
-					   
-						String before = sentence.substring(0,matcher.end()).replaceAll("<[^>]+>","");
-						String after = sentence.substring(matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
-						String between = sentence.substring(matcher.end(),matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
-		                
-						/*
-						System.out.println("type1: " + type1);
-						System.out.println("type2: " + type2);						
-						System.out.println("before: " + before);
-						System.out.println("between: " + between);
-						System.out.println("after: " + after);
-						*/
-						
-						before = before + " " + between;
-		                after = between + " " + after;
-		                   
-		                before = before.replaceAll(" +", " ").trim();
-		                after = after.replaceAll(" +", " ").trim();
-		                between = between.replaceAll(" +", " ").trim();
-		                
-						processExample(before,after,between,"UNK" ,out);
-						
-						/*
-						System.out.println(" ====== ");
-						System.out.println("");
-						*/
-			    	}   
-			    }
+		if (!(id>50000)) {	
+			for (Article a : articles) {
+				String text = a.getText();
+				text = text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
+				text = text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
+				text = text.replaceAll(" SLN "," <ORGANIZACAO>SLN<ORGANIZACAO> ");
+				text = text.replaceAll(" PS "," <ORGANIZACAO>PS<ORGANIZACAO> ");
+				text = text.replaceAll(" PSP "," <ORGANIZACAO>PSP<ORGANIZACAO> ");
+				text = text.replaceAll(" PSD "," <ORGANIZACAO>PSD<ORGANIZACAO> ");
+				text = text.replaceAll(" CDS/PP "," <ORGANIZACAO>CDS/PP<ORGANIZACAO> ");
+				text = text.replaceAll(" BE, "," <ORGANIZACAO>BE<ORGANIZACAO>, ");
+				text = text.replaceAll(" BPN, "," <ORGANIZACAO>BPN<ORGANIZACAO>, ");
+				text = text.replaceAll(" SLN, "," <ORGANIZACAO>SLN<ORGANIZACAO>, ");
+				text = text.replaceAll(" PS, "," <ORGANIZACAO>PS<ORGANIZACAO>, ");
+				text = text.replaceAll(" PSP, "," <ORGANIZACAO>PSP<ORGANIZACAO>, ");
+				text = text.replaceAll(" PSD, "," <ORGANIZACAO>PSD<ORGANIZACAO>, ");
+				text = text.replaceAll(" CDS/PP, "," <ORGANIZACAO>CDS/PP<ORGANIZACAO>, ");
+				text = text.replaceAll("&quot;","\"");
+	
+				//System.out.println(text);
+				
+				List<String> tokenList = new ArrayList<String>();
+				List<String> whiteList = new ArrayList<String>();
+				Tokenizer tokenizer = TOKENIZER_FACTORY.tokenizer(text.toCharArray(),0,text.length());
+				tokenizer.tokenize(tokenList,whiteList);			
+				String[] tokens = new String[tokenList.size()];
+				String[] whites = new String[whiteList.size()];
+				tokenList.toArray(tokens);
+				whiteList.toArray(whites);
+				int[] sentenceBoundaries = SENTENCE_MODEL.boundaryIndices(tokens,whites);			
+				int sentStartTok = 0;
+				int sentEndTok = 0;
+				
+				for (int i = 0; i < sentenceBoundaries.length; ++i) {
+					//System.out.println("SENTENCE "+(i+1)+": ");
+				    sentEndTok = sentenceBoundaries[i];			    
+				    StringBuffer sentence =  new StringBuffer();
+				    for (int j=sentStartTok; j <= sentEndTok; j++) {
+				        sentence.append(tokens[j]+whites[j+1]);
+				    }			    
+				    sentStartTok = sentEndTok+1;
+				    Pattern pattern = Pattern.compile("<[^>]*>[^<]+</[^>]+>");
+				    Matcher matcher = pattern.matcher(sentence);
+ 
+				    sentences.write(id + "\t" + sentence + "\n");
+				    
+				    while (matcher.find()) {
+				    	
+				    	String type1 = matcher.group();
+				    	String after1 = sentence.substring(matcher.end());
+				    	Matcher matcher2 = pattern.matcher(after1);
+				    	
+				    	while (matcher2.find()) {
+				    		String type2 = matcher2.group();
+						   
+							String before = sentence.substring(0,matcher.end()).replaceAll("<[^>]+>","");
+							String after = sentence.substring(matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
+							String between = sentence.substring(matcher.end(),matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
+			                
+							/*
+							System.out.println("type1: " + type1);
+							System.out.println("type2: " + type2);						
+							System.out.println("before: " + before);
+							System.out.println("between: " + between);
+							System.out.println("after: " + after);
+							*/
+							
+							before = before + " " + between;
+			                after = between + " " + after;
+			                   
+			                before = before.replaceAll(" +", " ").trim();
+			                after = after.replaceAll(" +", " ").trim();
+			                between = between.replaceAll(" +", " ").trim();
+							processExample(before,after,between,String.valueOf(id),out);
+				    	}   
+				    }
+				    id++;
+				}
 			}
+			out.close();
+			sentences.close();
 		}
 	}
 				
@@ -580,12 +585,12 @@ public class GenerateSetsPT {
 		}
 	}
 	
-	public static void processExample(String before, String after,String between, String type, PrintWriter out) {
+	public static void processExample(String before, String after,String between, String type, Writer out) throws IOException {
 		
 		int window = 3;
 		int casing = 1;
 		
-		out.print(type);
+		out.write(type);
 		if (before.lastIndexOf(",") != -1 && before.lastIndexOf(",") < before.lastIndexOf(between)) before = before.substring(before.lastIndexOf(",") + 1);		
 		if (after.indexOf(",") != -1 && after.indexOf(",") > between.length()) after = after.substring(0, after.lastIndexOf(","));				
 		
@@ -593,21 +598,21 @@ public class GenerateSetsPT {
 		int beforeLength = PortuguesePOSTagger.tokenize(before).length;
 		int afterLength = PortuguesePOSTagger.tokenize(after).length;		
 		
-		if (beforeLength >= Math.max(betweenLength, afterLength)) out.print(" " + "LARGER_BEF");
-		if (afterLength >= Math.max(betweenLength, beforeLength)) out.print(" " + "LARGER_AFT");
-		if (betweenLength >= Math.max(afterLength, beforeLength)) out.print(" " + "LARGER_BET");
+		if (beforeLength >= Math.max(betweenLength, afterLength)) out.write(" " + "LARGER_BEF");
+		if (afterLength >= Math.max(betweenLength, beforeLength)) out.write(" " + "LARGER_AFT");
+		if (betweenLength >= Math.max(afterLength, beforeLength)) out.write(" " + "LARGER_BET");
 		
-		if (beforeLength == 0) out.print(" " + "EMPTY_BEF");
-		if (afterLength == 0) out.print(" " + "EMPTY_AFT");
-		if (betweenLength == 0) out.print(" " + "EMPTY_BET");
+		if (beforeLength == 0) out.write(" " + "EMPTY_BEF");
+		if (afterLength == 0) out.write(" " + "EMPTY_AFT");
+		if (betweenLength == 0) out.write(" " + "EMPTY_BET");
 		ArrayList<String> someCollection = new ArrayList<String>();
 		for (String aux : new String[] { "BEF\t" + before, "BET\t" + between, "AFT\t" + after })
 			someCollection.add(aux);
 		for (String obj : someCollection) {
 			String prefix = obj.substring(0, obj.indexOf("\t"));
 			String str = obj.substring(obj.indexOf("\t") + 1);
-			out.print(" " + generateNGrams(str, prefix, betweenLength, casing, window));
+			out.write(" " + generateNGrams(str, prefix, betweenLength, casing, window));
 		}
-		out.println();
+		out.write("\n");
 	}
 }
