@@ -33,7 +33,6 @@ public class NBTree {
   
  // A constructor that initializes the LSH index with a given number of hash functions for the min-hash signatures, and with a given number of bands
  public NBTree( File file, int norm ) {
-	 if ( norm != 0 ) throw new Error("Unknown norm.");
      try {
   	   DB db = DBMaker.newFileDB(file).closeOnJvmShutdown().make();
        this.representation = db.getTreeMap("representation");
@@ -55,18 +54,19 @@ public class NBTree {
  
  // Adds a new example to the index
  public void index ( Integer id, Double[] data , String result ) {
-     try {
+	 representation.put(id,data);
+	 value.put(id,result);
+	 try {
          double code = norm(data);
-         double fastMap = MinkowskiDistances.fastMap(data);
 		 HashSet<Integer> auxSet = new HashSet<Integer>();			 
 		 if ( index.containsKey(code) ) auxSet.addAll(index.get(code));
 		 auxSet.add(id);
 		 index.put(code,Collections.unmodifiableSet(auxSet));
 		 System.out.println(" ** INDEXING NORM (L2) 	 : " + code + " " + id + " " + result);
+
+		 double fastMap = MinkowskiDistances.fastMap(data);
 		 System.out.println(" ** INDEXING NORM (FastMap) : " + fastMap + " " + id + " " + result);
-	 } catch ( Exception ex ) { ex.printStackTrace(System.err); }
-	 representation.put(id,data);
-	 value.put(id,result);
+	 } catch ( Exception ex ) { ex.printStackTrace(); ex.printStackTrace(System.err); }
  }
  
  // Returns all instances whose norm is within a given range
@@ -81,7 +81,7 @@ public class NBTree {
 	 TopN<String> result = new TopN<String>(k);
 	 double code = norm(data);
 	 k = Math.min(k,indexSize());
-	 double range = 0.1;
+	 double range = 0.05;
 	 while ( result.size() != k ) {
 		 Set<Integer> auxSet = queryRange(code - range, code + range);
 		 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
@@ -91,6 +91,7 @@ public class NBTree {
 		 	 if ( norm == 1 ) result.add(value, 1.0 / (1.0 + MinkowskiDistances.distanceManhattan(data,data2)));
 		 	 if ( norm == 2 ) result.add(value, 1.0 / (1.0 + MinkowskiDistances.distanceFractional(data,data2)));
 		     if ( norm == 3 ) result.add(value, 1.0 / (1.0 + MinkowskiDistances.distanceMaximum(data,data2)));
+		     if ( norm == 4 ) result.add(value, MinkowskiDistances.jensenShannonDivergence(data,data2));
 		 }
 		 range = range * 2.0;
 	 }
@@ -103,6 +104,7 @@ public class NBTree {
 	if ( norm == 1 ) return MinkowskiDistances.normManhattan(data);
 	if ( norm == 2 ) return MinkowskiDistances.normFractional(data);
     if ( norm == 3 ) return MinkowskiDistances.normMaximum(data);
+    if ( norm == 4 ) return MinkowskiDistances.fastMap(data);
 	return -1;
  }
  

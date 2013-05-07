@@ -29,7 +29,7 @@ public class TestClassificationNBTree {
   public static void readTrainData ( String file, int number ) throws Exception {
 	File dbfile = new File("mapdb-relations-index-nbtree");
 	dbfile.deleteOnExit();
-    dataIndex = new NBTree( dbfile, 0 );
+    dataIndex = new NBTree( dbfile, 4 );
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;
 	int num=0;
@@ -37,7 +37,7 @@ public class TestClassificationNBTree {
       List<Double> set = new ArrayList<Double>();
       for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(new Double(element));
       String cl = aux.substring(0,aux.indexOf(" "));
-      dataIndex.index(dataIndex.indexSize(), set.toArray(new Double[0]),cl);      
+      dataIndex.index(dataIndex.indexSize(), set.toArray(new Double[0]), cl);      
       if ( number > 0 && num++ > number) break;
     }
     input.close();
