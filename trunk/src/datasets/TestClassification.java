@@ -253,6 +253,20 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3]);	  
   }
   
+  
+  public static void classifyPublico() throws Exception {
+	  System.out.println();
+	  System.out.println("Reading train data WikiPT...");
+	  readTrainData("train-data-wikipt.txt");
+      System.out.println("Classifying publico.pt relations");
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("publico-relations.txt");
+      Writer results = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-relations-classifications.txt"), "UTF8"));
+      for (Pair<String, String> pair : all_results) {
+    	  results.write(pair.getFirst() + '\t' + pair.getSecond() + '\n');
+      }
+      results.close();
+  }
+  
   public static void testWikiPT() throws Exception{
 	  System.out.println();
 	  System.out.println("Test classification on WikiPT...");
@@ -319,9 +333,12 @@ public class TestClassification {
 		  
 		  if (args[0].equals("publico") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsPT.generatePublico();
-			  //TODO: TestClassification.classifyPublico();
+			  TestClassification.classifyPublico();
 		  }
-
+		  
+		  else if (args[0].equals("publico") && args[1].equalsIgnoreCase("false")) {
+			  TestClassification.classifyPublico();
+		  }
 		  
 		  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsPT.generateWikiPT();
