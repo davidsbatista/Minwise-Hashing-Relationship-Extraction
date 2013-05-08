@@ -22,7 +22,7 @@ public class TestClassification {
   private static LocalitySentitiveHashing directionIndex;
 
   public static void readTrainData ( String file ) throws Exception {
-    readTrainData(file,-1);
+    readTrainData(file,1000);
   }
   		
   public static void readTrainData ( String file, int number ) throws Exception {
@@ -31,11 +31,18 @@ public class TestClassification {
 	dbfile.deleteOnExit();
     dbfile2.deleteOnExit();
     dataIndex = new LocalitySentitiveHashing( dbfile, signature , bands );
-    directionIndex = new LocalitySentitiveHashing( dbfile2, signature , bands );
+    directionIndex = new LocalitySentitiveHashing( dbfile2, signature , bands );    
+    
+    LineNumberReader  lnr = new LineNumberReader(new FileReader(new File(file)));
+    lnr.skip(Long.MAX_VALUE);
+    int num_lines = lnr.getLineNumber();
+    int lines_red = 0;
+
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;
 	int num=0;
     while ( ( aux = input.readLine() ) != null ) {
+      System.out.println(String.valueOf(lines_red) + "/" + String.valueOf(num_lines));      
       HashSet<String> set = new HashSet<String>();
       for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(element);
       String cl = aux.substring(0,aux.indexOf(" "));
@@ -313,7 +320,6 @@ public class TestClassification {
 		  System.out.println("usage is: dataset true|false knn signature bands");
 		  System.out.println("dataset: semeval wiki aimed drugbank wikipt publico");
 		  System.out.println("generate examples: true|false");
-		  System.out.println("use Levin classes: true|false");
 	      System.exit(0);
 	  }
 	  

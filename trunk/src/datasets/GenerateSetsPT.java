@@ -40,6 +40,7 @@ import datasets.WikiPT.Instance;
 import datasets.WikiPT.Relations;
 
 import utils.nlp.PortuguesePOSTagger;
+import utils.nlp.PortugueseVerbNormalizer;
 
 public class GenerateSetsPT {
 
@@ -47,7 +48,8 @@ public class GenerateSetsPT {
 	static Set<String> sentences_ignored = new HashSet<String>();	
 	static Multimap<String, Instance> instances_per_class = LinkedListMultimap.create();
 	
-	public static void generateWikiPT() throws Exception, IOException {				
+	public static void generateWikiPT() throws Exception, IOException {
+		PortugueseVerbNormalizer.initialize();
 		PortuguesePOSTagger.initialize();		
 		Relations.initialize();
 		PrintWriter outTrain = new PrintWriter(new FileWriter("train-data-wikipt.txt"));
@@ -56,8 +58,9 @@ public class GenerateSetsPT {
 		processWikiPT("Datasets/WikiPT/results-relation-extraction.txt",outTrain,outTest);		
 	}
 	
-	public static void generatePublico() throws InvalidFormatException, FileNotFoundException, IOException {
-		PortuguesePOSTagger.initialize();
+	public static void generatePublico() throws InvalidFormatException, FileNotFoundException, IOException {		
+		PortugueseVerbNormalizer.initialize();
+		PortuguesePOSTagger.initialize();				
 		System.out.println("Extracting sentences from publico");
 		LinkedList<Article> articles = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
 		Writer sentences = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-sentences.txt"), "UTF8"));
@@ -121,7 +124,7 @@ public class GenerateSetsPT {
 		                before = before.replaceAll(" +", " ").trim();
 		                after = after.replaceAll(" +", " ").trim();
 		                between = between.replaceAll(" +", " ").trim();
-						processExample(before,after,between,String.valueOf(id),out);
+						processExample(before,after,between,type1+"-"+type2+"_"+String.valueOf(id),out);
 				    	}
 				    }
 			    id++;
@@ -160,13 +163,23 @@ public class GenerateSetsPT {
 				if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
 				
 				if ( sourcePOS[i].startsWith("verb") || sourcePOS[i].startsWith("pp") ) {
-				  set.add(sourceTokens[i].toLowerCase() + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1].toLowerCase() + "_" : "" ) +  prefix);
-				  set.add(sourceTokens[i].toLowerCase() + "_" + prefix);
+				  
+				  //normalizar o verbo
+				  String verb = PortugueseVerbNormalizer.normalize(sourceTokens[i].toLowerCase());				  
+				  if (verb == null) verb = sourceTokens[i].toLowerCase();
+				  
+				  //adiconar verbo normalizado + palavra à frente
+				  set.add(verb + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1].toLowerCase() + "_" : "" ) +  prefix);
+				 
+				  //verbo verbo normalizado 
+				  set.add(verb + "_" + prefix);
+				  
+				  //se o verbo está no PP adicionar nessa forma
 				  if ( sourcePOS[i].startsWith("pp")  ) set.add(sourceTokens[i].toLowerCase() + "_PP_" + prefix);
 				  
 				  //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
-				  if (i < sourceTokens.length - 2) {
-		  			String pattern = sourceTokens[i].toLowerCase();
+				  if (i < sourceTokens.length - 2) {		  			
+		  			String pattern = verb;
 		  			int j = i+1;				
 					while ( ((j < sourceTokens.length - 2)) && ((sourcePOS[j].startsWith("adverb") || sourcePOS[j].startsWith("adjective")) || sourcePOS[j].startsWith("noun"))) {	  				
 						pattern += "_" + sourceTokens[j].toLowerCase();
@@ -179,6 +192,7 @@ public class GenerateSetsPT {
 		  		  }		  	
 				} else if (sourcePOS[i].startsWith("preposition")) set.add(sourceTokens[i].toLowerCase() + "_PREP_" + prefix);
 			}
+			
 			// character quadgrams
 			for (int j = 0; j < source.length() + 3; j++) {
 					String tok = "";
@@ -195,7 +209,7 @@ public class GenerateSetsPT {
 		return result.trim();
 	}
 	
-	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) {
+	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) throws IOException {
 		
 		String before = null;
 		String between = null;
@@ -215,7 +229,6 @@ public class GenerateSetsPT {
 			
 			if (e1_start!=-1 && e2_start!=-1) {
 
-				/*
 				///test if relationships as a direction
 				if (!(type.equals("other") || type.equals("partner"))) {
 					
@@ -230,8 +243,7 @@ public class GenerateSetsPT {
 						System.out.println("e2 start: " + e2_start);
 						System.out.println("e2 finish: " + e2_finish);						
 					}	
-				}
-				*/				
+				}			
 				
 				try {
 					before = sentence.substring(0,Math.min(e1_finish, e2_finish));
@@ -256,13 +268,14 @@ public class GenerateSetsPT {
 				}
 			}
 					
-			/*
+			
 			if (!checked) processExample(before,after,between,type,outTrain);
 			else processExample(before,after,between,type,outTest);
-			*/
 			
+			/*
 			Instance i = new Instance(type, before, after, between);
 			instances_per_class.put(type, i);
+			/*
 			
 			/*
 			try {
@@ -433,6 +446,7 @@ public class GenerateSetsPT {
 		}
 		
 		//precorrer instances_per_classe, para cada classe gerar:  75% treino, restantes 25% para teste
+		/*
 		for (String class_type : instances_per_class.keySet()) {
 			Collection<Instance> instances = instances_per_class.get(class_type);
 			int total = instances.size();						
@@ -457,6 +471,7 @@ public class GenerateSetsPT {
 			System.out.println("Train: " + num_train_examples);
 			System.out.println("Test:  " + num_test_examples);
 		}
+		*/
 		
 		outTrain.flush();
 		outTrain.close();

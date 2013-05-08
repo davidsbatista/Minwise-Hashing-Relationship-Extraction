@@ -29,7 +29,7 @@ public class TestClassificationNBTree {
   public static void readTrainData ( String file, int number ) throws Exception {
 	File dbfile = new File("mapdb-relations-index-nbtree");
 	dbfile.deleteOnExit();
-    dataIndex = new NBTree( dbfile, 4 );
+    dataIndex = new NBTree( dbfile, 0 );
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;
 	int num=0;
