@@ -81,7 +81,7 @@ public class NBTree {
 	 TopN<String> result = new TopN<String>(k);
 	 double code = norm(data);
 	 k = Math.min(k,indexSize());
-	 double range = 0.05;
+	 double range = 0.5;
 	 while ( result.size() != k ) {
 		 Set<Integer> auxSet = queryRange(code - range, code + range);
 		 if ( auxSet != null ) for ( Integer candidate : auxSet ) {
@@ -91,7 +91,7 @@ public class NBTree {
 		 	 if ( norm == 1 ) result.add(value, 1.0 / (1.0 + MinkowskiDistances.distanceManhattan(data,data2)));
 		 	 if ( norm == 2 ) result.add(value, 1.0 / (1.0 + MinkowskiDistances.distanceFractional(data,data2)));
 		     if ( norm == 3 ) result.add(value, 1.0 / (1.0 + MinkowskiDistances.distanceMaximum(data,data2)));
-		     if ( norm == 4 ) result.add(value, MinkowskiDistances.jensenShannonDivergence(data,data2));
+		     if ( norm == 4 ) result.add(value, 1.0 - MinkowskiDistances.jensenShannonDivergence(data,data2));
 		 }
 		 range = range * 2.0;
 	 }
