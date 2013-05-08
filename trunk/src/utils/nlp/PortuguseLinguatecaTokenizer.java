@@ -1,6 +1,6 @@
 package utils.nlp;
 
-public class LinguatecaTokenizerPT extends com.aliasi.tokenizer.RegExTokenizerFactory {
+public class PortuguseLinguatecaTokenizer extends com.aliasi.tokenizer.RegExTokenizerFactory {
 
 	private static String regex =   "(\\d+((/\\d+)+))" + "|" + 			/** dates or similar, e.g. 12/21/1 */
 	                                 "(\\d+\\:\\d+(\\:\\d+)?)" + "|" + 		/** the time, e.g. 12:12:2 */
@@ -19,7 +19,7 @@ public class LinguatecaTokenizerPT extends com.aliasi.tokenizer.RegExTokenizerFa
 	                                 "(\\bn\\.o)"; 							/** number */
 
 
-	public LinguatecaTokenizerPT ( ) { super(regex); }
+	public PortuguseLinguatecaTokenizer ( ) { super(regex); }
 
 	public com.aliasi.tokenizer.Tokenizer tokenizer(String str) { return tokenizer(str.toCharArray(),0,str.length()); } 
 
@@ -35,7 +35,7 @@ public class LinguatecaTokenizerPT extends com.aliasi.tokenizer.RegExTokenizerFa
 	 
 	public static void main ( String args[] ) {
 		System.out.println("Testing tokenization of the input parameters...");
-		LinguatecaTokenizerPT tf = new LinguatecaTokenizerPT();
+		PortuguseLinguatecaTokenizer tf = new PortuguseLinguatecaTokenizer();
 		for ( String str : args ) {
 			System.out.println();
 			for ( String token : tf.tokenize(str) ) System.out.println(token);
