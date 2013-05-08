@@ -22,7 +22,7 @@ public class TestClassification {
   private static LocalitySentitiveHashing directionIndex;
 
   public static void readTrainData ( String file ) throws Exception {
-    readTrainData(file,1000);
+    readTrainData(file,-1);
   }
   		
   public static void readTrainData ( String file, int number ) throws Exception {
@@ -53,6 +53,7 @@ public class TestClassification {
       }
       dataIndex.index(dataIndex.indexSize(),set.toArray(new String[0]),cl);      
       if ( number > 0 && num++ > number) break;
+      lines_red++;
     }
     //dataIndex.computeValidity(knn);
     input.close();
@@ -295,7 +296,7 @@ public class TestClassification {
     		  							"influencedBy(e1,e2)","influencedBy(e2,e1)",
     		  							"partner","other"};
       
-      String[] classes = classes_simmetrycal;
+      String[] classes = classes_asymmetrical;
       
       for ( String c : classes  ) {
     	  System.out.println();		  		  
