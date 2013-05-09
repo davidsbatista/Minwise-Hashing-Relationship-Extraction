@@ -59,17 +59,17 @@ public class GenerateSetsPT {
 	}
 	
 	public static void generatePublico() throws InvalidFormatException, FileNotFoundException, IOException {		
-		PortugueseVerbNormalizer.initialize();
+		//PortugueseVerbNormalizer.initialize();
 		PortuguesePOSTagger.initialize();				
 		System.out.println("Extracting sentences from publico");
-		LinkedList<Article> articles = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico-10-years-all.xml");
+		LinkedList<Article> articles = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico.pt/publico-10-years-all.xml");
 		Writer sentences = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-sentences.txt"), "UTF8"));
 		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-relations.txt"), "UTF8"));
 		final TokenizerFactory TOKENIZER_FACTORY = IndoEuropeanTokenizerFactory.INSTANCE;
 		final SentenceModel SENTENCE_MODEL = new IndoEuropeanSentenceModel();
 		int id = 0;
 		Iterator<Article> iterator = articles.iterator();
-		while ((id<10000) && iterator.hasNext()) {
+		while (iterator.hasNext()) {
 			Article a = iterator.next();
 			String text = a.getText();
 			text = text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
@@ -123,8 +123,10 @@ public class GenerateSetsPT {
 						before = before + " " + between;
 		                before = before.replaceAll(" +", " ").trim();
 		                after = after.replaceAll(" +", " ").trim();
-		                between = between.replaceAll(" +", " ").trim();
-						processExample(before,after,between,type1+"-"+type2+"_"+String.valueOf(id),out);
+		                between = between.replaceAll(" +", " ").trim();		                
+		                type1 = type1.replaceAll(" ","_");
+		                type2 = type2.replaceAll(" ","_");
+						processExample(before,after,between,String.valueOf(id)+"_"+type1+"-"+type2,out);
 				    	}
 				    }
 			    id++;
@@ -165,8 +167,9 @@ public class GenerateSetsPT {
 				if ( sourcePOS[i].startsWith("verb") || sourcePOS[i].startsWith("pp") ) {
 				  
 				  //normalizar o verbo
-				  String verb = PortugueseVerbNormalizer.normalize(sourceTokens[i].toLowerCase());				  
-				  if (verb == null) verb = sourceTokens[i].toLowerCase();
+				  //String verb = PortugueseVerbNormalizer.normalize(sourceTokens[i].toLowerCase());				  
+				  //if (verb == null) verb = sourceTokens[i].toLowerCase();
+				  String verb = sourceTokens[i].toLowerCase();
 				  
 				  //adiconar verbo normalizado + palavra à frente
 				  set.add(verb + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1].toLowerCase() + "_" : "" ) +  prefix);
