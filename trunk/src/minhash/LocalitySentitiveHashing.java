@@ -1,13 +1,22 @@
 package minhash;
 
-import java.util.*;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Array;
-import org.mapdb.*;
-import utils.misc.TopN;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+
 import utils.misc.Pair;
-import com.davidsoergel.conja.Function;
-import com.davidsoergel.conja.Parallel;
+import utils.misc.TopN;
 
 /** This class implements a simple Locality Sensitive Hashing (LSH) strategy, relying on min-hash for measuring similarity between instances */
 public class LocalitySentitiveHashing {

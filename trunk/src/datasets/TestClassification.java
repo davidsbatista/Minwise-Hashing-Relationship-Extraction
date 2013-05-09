@@ -1,11 +1,18 @@
 package datasets;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.LineNumberReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.HashSet;
+import java.util.LinkedList;
 
-import utils.misc.Pair;
-import utils.nlp.EnglishNLP;
 import minhash.LocalitySentitiveHashing;
+import utils.misc.Pair;
 
 public class TestClassification {
 
@@ -160,7 +167,8 @@ public class TestClassification {
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1]);
   	  System.out.println("Recall : " + results[2]);
-  	  System.out.println("F1 : " + results[3]);	  
+  	  System.out.println("F1 : " + results[3]);
+  	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
   
   public static void testWikiEN() throws Exception{
@@ -200,7 +208,7 @@ public class TestClassification {
   	  System.out.println("Precision : " + resultsWiki[1]);
   	  System.out.println("Recall : " + resultsWiki[2]);
   	  System.out.println("F1 : " + resultsWiki[3]);
-	  
+  	  System.out.println("F1 (corrected) : " + (2.0*((resultsWiki[1]*resultsWiki[2])/(resultsWiki[1]+resultsWiki[2]))) );	  
   }
   
   public static void testAIMED() throws Exception{
@@ -227,6 +235,7 @@ public class TestClassification {
   	  System.out.println("Precision : " + results[1] );
   	  System.out.println("Recall : " + results[2] );
   	  System.out.println("F1 : " + results[3] );
+  	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
 
   public static void testDrugBank() throws Exception{
@@ -258,9 +267,9 @@ public class TestClassification {
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1]);
   	  System.out.println("Recall : " + results[2]);
-  	  System.out.println("F1 : " + results[3]);	  
+  	  System.out.println("F1 : " + results[3]);
+  	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
-  
   
   public static void classifyPublico() throws Exception {
 	  System.out.println();
@@ -312,7 +321,8 @@ public class TestClassification {
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1]);
   	  System.out.println("Recall : " + results[2]);
-  	  System.out.println("F1 : " + results[3]);	  
+  	  System.out.println("F1 : " + results[3]);
+  	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
   
   public static void main ( String args[] ) throws Exception {
