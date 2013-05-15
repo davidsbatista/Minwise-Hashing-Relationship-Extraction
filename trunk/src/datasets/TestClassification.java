@@ -38,18 +38,15 @@ public class TestClassification {
 	dbfile.deleteOnExit();
     dbfile2.deleteOnExit();
     dataIndex = new LocalitySentitiveHashing( dbfile, signature , bands );
-    directionIndex = new LocalitySentitiveHashing( dbfile2, signature , bands );    
-    
+    directionIndex = new LocalitySentitiveHashing( dbfile2, signature , bands );      
     LineNumberReader  lnr = new LineNumberReader(new FileReader(new File(file)));
     lnr.skip(Long.MAX_VALUE);
     int num_lines = lnr.getLineNumber();
-    int lines_red = 0;
-
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;
 	int num=0;
     while ( ( aux = input.readLine() ) != null ) {
-      System.out.println(String.valueOf(lines_red) + "/" + String.valueOf(num_lines));      
+      System.out.println(String.valueOf(num) + "/" + String.valueOf(num_lines));      
       HashSet<String> set = new HashSet<String>();
       for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(element);
       String cl = aux.substring(0,aux.indexOf(" "));
@@ -59,9 +56,11 @@ public class TestClassification {
           directionIndex.index(directionIndex.indexSize(),set.toArray(new String[0]),dr);
       }
       dataIndex.index(dataIndex.indexSize(),set.toArray(new String[0]),cl);      
-      if ( number > 0 && num++ > number) break;
-      lines_red++;
+      num++;
+      if ( number > 0 && num > number) break;
+      if ( num % 10000 == 0 ) dataIndex.commitChanges();
     }
+    dataIndex.commitChanges();
     //dataIndex.computeValidity(knn);
     input.close();
   }

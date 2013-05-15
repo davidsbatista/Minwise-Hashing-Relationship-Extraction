@@ -26,7 +26,10 @@ public class LocalitySentitiveHashing {
  
  // The bands from the LSH index
  private Map<Integer,Set<Integer>> index[];
- 
+
+ // The bands from the LSH index (a temporary index that is periodically flushed to non-volatile storage)
+ private Map<Integer,Set<Integer>> indexTemp[];
+  
  // The min-hash representions for each example in the database
  private Map<Integer,int[]> representation;
  
@@ -65,7 +68,10 @@ public class LocalitySentitiveHashing {
 	   this.value = db.getTreeMap("value");
 	   this.validity = db.getTreeMap("kvalue");
 	   this.index = (Map[]) Array.newInstance(db.getTreeMap("index").getClass(),numBands);	 
-	   for ( int i = 0 ; i < numBands ; i++ ) this.index[i] = db.getTreeMap("index-"+i);
+	   for ( int i = 0 ; i < numBands ; i++ ) {
+		   this.indexTemp[i] = new HashMap<Integer,Set<Integer>>();
+		   this.index[i] = db.getTreeMap("index-"+i);
+	   }
  	 } catch ( Exception ex ) { ex.printStackTrace(); throw new Error(ex); } 
  }
  
@@ -98,13 +104,24 @@ public class LocalitySentitiveHashing {
 	 int[] minhash = weights == null ? MinHash.minHashFromSet(data,function) : MinHash.minHashFromWeightedSet(data,weights,function);
 	 for ( int i = 0 ; i < index.length; i++ ) try {
          int code = function[0].hash(integersToBytes(minhash,i*size,size));
-		 HashSet<Integer> auxSet = new HashSet<Integer>();			 
-		 if ( index[i].containsKey(code) ) auxSet.addAll(index[i].get(code));
-		 auxSet.add(id);
-		 index[i].put(code,Collections.unmodifiableSet(auxSet));
+         Set<Integer> auxSet = indexTemp[i].get(code);
+         if ( auxSet == null ) auxSet = new HashSet<Integer>();
+         auxSet.add(id);
+         indexTemp[i].put(code,auxSet);
 	 } catch ( Exception ex ) { ex.printStackTrace(System.err); }
 	 representation.put(id,minhash);
 	 value.put(id,result);
+ }
+ 
+ public void commitChanges() {
+	 for ( int i = 0 ; i < indexTemp.length; i++ ) try {
+		for ( Integer code : indexTemp[i].keySet() ) {	     
+	         Set<Integer> auxSet = new HashSet<Integer>(indexTemp[i].get(code));
+			 if ( index[i].containsKey(code)) auxSet.addAll(index[i].get(code));
+			 index[i].put(code,Collections.unmodifiableSet(auxSet));			
+		}
+		indexTemp[i].clear();
+	 } catch ( Exception ex ) { ex.printStackTrace(System.err); }
  }
  
  // Computes the validity score for each example in the database, through a leave-one-out methodology
