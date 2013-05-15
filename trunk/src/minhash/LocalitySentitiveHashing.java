@@ -68,6 +68,7 @@ public class LocalitySentitiveHashing {
 	   this.value = db.getTreeMap("value");
 	   this.validity = db.getTreeMap("kvalue");
 	   this.index = (Map[]) Array.newInstance(db.getTreeMap("index").getClass(),numBands);	 
+	   this.indexTemp = (Map[]) Array.newInstance(new HashMap<Integer,Set<Integer>>().getClass(),numBands);	 
 	   for ( int i = 0 ; i < numBands ; i++ ) {
 		   this.indexTemp[i] = new HashMap<Integer,Set<Integer>>();
 		   this.index[i] = db.getTreeMap("index-"+i);

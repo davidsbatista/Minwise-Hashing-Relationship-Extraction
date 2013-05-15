@@ -28,7 +28,7 @@ public class GenerateSetsEN {
 	   String before = sentence.substring(0,Math.min(sentence.indexOf("</e1>"),sentence.indexOf("</e2>"))).trim();
 	   String after = sentence.substring(Math.max(sentence.indexOf("<e2>")+4,sentence.indexOf("<e1>")+4)).trim();  	   
 	   String between = sentence.substring(Math.min(sentence.indexOf("</e1>")+5,sentence.indexOf("</e2>")+5),Math.max(sentence.indexOf("<e2>"),sentence.indexOf("<e1>"))).trim();  
-	   between = between.replaceAll("</?e[12] *>","");	   
+	   between = between.replaceAll("</?e[12] *>","");
 	   before = before.replaceAll("</?e[12] *>","") + " " + between;
 	   after = between + " " + after.replaceAll("</?e[12] *>","");
 	   type = input.readLine().trim();
@@ -221,13 +221,11 @@ public class GenerateSetsEN {
 				   String before = sentence.substring(0,matcher.end()).replaceAll("<[^>]+>","");
 				   String after = sentence.substring(matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
 				   String between = sentence.substring(matcher.end(),matcher.end()+matcher2.start()).replaceAll("<[^>]+>","");
-                   before = before + " " + between;
-                   after = between + " " + after;
-                   
+				   before = before + " " + between;
+                   after = between + " " + after;                   
                    before = before.replaceAll(" +", " ").trim();
                    after = after.replaceAll(" +", " ").trim();
                    between = between.replaceAll(" +", " ").trim();
-                   
 				   type = "OTHER";
 				   if ( !type1.equals("OTHER") && !type2.equals("OTHER")) type = "OTHER";
 				   else if ( type1.equals("OTHER") && type2.equals("OTHER")) type = "OTHER";
@@ -296,7 +294,7 @@ public class GenerateSetsEN {
 		   before = before.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 		   after = after.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
 	  	   between = between.replaceAll("</?p[0-9]+( +pair=[0-9]+ +)?>","").replaceAll("  +"," ").trim();
-		   before = before + " " + between;
+	  	   before = before + " " + between;
 	       after = between + " " + after;	       
 	       String relation = before + "\t" + between + "\t" + after;
 		   if (type.equals("related")) positiveExamples.add(relation); else negativeExamples.add(relation);

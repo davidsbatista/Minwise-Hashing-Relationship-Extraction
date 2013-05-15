@@ -72,6 +72,7 @@ public class GenerateSetsPT {
 		while (iterator.hasNext()) {
 			Article a = iterator.next();
 			String text = a.getText();
+			String date = a.date;			
 			text = text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
 			text = text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
 			text = text.replaceAll(" SLN "," <ORGANIZACAO>SLN<ORGANIZACAO> ");
@@ -126,7 +127,7 @@ public class GenerateSetsPT {
 		                between = between.replaceAll(" +", " ").trim();		                
 		                type1 = type1.replaceAll(" ","_");
 		                type2 = type2.replaceAll(" ","_");
-						processExample(before,after,between,String.valueOf(id)+"_"+type1+"-"+type2,out);
+						processExample(before,after,between,date+"_"+String.valueOf(id)+"_"+type1+"-"+type2,out);
 				    	}
 				    }
 			    id++;
