@@ -1,6 +1,7 @@
 package datasets;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.*;
 
 import utils.nlp.EnglishNLP;
@@ -99,13 +100,14 @@ public class GenerateSetsEN {
    String aux = null;
    String entity1 = null;
    String type = null;
-   List<String> avoidClasses = Arrays.asList("descendant","discovered","gpe_competition","grandmother","inventor","supported_person","uncle");   
+   List<String> avoidClasses = Arrays.asList("descendant","discovered","gpe_competition","grandmother","inventor","supported_person","uncle");
    //top15
    //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place");   
    //top 25 classes
-   List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation");
-     
-   while ( ( aux = input.readLine() ) != null ) {	   
+   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation");
+   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law");     
+
+     while ( ( aux = input.readLine() ) != null ) {	   
 	   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 		   aux = aux.replaceAll("</?i>","").replaceAll("&amp;","&").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
 		   aux = aux.replaceAll("</?span[^>]*>","").replaceAll("</?sup[^>]*>","").replaceAll("<a [^>]*class='external autonumber'[^>]*>[^<]+</a>" , "");
@@ -234,7 +236,7 @@ public class GenerateSetsEN {
 				   
 				   if (avoidClasses.contains(type)) type="OTHER";				   
 				   if ( (type.equals("OTHER") && Math.random() < 0.975 )) continue;				   
-				   if (!classesWikiEn.contains(type)) continue;
+				   //if (!classesWikiEn.contains(type)) continue;
 				   
 				   processExample(before,after,between,type,out); 
 			   }   
@@ -393,30 +395,33 @@ public class GenerateSetsEN {
 		if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {		
 			if ( auxPOS[i].startsWith("v") ) { 
 			  set.add(normalized[i] + "_" + ( i < aux.length - 1 ? normalized[i+1] + "_" : "" ) + prefix);
-			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
+			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);			  
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			  
 			  
 	  	      //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
 	  		  if (i < aux.length - 2) {
 	  			String pattern = normalized[i];
-	  			int j = i+1;				
-				try {
-					while ( ((j < aux.length - 2)) && ((auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j")) || auxPOS[j].startsWith("n"))) {	  				
+	  			int j = i+1;
+	  			if ( j < aux.length && auxPOS[j].startsWith("pc-acp") || auxPOS[j].startsWith("acp")) {
+					pattern += "_" + normalized[j];
+					j++;
+	  			} 			
+	  			if ( j < aux.length && auxPOS[j].startsWith("av")) {
+					pattern += "_" + normalized[j];
+					j++;
+	  			}
+	  			while ( (j < aux.length - 2) && (auxPOS[j].startsWith("av") || // adverbs
+	  										     auxPOS[j].equals("d") || auxPOS[j].startsWith("av-d") || auxPOS[j].equals("dc")|| auxPOS[j].equals("dg") || auxPOS[j].equals("ds") || auxPOS[j].equals("dx") || auxPOS[j].equals("n2-dx") || //determiners	  										     
+	  										     auxPOS[j].startsWith("j") || //adjectives
+	  										     (auxPOS[j].startsWith("n") && !auxPOS[j].startsWith("nu")) || //nouns 
+	  										     auxPOS[j].startsWith("pi") || auxPOS[j].startsWith("po") || auxPOS[j].startsWith("pn") || auxPOS[j].startsWith("px"))) { //pronoun
+	  				pattern += "_" + normalized[j];
+	  				j++;				
+				}
+	  			if ( ( j < aux.length ) && (auxPOS[j].startsWith("pp") || auxPOS[j].equals("p-acp") || auxPOS[j].startsWith("pf") || auxPOS[j].startsWith("pc-acp") || auxPOS[j].startsWith("acp"))) {
 						pattern += "_" + normalized[j];
-						j++;				
-					}
-				} catch (Exception e) {
-					for (int k = 0; k < auxPOS.length; k++) {
-						System.out.println();
-					}
-					System.out.println("i:" + i);
-					e.printStackTrace();
-					System.exit(0);
-				}					
-				if (auxPOS[j].startsWith("pp") || auxPOS[j].equals("p-acp") || auxPOS[j].startsWith("pf")) {
-						pattern += "_" + normalized[j];
-						set.add(pattern + "_RVB_" + prefix);
-					}
+				}
+	  			set.add(pattern + "_RVB_" + prefix);
 	  		  }
 			  
 			//preposições normalizadas 
@@ -463,36 +468,42 @@ public class GenerateSetsEN {
  
  public static void generateDataAIMED() throws Exception, IOException {
 	 
+	 long accu_train = 0;
+	 long accu_test = 0;
 	 for ( int f = 1 ; f <= 1; f++) {
 		System.out.println("Generating AIMED data fold " + f );
-		/*
-		entropyMap = null; 
+		long startTime = System.nanoTime();
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
-		entropyMap = getEntropyMap("train-data-aimed.txt." + f);
-		*/
-		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
+		long stopTime = System.nanoTime();
+		long elapsedTime = stopTime - startTime;
+		System.out.println("Generate train data time" + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
+		accu_train += elapsedTime;
+		startTime = System.nanoTime();
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
+		stopTime = System.nanoTime();
+		elapsedTime = stopTime - startTime;
+		System.out.println("Generate test data time" + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
+		accu_test += elapsedTime;
 	 }
+	 System.out.println("Avg. Generate train data time: " + TimeUnit.SECONDS.convert(accu_train, TimeUnit.NANOSECONDS));
+	 System.out.println("Avg. Generate test data time: " + TimeUnit.SECONDS.convert(accu_test, TimeUnit.NANOSECONDS));
+	 
 }
 
  public static void generateDataSemEval() throws Exception, IOException {
 	 System.out.println("Generating SemEval data...");
-	 /*
-	 entropyMap = null;
-	 System.out.println("Determining shingles entropy...");
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 entropyMap = getEntropyMap("train-data-semeval.txt");
-	 */
-	 /*
-	 frequencyMap = null;
-	 System.out.println("Determining shingles frequency...");
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
-	 frequencyMap = getFrequencyMap("train-data-semeval.txt");
-	 */
 	 System.out.println("\nGenerating train data...");
-	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));
+	 long startTime = System.nanoTime();	 
+	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));	 
+	 long stopTime = System.nanoTime();	 
+	 long elapsedTime = stopTime - startTime;	 
+	 System.out.println(TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));	 
 	 System.out.println("\nGenerating test data...");
+	 startTime = System.nanoTime();
 	 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
+	 stopTime = System.nanoTime();
+	 elapsedTime = stopTime - startTime;	 
+	 System.out.println(TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
 }
  
  
@@ -502,21 +513,18 @@ public class GenerateSetsEN {
 
  public static void generateDataWikiEn() throws Exception, IOException {
 	 System.out.println("Generating Wikipedia data...");
-	 /*entropyMap = null;
-	 System.out.println("Determining shingles entropy...");
-	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("train-data-wikien.txt")));
-	 entropyMap = getEntropyMap("train-data-wikien.txt"); */
 	 System.out.println("\nGenerating train data...");
+	 long startTime = System.nanoTime();	 
 	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.train", new PrintWriter(new FileWriter("train-data-wikien.txt")));
+	 long stopTime = System.nanoTime();	 
+	 long elapsedTime = stopTime - startTime;
+	 System.out.println(TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
 	 System.out.println("\n\nGenerating test data...");
+	 startTime = System.nanoTime();
 	 processWikipediaEN("Datasets/wikipedia_datav1.0/wikipedia.test", new PrintWriter(new FileWriter("test-data-wikien.txt")));
+	 stopTime = System.nanoTime();	 
+	 elapsedTime = stopTime - startTime;
+	 System.out.println(TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
 }
  
- public static void generateAll() throws Exception {
-		generateDataWikiEn();
-		System.out.println();
-		generateDataSemEval();
-		System.out.println();
-		generateDataAIMED();
- }
 }

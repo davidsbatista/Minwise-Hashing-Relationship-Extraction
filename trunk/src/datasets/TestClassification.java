@@ -5,11 +5,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import minhash.LocalitySentitiveHashing;
 import utils.misc.Pair;
@@ -44,9 +47,10 @@ public class TestClassification {
     int num_lines = lnr.getLineNumber();
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;
-	int num=0;
+	int num=0;	
+	long startTime = System.nanoTime();
     while ( ( aux = input.readLine() ) != null ) {
-      System.out.println(String.valueOf(num) + "/" + String.valueOf(num_lines));      
+      if ( num % 1000 == 0 ) System.out.println(String.valueOf(num) + "/" + String.valueOf(num_lines));      
       HashSet<String> set = new HashSet<String>();
       for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(element);
       String cl = aux.substring(0,aux.indexOf(" "));
@@ -59,7 +63,10 @@ public class TestClassification {
       num++;
       if ( number > 0 && num > number) break;
       if ( num % 10000 == 0 ) dataIndex.commitChanges();
-    }
+    }  
+	long stopTime = System.nanoTime();
+	long elapsedTime = stopTime - startTime;
+	System.out.println("Indexing time: " + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
     dataIndex.commitChanges();
     //dataIndex.computeValidity(knn);
     input.close();
@@ -74,6 +81,7 @@ public class TestClassification {
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;    
 	LinkedList<Pair<String,String>> results = new LinkedList<Pair<String,String>>();
+	long startTime = System.nanoTime();
     while ( ( aux = input.readLine() ) != null ) {
 	  if ( number-- > 0) continue;
       HashSet<String> set = new HashSet<String>();
@@ -84,6 +92,9 @@ public class TestClassification {
       Pair<String,String> p = new Pair<String, String>(cl, clResult);
       results.add(p);      
     }
+    long stopTime = System.nanoTime();
+    long elapsedTime = stopTime - startTime;
+    System.out.println("Classification time: " + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
     input.close();
 	return results;
   }
@@ -181,13 +192,12 @@ public class TestClassification {
       double[] resultsWiki = { 0.0, 0.0, 0.0, 0.0 };
 
       //top 15 classes
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place"};
-      
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place"};      
       //top 25 classes
-      String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
+      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
           
       //All except classes with no test instances
-      //String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law"};          
+      String[] classesWikiEn = {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law"};          
       
       for ( String c : classesWikiEn  ) {		  
     	  System.out.println();
@@ -346,13 +356,9 @@ public class TestClassification {
 			  if (args[1].equals("true")) GenerateSetsEN.generateDataDrugBank();
 			  testDrugBank();
 		  }
-		  
+		  		  
 		  if (args[0].equals("publico") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsPT.generatePublico();
-			  TestClassification.classifyPublico();
-		  }
-		  
-		  else if (args[0].equals("publico") && args[1].equalsIgnoreCase("false")) {
 			  TestClassification.classifyPublico();
 		  }
 		  
@@ -364,48 +370,26 @@ public class TestClassification {
 		  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) {
 				System.out.println("Testing WikiPT data...");
 				TestClassification.testWikiPT();
-		  }
+		  }		  
 		  
-		  if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("true")) {
-			  GenerateSetsEN.generateAll();
-			  testSemEval();
-			  testAIMED();
-			  testWikiEN();
-		  }
-		  
-		  else if (args[0].equalsIgnoreCase("all") && args[1].equalsIgnoreCase("false")) {
-			  testSemEval();
-			  testAIMED();
-			  testWikiEN();
-		  }
-		  
+		  if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) testSemEval();
 		  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsEN.generateDataSemEval();
 			  testSemEval();
 		  }
 		  
+		  if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) testAIMED();
 		  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsEN.generateDataAIMED();
-			  testAIMED();
+			  testAIMED();			  		  
 		  }
 		  
+		  if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("false")) testWikiEN();		  
 		  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("true")) {
 			  GenerateSetsEN.generateDataWikiEn();
 			  testWikiEN();
 		  }
-		  
-		  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) {
-			  testSemEval();
-		  }
-		  
-		  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) {
-			  testAIMED();
-		  }
-		  
-		  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("false")) {
-			  testWikiEN();
-		  }
-		  System.exit(0);
-		}
+		 }
+	System.exit(0);
+  	}
   }
-}
