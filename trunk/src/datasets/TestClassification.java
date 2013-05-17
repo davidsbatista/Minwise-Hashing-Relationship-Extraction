@@ -23,7 +23,7 @@ public class TestClassification {
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
-  public static boolean SemEvalAsymmetrical = true;
+  public static boolean SemEvalAsymmetrical = false;
  
   private static int trainInstances = 0;
   private static int testInstances = 0;
@@ -157,7 +157,8 @@ public class TestClassification {
     		  "Instrument-Agency",
     		  "Member-Collection",
     		  "Message-Topic",
-    		  "Product-Producer"};
+    		  "Product-Producer",
+    		  "Other"};
             
       String[] classes = null;
 
