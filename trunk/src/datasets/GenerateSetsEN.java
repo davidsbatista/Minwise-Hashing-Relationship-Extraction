@@ -470,23 +470,24 @@ public class GenerateSetsEN {
 	 
 	 long accu_train = 0;
 	 long accu_test = 0;
-	 for ( int f = 1 ; f <= 1; f++) {
+	 for ( int f = 1 ; f <= 10; f++) {
 		System.out.println("Generating AIMED data fold " + f );
+		
 		long startTime = System.nanoTime();
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
 		long stopTime = System.nanoTime();
 		long elapsedTime = stopTime - startTime;
-		System.out.println("Generate train data time" + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
 		accu_train += elapsedTime;
+		
 		startTime = System.nanoTime();
 		processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
 		stopTime = System.nanoTime();
 		elapsedTime = stopTime - startTime;
-		System.out.println("Generate test data time" + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
 		accu_test += elapsedTime;
 	 }
-	 System.out.println("Avg. Generate train data time: " + TimeUnit.SECONDS.convert(accu_train, TimeUnit.NANOSECONDS));
-	 System.out.println("Avg. Generate test data time: " + TimeUnit.SECONDS.convert(accu_test, TimeUnit.NANOSECONDS));
+	 
+	 System.out.println("Avg. Generate train data time: " + TimeUnit.SECONDS.convert(accu_train, TimeUnit.NANOSECONDS) / (float) 10 );
+	 System.out.println("Avg. Generate test data time: " + TimeUnit.SECONDS.convert(accu_test, TimeUnit.NANOSECONDS) / (float) 10);
 	 
 }
 

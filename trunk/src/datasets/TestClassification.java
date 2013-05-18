@@ -23,7 +23,7 @@ public class TestClassification {
   private static int signature = 400;	
   private static int bands = 50;
   private static boolean separateDirection = false;
-  public static boolean SemEvalAsymmetrical = false;
+  public static boolean SemEvalAsymmetrical = true;
  
   private static int trainInstances = 0;
   private static int testInstances = 0;
