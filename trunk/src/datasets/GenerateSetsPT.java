@@ -72,8 +72,8 @@ public class GenerateSetsPT {
 		while (iterator.hasNext()) {
 			Article a = iterator.next();
 			String date = a.date;
-			//String text = a.getText();						
-			String text = a.title;			
+			String text = a.getText();						
+			//String text = a.title;			
 			//String text = a.lead; 			
 			text = text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
 			text = text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
