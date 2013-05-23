@@ -422,8 +422,16 @@ public class GenerateSetsEN {
 						pattern += "_" + normalized[j];
 				}
 	  			set.add(pattern + "_RVB_" + prefix);
+	  			if ( (i - 1 > 0) && ( normalized[i-1].equals("not") ||
+ 	  					              normalized[i-1].equals("neither") ||
+ 	  					              normalized[i-1].equals("nobody") ||
+ 	  					              normalized[i-1].equals("no") ||
+ 	  					              normalized[i-1].equals("none") ||
+ 	  					              normalized[i-1].equals("nor") ||
+ 	  					              normalized[i-1].equals("nothing") ||
+ 	  					              normalized[i-1].equals("nowhere") ||
+	  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_NRVB_" + prefix);
 	  		  }
-			  
 			//preposições normalizadas 
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
