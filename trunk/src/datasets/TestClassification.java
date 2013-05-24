@@ -5,16 +5,18 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
 import minhash.LocalitySentitiveHashing;
+import utils.misc.PMI;
 import utils.misc.Pair;
 
 public class TestClassification {
@@ -72,7 +74,7 @@ public class TestClassification {
     input.close();
   }
   
-  public static LinkedList<Pair<String, String>> evaluateTestData ( String file ) throws Exception { 
+  public static LinkedList<Pair<String, String>> evaluateTestData ( String file) throws Exception { 
     return evaluateTestData(file,-1); 
   }
   		
@@ -85,7 +87,10 @@ public class TestClassification {
     while ( ( aux = input.readLine() ) != null ) {
 	  if ( number-- > 0) continue;
       HashSet<String> set = new HashSet<String>();
-      for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(element);
+      for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) {
+    	  set.add(element);}
+      //check if RVB pattern is equal to on of the top 5 reverb patterns with highest PMI scores
+      
       String cl = aux.substring(0,aux.indexOf(" "));      
       String clResult = dataIndex.queryNearest(set.toArray(new String[0]),knn).mostFrequent();
       if ( clResult!= null && separateDirection) clResult += directionIndex.queryNearest(set.toArray(new String[0]),knn).mostFrequent();
@@ -137,6 +142,16 @@ public class TestClassification {
 	  System.out.println("Reading train data SemEval...");
       readTrainData("train-data-semeval.txt");
       System.out.println("Reading test data SemEval...");
+      
+      Map<String, Set<String>> patterns = PMI.readScores("class_reverb_patterns_pmi.txt",5);
+      
+      for (String t : patterns.keySet()) {
+		System.out.println(t);
+		for (String p : patterns.get(t)) {
+			System.out.println(p);
+		}
+	}
+      
       LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
       String[] classes_asymmetrical = {"Cause-Effect(e1,e2)","Cause-Effect(e2,e1)",
@@ -178,7 +193,7 @@ public class TestClassification {
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1]);
   	  System.out.println("Recall : " + results[2]);
-  	  System.out.println("F1 : " + results[3]);
+  	  //System.out.println("F1 : " + results[3]);
   	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
   
