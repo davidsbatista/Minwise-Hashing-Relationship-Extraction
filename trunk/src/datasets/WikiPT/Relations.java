@@ -12,16 +12,20 @@ public class Relations {
 	
 	public static String[] changeDirection = {"predecessor","doctoralAdvisor","influenced","child","foundedBy",
 											  "capitalCountry","currentMember","pastMember","keyPerson","president","leaderName",
-											  "successor"};
+											  "successor","city","capital"};
+	
+	public static String other[] = {"number","relative","crosses","neighboringMunicipality","sisterStation","portrayer","patron","knownFor","ground","tenant","appearancesInNationalTeam","riverMouth",};
 	
 	public static void initialize() {
 		aggregatedRelations = new HashMap<String, String>();
 		
 		//trocar a direcção para encaixar em "locatedinArea"
-		//capitalCountry				
+		//capitalCountry
+		//*city
+		//*capital
 		String locatedInArea[] = {"locatedInArea","archipelago","location", "locationCity",
-								  "locationCountry","municipality","subregion","federalState","capital","district","region",
-								  "city","country","province","state","county", "map","campus","garrison","department"};		
+								  "locationCountry","municipality","subregion","federalState","district","region",
+								  "province","state","county", "map","campus","garrison","department","country"};		
 		
 		//trocar a direccao para encaixar em "partOf"
 		//currentMember
@@ -46,7 +50,7 @@ public class Relations {
 		//trocar direcção para encaixar em "e1, succesor of e2"
 		String successor[] = {"successor"};	
 		
-		String other[] = {"number","relative","crosses","neighboringMunicipality","sisterStation","portrayer","patron","knownFor","ground","tenant","appearancesInNationalTeam","riverMouth",};		
+				
 		
 		addRelations(locatedInArea,"locatedInArea");
 		addRelations(partOf,"partOf");
@@ -63,9 +67,6 @@ public class Relations {
 		for (String relation : aggregatedRelations.keySet()) {			
 			relations.add(aggregatedRelations.get(relation));
 		}
-		System.out.println(relations.size() + " relations");
-		
-		
 	}
 	
 	public static void addRelations(String[] lowerRelations, String relationName) {

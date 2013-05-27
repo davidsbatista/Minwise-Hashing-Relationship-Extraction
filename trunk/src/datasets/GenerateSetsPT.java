@@ -375,7 +375,7 @@ public class GenerateSetsPT {
 						}
 						
 						//capitalCountry to locatedinArea
-						if (type.equals("capitalCountry")) {
+						if (type.equals("capitalCountry") || type.equals("city")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
