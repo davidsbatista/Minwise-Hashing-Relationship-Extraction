@@ -1,0 +1,13 @@
+[locatedInArea_Transitive: (?X locatedInArea ?Y), (?Y locatedInArea ?Z)  -> (?X locatedInArea ?Z) ]
+
+[parentOrganisation_Transitive: (?X parentOrganisation ?Y), (?Y parentOrganisation ?Z)  -> (?X parentOrganisation ?Z) ]
+
+[influencedBy_Transitive: (?X influencedBy ?Y), (?Y influencedBy ?Z)  -> (?X influencedBy ?Z) ]
+
+[spouse_Simmetric: (?X spouse ?Y) -> (?Y spouse ?X) ]
+
+parentOrganisation(X,Y) AND affiliation(Y,Z) :- affiliation(X,Z) 
+
+parentOrganisation(X,Y) AND keyPerson(X,Z) :- keyPerson(Y,Z) 
+
+locatedInArea(X,Y) AND origin(Z,X) :- origin(Z,Y)
