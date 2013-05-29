@@ -22,7 +22,7 @@ public class ReadXML{
  
 			DefaultHandler handler = new DefaultHandler() {
  
-				boolean politica = false;
+				boolean category_to_extract = false;
 				boolean extract = false;				
 				boolean extractEntities = false;				
 				boolean ALT = false;
@@ -36,9 +36,9 @@ public class ReadXML{
 												
 				public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
 					int index = attributes.getIndex("category");
-					if ((index!=-1) && (attributes.getValue(index).equals("politica"))) politica = true;
-					if (politica && qName.equals("date")) extractDate = true;
-					if ((politica) && ( qName.equals("title_rembrandted") || qName.equals("subtitle_rembrandted") || qName.equals("newstext_rembrandted"))) extract = true;					
+					if ((index!=-1) && (attributes.getValue(index).equals("mundo"))) category_to_extract = true;
+					if (category_to_extract && qName.equals("date")) extractDate = true;
+					if ((category_to_extract) && ( qName.equals("title_rembrandted") || qName.equals("subtitle_rembrandted") || qName.equals("newstext_rembrandted"))) extract = true;					
 					if ((extract) && qName.equals("ALT")) ALT = true;
 					if ((ALT) && (!firstSUBALT) && (qName.equals("SUBALT"))) firstSUBALT = true;										
 					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = true; 
@@ -46,13 +46,13 @@ public class ReadXML{
 				}
  
 				public void endElement(String uri, String localName, String qName) throws SAXException {
-					if ( qName.equals("article") && politica) {
+					if ( qName.equals("article") && category_to_extract) {
 						extract=false;
-						politica=false;
+						category_to_extract=false;
 					}					
 					if (extractEntities) { txt.append( "</" + qName + ">");}
 					if ((extract) && (qName.equals("PESSOA") || qName.equals("ORGANIZACAO") || qName.equals("LOCAL"))) extractEntities = false;										
-					if (politica && qName.equals("date")) extractDate = false;
+					if (category_to_extract && qName.equals("date")) extractDate = false;
 					if ((ALT) && (firstSUBALT) && (qName.equals("SUBALT"))) extract = false;;
 					if (extract) {
 						if (qName.equals("title_rembrandted")) {
@@ -78,7 +78,7 @@ public class ReadXML{
 				}
 				
 				public void characters(char ch[], int start, int length) throws SAXException {
-					if (politica && extract || extractEntities) {
+					if (category_to_extract && extract || extractEntities) {
 						String text = new String(ch, start, length);
 						txt.append(text);
 					}

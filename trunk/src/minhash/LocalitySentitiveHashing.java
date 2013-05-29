@@ -149,18 +149,26 @@ public class LocalitySentitiveHashing {
 	 }
  }
 
- // Returns the top-k most similar examples in the database
  public TopN<String> queryNearest ( String[] data , int weights[], int k ) {
+	 return queryNearest ( data , weights, k, null );
+ }
+ 
+ // Returns the top-k most similar examples in the database
+ public TopN<String> queryNearest ( String[] data , int weights[], int k, String pattern ) {
     if ( data.length != weights.length ) throw new Error("The arrays with the data and with the weights do not have the same size.");
 	Set<String> newSet = new HashSet<String>();
 	for ( int i = 0; i < data.length; i++ ) for ( int j = 0; j < weights[i]; i++ ) {
 		newSet.add(data[i] + "_VALUE_" + j);
 	}
-	return queryNearest(newSet.toArray(new String[0]), k);
+	return queryNearest(newSet.toArray(new String[0]), k, pattern);
  }
- 
- // Returns the top-k most similar examples in the database
+
  public TopN<String> queryNearest ( String[] data , int k ) {
+	 return queryNearest ( data , k, null );
+ }
+
+ // Returns the top-k most similar examples in the database
+ public TopN<String> queryNearest ( String[] data , int k, String pattern ) {
 	 int weights[] = null;
 	 if ( featureWeights.size() > 0 ) {
 	 	   weights = new int[data.length];
@@ -169,7 +177,6 @@ public class LocalitySentitiveHashing {
      final int size = function.length / index.length;
 	 final int[] minhash = weights == null ? MinHash.minHashFromSet(data,function) : MinHash.minHashFromWeightedSet(data,weights,function);
 	 final TopN<String> result = new TopN<String>(k);
-//	 Parallel.forEach(index.length, new Function<Integer, Void>() { public Void apply(Integer i) {
 	 for ( int i = 0 ; i < index.length; i++ ) { 
          int code = function[0].hash(integersToBytes(minhash,i*size,size));
 		 Set<Integer> auxSet = index[i].get(code);
@@ -178,10 +185,9 @@ public class LocalitySentitiveHashing {
 			 int rep[] = representation.get(candidate);
 		     double score = MinHash.jaccardSimilarity(minhash,rep);
 		     if ( validity.containsKey(candidate) ) score = score * validity.get(candidate);
-			 result.add(valueS, score);			
+			 if ( pattern == null || valueS.matches(pattern)) result.add(valueS, score);			
 		 }
-//		 return null;
-	 }// });
+	 }
 	 return result;	 
  }
  
