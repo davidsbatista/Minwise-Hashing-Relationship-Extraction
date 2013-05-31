@@ -89,11 +89,11 @@ public class TestClassification {
       HashSet<String> set = new HashSet<String>();
       boolean passive = false;
       for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) {
-    	  if ( testPassive && element.contains("_VVN_BET")) passive = true;
+    	  if ( testPassive && element.contains("_PASSIVE_BET")) passive = true;
     	  set.add(element);
       }
       String cl = aux.substring(0,aux.indexOf(" "));      
-      String clResult = dataIndex.queryNearest(set.toArray(new String[0]),knn, (passive ? "\\(e2,e1\\)" : null)).mostFrequent();
+      String clResult = dataIndex.queryNearest(set.toArray(new String[0]),knn, (passive ? "\\(e2,e1\\)" : null)).mostFrequent();      
       if ( clResult!= null && separateDirection) clResult += directionIndex.queryNearest(set.toArray(new String[0]),knn).mostFrequent();
       Pair<String,String> p = new Pair<String, String>(cl, clResult);
       results.add(p);      
@@ -144,16 +144,17 @@ public class TestClassification {
       readTrainData("train-data-semeval.txt");
       System.out.println("Reading test data SemEval...");
       
+      /*
       Map<String, Set<String>> patterns = PMI.readScores("class_reverb_patterns_pmi.txt",5);
-      
       for (String t : patterns.keySet()) {
 		System.out.println(t);
 		for (String p : patterns.get(t)) {
 			System.out.println(p);
 		}
-	}
+      }
+      */
       
-      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt",true);	      
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt",false);	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
       String[] classes_asymmetrical = {"Cause-Effect(e1,e2)","Cause-Effect(e2,e1)",
     		  "Component-Whole(e1,e2)","Component-Whole(e2,e1)",

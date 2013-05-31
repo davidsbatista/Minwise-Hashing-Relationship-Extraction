@@ -397,6 +397,15 @@ public class GenerateSetsEN {
 			  set.add(normalized[i] + "_" + ( i < aux.length - 1 ? normalized[i+1] + "_" : "" ) + prefix);
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);			  
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			  
+
+			  /*
+			  //passive voice
+			  if (i < aux.length - 4) {
+				  if ((normalized[i].equals("have") && normalized[i+1].equals("be") && auxPOS[i+2].equals("vvn") && (auxPOS[i+3].startsWith("pp") || auxPOS[i+3].equals("p-acp") || auxPOS[i+3].startsWith("pf") || auxPOS[i+3].startsWith("pc-acp") || auxPOS[i+3].startsWith("acp")))) {
+					  set.add(normalized[i] + "_" + normalized[i+1] + "_" + normalized[i+2] +  "_" + normalized[i+3] + "_PASSIVE" + prefix);					  
+				  }
+			  }
+			  */
 			  
 	  	      //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
 	  		  if (i < aux.length - 2) {
@@ -432,6 +441,7 @@ public class GenerateSetsEN {
  	  					              normalized[i-1].equals("nowhere") ||
 	  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_NRVB_" + prefix);
 	  		  }
+	  		  
 			//preposições normalizadas 
 			} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 	  		  set.add(normalized[i] + "_PREP_" + prefix);
