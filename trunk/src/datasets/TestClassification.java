@@ -74,11 +74,11 @@ public class TestClassification {
     input.close();
   }
   
-  public static LinkedList<Pair<String, String>> evaluateTestData ( String file , boolean testPassive ) throws Exception { 
-    return evaluateTestData(file,-1, testPassive); 
+  public static LinkedList<Pair<String, String>> evaluateTestData ( String file ) throws Exception { 
+    return evaluateTestData(file,-1); 
   }
   		
-  public static LinkedList<Pair<String,String>> evaluateTestData ( String file, int number , boolean testPassive ) throws Exception {
+  public static LinkedList<Pair<String,String>> evaluateTestData ( String file, int number ) throws Exception {
 	if ( number > 0 ) readTrainData(file,number);
     BufferedReader input = new BufferedReader( new FileReader(file) );
     String aux = null;    
@@ -87,13 +87,9 @@ public class TestClassification {
     while ( ( aux = input.readLine() ) != null ) {
 	  if ( number-- > 0) continue;
       HashSet<String> set = new HashSet<String>();
-      boolean passive = false;
-      for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) {
-    	  if ( testPassive && element.contains("_PASSIVE_BET")) passive = true;
-    	  set.add(element);
-      }
+      for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(element);
       String cl = aux.substring(0,aux.indexOf(" "));      
-      String clResult = dataIndex.queryNearest(set.toArray(new String[0]),knn, (passive ? "\\(e2,e1\\)" : null)).mostFrequent();      
+      String clResult = dataIndex.queryNearest(set.toArray(new String[0]),knn, null).mostFrequent();      
       if ( clResult!= null && separateDirection) clResult += directionIndex.queryNearest(set.toArray(new String[0]),knn).mostFrequent();
       Pair<String,String> p = new Pair<String, String>(cl, clResult);
       results.add(p);      
@@ -154,7 +150,7 @@ public class TestClassification {
       }
       */
       
-      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt",false);	      
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
       String[] classes_asymmetrical = {"Cause-Effect(e1,e2)","Cause-Effect(e2,e1)",
     		  "Component-Whole(e1,e2)","Component-Whole(e2,e1)",
@@ -206,7 +202,7 @@ public class TestClassification {
       System.out.println("Reading train data WikiEN...");
       readTrainData("train-data-wikien.txt");
 	  System.out.println("Reading test data WikiEN...");
-      LinkedList<Pair<String,String>> aux = evaluateTestData("test-data-wikien.txt",false);	  
+      LinkedList<Pair<String,String>> aux = evaluateTestData("test-data-wikien.txt");	  
       double[] resultsWiki = { 0.0, 0.0, 0.0, 0.0 };
 
       //top 15 classes
@@ -248,7 +244,7 @@ public class TestClassification {
 		  System.out.println("Reading train data ...");
 		  readTrainData("train-data-aimed.txt." + i);
 		  System.out.println("Reading test data ...");
-		  LinkedList<Pair<String, String>> aux = evaluateTestData("test-data-aimed.txt." + i, false);
+		  LinkedList<Pair<String, String>> aux = evaluateTestData("test-data-aimed.txt." + i);
 		  double[] results_aux = evaluateResults(aux,"related");
 		  System.out.println("Accuracy : " + results_aux[0]);
 		  for ( int j = 0; j < results_aux.length; j++) {  
@@ -271,7 +267,7 @@ public class TestClassification {
 	  System.out.println("Reading train data DrugBank...");
       readTrainData("train-data-drugbank.txt");
       System.out.println("Reading test data DrugBank...");
-      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-drugbank.txt",true);	      
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-drugbank.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
       
       String[] classes = {"advise(e0,e1)",
@@ -303,7 +299,7 @@ public class TestClassification {
 	  System.out.println("Reading train data WikiPT...");
 	  readTrainData("train-data-wikipt.txt");
       System.out.println("Classifying publico.pt relations");
-      LinkedList<Pair<String,String>> all_results = evaluateTestData("publico-relations.txt",true);
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("publico-relations.txt");
       Writer results = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-relations-classifications.txt"), "UTF8"));
       for (Pair<String, String> pair : all_results) {
     	  results.write(pair.getFirst() + '\t' + pair.getSecond() + '\n');
@@ -317,7 +313,7 @@ public class TestClassification {
 	  System.out.println("Reading train data WikiPT...");
 	  readTrainData("train-data-wikipt.txt");
       System.out.println("Reading test data WikiPT...");
-      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-wikipt.txt",true);	      
+      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-wikipt.txt");	      
       double[] results = { 0.0, 0.0, 0.0, 0.0 };
       
       String[] classes_simmetrycal = {"locatedInArea","origin","partOf","deathOrBurialPlace","successor","keyPerson","parent","influencedBy","partner","other"};

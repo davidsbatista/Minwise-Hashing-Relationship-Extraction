@@ -398,26 +398,31 @@ public class GenerateSetsEN {
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);			  
 			  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			  
 
-			  /*
+			  
 			  //passive voice
 			  if (i < aux.length - 4) {
 				  if ((normalized[i].equals("have") && normalized[i+1].equals("be") && auxPOS[i+2].equals("vvn") && (auxPOS[i+3].startsWith("pp") || auxPOS[i+3].equals("p-acp") || auxPOS[i+3].startsWith("pf") || auxPOS[i+3].startsWith("pc-acp") || auxPOS[i+3].startsWith("acp")))) {
-					  set.add(normalized[i] + "_" + normalized[i+1] + "_" + normalized[i+2] +  "_" + normalized[i+3] + "_PASSIVE" + prefix);					  
+					  set.add(normalized[i] + "_" + normalized[i+1] + "_" + normalized[i+2] +  "_" + normalized[i+3] + "_PASSIVE" + prefix);
+			  		  set.add("_PASSIVE_" + prefix);
 				  }
 			  }
-			  */
+			  if (i < aux.length - 3) {
+				  if ( i > 0 && (normalized[i-1].equals("have") || normalized[i-1].equals("be"))) continue;
+				  if (((normalized[i].equals("have") || normalized[i].equals("be")) && auxPOS[i+1].equals("vvn") && (auxPOS[i+2].startsWith("pp") || auxPOS[i+2].equals("p-acp") || auxPOS[i+2].startsWith("pf") || auxPOS[i+2].startsWith("pc-acp") || auxPOS[i+2].startsWith("acp")))) {
+					  set.add(normalized[i] + "_" + normalized[i+1] + "_" + normalized[i+2] + "_PASSIVE" + prefix);
+			  		  set.add("_PASSIVE_" + prefix);
+				  }
+			  }
 			  
 	  	      //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
 	  		  if (i < aux.length - 2) {
 	  			String pattern = normalized[i];
-	  			int j = i+1;
+	  			int j = i + 1;
 	  			if ( j < aux.length && auxPOS[j].startsWith("pc-acp") || auxPOS[j].startsWith("acp")) {
-					pattern += "_" + normalized[j];
-					j++;
+					pattern += "_" + normalized[j++];
 	  			} 			
 	  			if ( j < aux.length && auxPOS[j].startsWith("av")) {
-					pattern += "_" + normalized[j];
-					j++;
+					pattern += "_" + normalized[j++];
 	  			}
 	  			while ( (j < aux.length - 2) && (auxPOS[j].startsWith("av") || // adverbs
 	  										     auxPOS[j].equals("d") || auxPOS[j].startsWith("av-d") || auxPOS[j].equals("dc")|| auxPOS[j].equals("dg") || auxPOS[j].equals("ds") || auxPOS[j].equals("dx") || auxPOS[j].equals("n2-dx") || //determiners	  										     
@@ -431,6 +436,7 @@ public class GenerateSetsEN {
 						pattern += "_" + normalized[j];
 				}
 	  			set.add(pattern + "_RVB_" + prefix);
+	  			set.add("_RVB_" + prefix);
 	  			if ( (i - 1 > 0) && ( normalized[i-1].equals("not") ||
  	  					              normalized[i-1].equals("neither") ||
  	  					              normalized[i-1].equals("nobody") ||
@@ -439,7 +445,7 @@ public class GenerateSetsEN {
  	  					              normalized[i-1].equals("nor") ||
  	  					              normalized[i-1].equals("nothing") ||
  	  					              normalized[i-1].equals("nowhere") ||
-	  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_NRVB_" + prefix);
+	  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_RVB_" + prefix);
 	  		  }
 	  		  
 			//preposições normalizadas 
