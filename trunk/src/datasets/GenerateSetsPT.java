@@ -64,7 +64,7 @@ public class GenerateSetsPT {
 		System.out.println("Extracting sentences from publico");
 		LinkedList<Article> articles = datasets.Publico.ReadXML.parse("/home/dsbatista/relations-minhash/publico.pt/publico-10-years-all.xml");
 		Writer sentences = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-sentences.txt"), "UTF8"));
-		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-relations.txt"), "UTF8"));
+		//Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-relations.txt"), "UTF8"));
 		final TokenizerFactory TOKENIZER_FACTORY = IndoEuropeanTokenizerFactory.INSTANCE;
 		final SentenceModel SENTENCE_MODEL = new IndoEuropeanSentenceModel();
 		int id = 0;
@@ -75,20 +75,13 @@ public class GenerateSetsPT {
 			String text = a.getText();					
 			//String text = a.title;			
 			//String text = a.lead; 			
-			text = text.replaceAll(" BE "," <ORGANIZACAO>BE<ORGANIZACAO> ");
-			text = text.replaceAll(" BPN "," <ORGANIZACAO>BPN<ORGANIZACAO> ");
-			text = text.replaceAll(" SLN "," <ORGANIZACAO>SLN<ORGANIZACAO> ");
-			text = text.replaceAll(" PS "," <ORGANIZACAO>PS<ORGANIZACAO> ");
-			text = text.replaceAll(" PSP "," <ORGANIZACAO>PSP<ORGANIZACAO> ");
-			text = text.replaceAll(" PSD "," <ORGANIZACAO>PSD<ORGANIZACAO> ");
-			text = text.replaceAll(" CDS/PP "," <ORGANIZACAO>CDS/PP<ORGANIZACAO> ");
-			text = text.replaceAll(" BE, "," <ORGANIZACAO>BE<ORGANIZACAO>, ");
-			text = text.replaceAll(" BPN, "," <ORGANIZACAO>BPN<ORGANIZACAO>, ");
-			text = text.replaceAll(" SLN, "," <ORGANIZACAO>SLN<ORGANIZACAO>, ");
-			text = text.replaceAll(" PS, "," <ORGANIZACAO>PS<ORGANIZACAO>, ");
-			text = text.replaceAll(" PSP, "," <ORGANIZACAO>PSP<ORGANIZACAO>, ");
-			text = text.replaceAll(" PSD, "," <ORGANIZACAO>PSD<ORGANIZACAO>, ");
-			text = text.replaceAll(" CDS/PP, "," <ORGANIZACAO>CDS/PP<ORGANIZACAO>, ");
+			text = text.replaceAll(" BE "," <ORGANIZACAO>BE</ORGANIZACAO> ");
+			text = text.replaceAll(" BPN "," <ORGANIZACAO>BPN</ORGANIZACAO> ");
+			text = text.replaceAll(" SLN "," <ORGANIZACAO>SLN</ORGANIZACAO> ");
+			text = text.replaceAll(" PS "," <ORGANIZACAO>PS</ORGANIZACAO> ");
+			text = text.replaceAll(" PSP "," <ORGANIZACAO>PSP</ORGANIZACAO> ");
+			text = text.replaceAll(" PSD "," <ORGANIZACAO>PSD</ORGANIZACAO> ");
+			text = text.replaceAll(" CDS/PP "," <ORGANIZACAO>CDS/PP</ORGANIZACAO> ");			
 			text = text.replaceAll("&quot;","\"");			
 			List<String> tokenList = new ArrayList<String>();
 			List<String> whiteList = new ArrayList<String>();
@@ -129,13 +122,13 @@ public class GenerateSetsPT {
 		                between = between.replaceAll(" +", " ").trim();		                
 		                type1 = type1.replaceAll(" ","_");
 		                type2 = type2.replaceAll(" ","_");
-						processExample(before,after,between,date+"_"+String.valueOf(id)+"_"+type1+"-"+type2,out);
-				    	}
-				    }
+						//processExample(before,after,between,date+"_"+String.valueOf(id)+"_"+type1+"-"+type2,out);
+				  	}
+				 }  
 			    id++;
 			}
 		}
-		out.close();
+		//out.close();
 		sentences.close();
 	}
 				

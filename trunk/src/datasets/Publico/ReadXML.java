@@ -36,7 +36,7 @@ public class ReadXML{
 												
 				public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
 					int index = attributes.getIndex("category");
-					if ((index!=-1) && (attributes.getValue(index).equals("mundo"))) category_to_extract = true;
+					if ((index!=-1) && (attributes.getValue(index).equals("politica"))) category_to_extract = true;
 					if (category_to_extract && qName.equals("date")) extractDate = true;
 					if ((category_to_extract) && ( qName.equals("title_rembrandted") || qName.equals("subtitle_rembrandted") || qName.equals("newstext_rembrandted"))) extract = true;					
 					if ((extract) && qName.equals("ALT")) ALT = true;
