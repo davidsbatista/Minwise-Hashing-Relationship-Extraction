@@ -105,7 +105,7 @@ public class GenerateSetsPT {
 			    sentStartTok = sentEndTok+1;
 			    Pattern pattern = Pattern.compile("<[^>]*>[^<]+</[^>]+>");
 				Matcher matcher = pattern.matcher(sentence);
-				sentences.write(id + "\t" + sentence + "\n");
+				sentences.write(date + "\t" + sentence + "\n");
 			    while (matcher.find()) {
 			    	String type1 = matcher.group();
 			    	String after1 = sentence.substring(matcher.end());
