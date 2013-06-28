@@ -8,7 +8,7 @@ import java.util.Set;
 public class Relations {
 	
 	public static Map<String, String> aggregatedRelations = null; 		
-	public static String[] ignore = {"picture","maintainedBy","politicGovernmentDepartment","regionServed","leader","owner"};
+	public static String[] ignore = {"picture","maintainedBy","politicGovernmentDepartment","regionServed","leader","owner", "city"};
 	
 	public static String[] changeDirection = {"predecessor","doctoralAdvisor","influenced","child","foundedBy",
 											  "capitalCountry","currentMember","pastMember","keyPerson","president","leaderName",
@@ -49,8 +49,6 @@ public class Relations {
 		
 		//trocar direcção para encaixar em "e1, succesor of e2"
 		String successor[] = {"successor"};	
-		
-				
 		
 		addRelations(locatedInArea,"locatedInArea");
 		addRelations(partOf,"partOf");
