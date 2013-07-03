@@ -12,7 +12,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,6 +24,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import opennlp.tools.util.InvalidFormatException;
+import utils.nlp.PortuguesePOSTagger;
+import utils.nlp.PortugueseVerbNormalizer;
 
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import com.aliasi.sentences.SentenceModel;
@@ -33,14 +34,10 @@ import com.aliasi.tokenizer.Tokenizer;
 import com.aliasi.tokenizer.TokenizerFactory;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Ordering;
 
 import datasets.Publico.Article;
 import datasets.WikiPT.Instance;
 import datasets.WikiPT.Relations;
-
-import utils.nlp.PortuguesePOSTagger;
-import utils.nlp.PortugueseVerbNormalizer;
 
 public class GenerateSetsPT {
 
@@ -208,7 +205,7 @@ public class GenerateSetsPT {
 		return result.trim();
 	}
 	
-	public static void processRelations(String sentence, String e1, String e2, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) throws IOException {
+	public static void processRelations(String sentence, String e1, String e2, String type_orginal, String type, boolean checked, PrintWriter outTrain, PrintWriter outTest) throws IOException {
 		
 		String before = null;
 		String between = null;
@@ -217,7 +214,7 @@ public class GenerateSetsPT {
 		
 		int e1_count = countWords(e1,sentence);
 		int e2_count = countWords(e2,sentence);
-				
+						
 		if ( (!(e1.contains(e2) || e2.contains(e1))) && (!e2.equals(e1)) && (e1_count==1) && (e2_count==1)) {
 			
 			int e1_start = sentence.indexOf(e1);
@@ -225,6 +222,11 @@ public class GenerateSetsPT {
 			
 			int e2_start = sentence.indexOf(e2);
 			int e2_finish = sentence.indexOf(e2)+e2.length();
+			
+			if (type==null) {
+				System.out.println("type not converted: " + type_orginal);
+				System.exit(0);
+			}
 			
 			if (e1_start!=-1 && e2_start!=-1) {
 
@@ -291,10 +293,11 @@ public class GenerateSetsPT {
 		BufferedReader input = new BufferedReader(new FileReader(file));
 		String aux = null;
 		String sentence = null;
-		String type = null;
+		String type_original = null;
 		String e1 = null;
 		String e2 = null;
 		boolean checked = false;
+		String type = null;
 		
 		Map<String,Integer> relations_train = new HashMap<String, Integer>();
 		Map<String,Integer> relations_test  = new HashMap<String, Integer>();
@@ -334,84 +337,88 @@ public class GenerateSetsPT {
 				while (!aux.startsWith("*")) {
 					if (aux.startsWith("ENTITY1")) e1 = aux.split(": ")[1].trim();
 					if (aux.startsWith("ENTITY2")) e2 = aux.split(": ")[1].trim();
-					if (aux.startsWith("REL TYPE")) type = aux.split(": ")[1];
+					if (aux.startsWith("REL TYPE")) type_original = aux.split(": ")[1];
 					aux = input.readLine();
 				}
 				
-				if (!Arrays.asList(Relations.ignore).contains(type)) {
+				if (!Arrays.asList(Relations.ignore).contains(type_original)) {
 										
-					if (!Arrays.asList(Relations.changeDirection).contains(type)) {
+					if (!Arrays.asList(Relations.changeDirection).contains(type_original)) {
 						
 						//transform relationship type into a top aggregated type
-						type = Relations.aggregatedRelations.get(type);												
-						processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
+						type  = Relations.aggregatedRelations.get(type_original);												
+						processRelations(sentence,e1,e2,type_original,type,checked,outTrain,outTest);
 					}
 					
 					else {
 						
 						//keyPerson, president, leaderName to keyPerson
-						if (type.equals("keyPerson") || type.equals("president") || type.equals("leaderName")) {
+						if (type_original.equals("keyPerson") || type_original.equals("president") || type_original.equals("leaderName")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "keyPerson";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 
 						//currentMember and pastMember to partOf  
-						if (type.equals("currentMember") || type.equals("pastMember")) {
+						if (type_original.equals("currentMember") || type_original.equals("pastMember")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "partOf";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//capitalCountry to locatedinArea
-						if (type.equals("capitalCountry") || type.equals("city")) {
+						if (type_original.equals("capitalCountry") || type_original.equals("city")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "locatedInArea";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//more examples of "influencedBy"
-						if (type.equals("influenced") || type.equals("doctoralAdvisor")) {
+						if (type_original.equals("influenced") || type_original.equals("doctoralAdvisor")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "influencedBy";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 
 						//more examples of "successor"
-						if (type.equals("predecessor") || type.equals("successor")) {
+						if (type_original.equals("predecessor") || type_original.equals("successor")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "successor";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
 						//more examples of "parent"
-						if (type.equals("child")) {
+						if (type_original.equals("child")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "parent";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}						
 						
 						//more examples of "keyPerson"
-						if (type.equals("foundedBy")) {
+						if (type_original.equals("foundedBy")) {
 							String tmp = e2;
 							e2 = e1;
 							e1 = tmp;
 							type = "keyPerson";
-							processRelations(sentence,e1,e2,type,checked,outTrain,outTest);
 						}
 						
+						//largestCity to locatedInArea
+						if (type_original.equals("largestCity")) {
+							String tmp = e2;
+							e2 = e1;
+							e1 = tmp;
+							type = "locatedInArea";							
+						}
+						
+						
+						processRelations(sentence,e1,e2,type_original,type,checked,outTrain,outTest);
+
 					}
 					
 					/*

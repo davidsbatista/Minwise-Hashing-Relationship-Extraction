@@ -1,7 +1,5 @@
 package nbtree;
 
-import java.io.*;
-import java.util.*;
 
 // This class implements the family of Minkowski distances and norms
 public class MinkowskiDistances {

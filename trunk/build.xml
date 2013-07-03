@@ -20,22 +20,14 @@
             <fileset dir="/home/dsbatista/workspace/relations-minhash/bin"/>
             <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="icu4j.jar"/>
             <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="mapdb-0.9.1.jar"/>
-        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="morphadorner.jar"/>
-        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="conja-1.07-SNAPSHOT.jar"/>
+        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="morphadorner.jar"/>        	
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="log4j-1.2-1.2.15.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="guava-14.0.1.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-tools-1.5.2-incubating.jar"/>        	
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-maxent-3.0.2-incubating.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="opennlp-uima-1.5.2-incubating.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="PTStemmer_v2.jar"/>
-        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="lingpipe-4.1.0.jar"/>        	
-        	<zipfileset dir="/home/dsbatista/apache-jena-2.10.0/lib/" includes="jena-core-2.10.0.jar"/>
-        	<zipfileset dir="/home/dsbatista/apache-jena-2.10.0/lib/" includes="jena-tdb-0.10.0.jar"/>
-        	<zipfileset dir="/home/dsbatista/apache-jena-2.10.0/lib/" includes="jena-arq-2.10.0.jar"/>
-        	<zipfileset dir="/home/dsbatista/apache-jena-2.10.0/lib/" includes="slf4j-api-1.6.4.jar"/>        	
-        	<zipfileset dir="/home/dsbatista/apache-jena-2.10.0/lib/" includes="xercesImpl-2.10.0.jar"/>
-        	<zipfileset dir="/home/dsbatista/apache-jena-2.10.0/lib/" includes="xml-apis-1.4.01.jar"/>
-        	<zipfileset dir="/home/dsbatista/apache-jena-2.10.0/lib/" includes="jena-iri-0.9.5.jar"/>        	
+        	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="lingpipe-4.1.0.jar"/>
         </jar>
     </target>
 </project>

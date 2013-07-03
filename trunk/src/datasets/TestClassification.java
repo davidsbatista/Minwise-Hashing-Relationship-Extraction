@@ -10,13 +10,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 
 import minhash.LocalitySentitiveHashing;
-import utils.misc.PMI;
 import utils.misc.Pair;
 
 public class TestClassification {
