@@ -196,7 +196,7 @@ public class GenerateSetsPT {
 						char ch = (j + i) < 0 || (j + i) >= source.length() ? '_' : source.charAt(j + i);
 						tok += ch == ' ' ? '_' : ch;
 					}
-					set.add(tok + "_" + prefix + "_");
+					set.add(tok + "_" + prefix);
 				}
 		} 
 		String result = "";
