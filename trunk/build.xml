@@ -14,12 +14,12 @@
             	<attribute name="Rsrc-Main-Class" value="utils.misc.PMI"/>
             	-->            	
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ jena-iri-0.9.5.jar xml-apis-1.4.01.jar xercesImpl-2.10.0.jar slf4j-api-1.6.4.jar jena-arq-2.10.0.jar jena-tdb-0.10.0.jar jena-core-2.10.0.jar lingpipe-4.1.0.jar PTStemmer_v2.jar opennlp-uima-1.5.2-incubating.jar opennlp-maxent-3.0.2-incubating.jar opennlp-tools-1.5.2-incubating.jar icu4j.jar mapdb-0.9.1.jar morphadorner.jar conja-1.07-SNAPSHOT.jar log4j-1.2-1.2.15.jar guava-14.0.1.jar"/>
+                <attribute name="Rsrc-Class-Path" value="./ jena-iri-0.9.5.jar xml-apis-1.4.01.jar xercesImpl-2.10.0.jar slf4j-api-1.6.4.jar jena-arq-2.10.0.jar jena-tdb-0.10.0.jar jena-core-2.10.0.jar lingpipe-4.1.0.jar PTStemmer_v2.jar opennlp-uima-1.5.2-incubating.jar opennlp-maxent-3.0.2-incubating.jar opennlp-tools-1.5.2-incubating.jar icu4j.jar mapdb-0.9.3.jar morphadorner.jar conja-1.07-SNAPSHOT.jar log4j-1.2-1.2.15.jar guava-14.0.1.jar"/>
             </manifest>
             <zipfileset src="jar-in-jar-loader.zip"/>
             <fileset dir="/home/dsbatista/workspace/relations-minhash/bin"/>
             <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="icu4j.jar"/>
-            <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="mapdb-0.9.1.jar"/>
+            <zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="mapdb-0.9.3.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="morphadorner.jar"/>        	
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="log4j-1.2-1.2.15.jar"/>
         	<zipfileset dir="/home/dsbatista/workspace/relations-minhash/jars" includes="guava-14.0.1.jar"/>

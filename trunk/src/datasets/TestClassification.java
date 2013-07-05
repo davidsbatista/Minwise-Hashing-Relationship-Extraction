@@ -28,7 +28,12 @@ public class TestClassification {
   
   private static LocalitySentitiveHashing dataIndex;  
   private static LocalitySentitiveHashing directionIndex;
-
+  
+  /* to calculte the micro-averages */
+  static double numCorrectClassified_global = 0;
+  static double numClassified_global = 0;
+  static double numInstancesOfClass_global = 0;
+  
   public static void readTrainData ( String file ) throws Exception {
     readTrainData(file,-1);
   }
@@ -98,24 +103,35 @@ public class TestClassification {
   }
 
   public static double[] evaluateResults(LinkedList<Pair<String,String>> results, String class_relation){
+	  
 	  double numInstancesOfClass = 0;
 	  double numCorrectClassified = 0;
 	  double numClassified = 0;	  
 	  double numCorrect = 0;
+	  
 	  for (Pair<String, String> pair : results) {		  
 		  if (pair.getSecond() == null) pair.setSecond("UNKNOWN");	
 		  String first = pair.getFirst();
 		  String second = pair.getSecond();
 		  if (first.equalsIgnoreCase(class_relation)) {
 			  numInstancesOfClass++;
-			  if (first.equalsIgnoreCase(second) ) numCorrectClassified++;
+			  numInstancesOfClass_global++;
+			  if (first.equalsIgnoreCase(second) ) {
+				  numCorrectClassified++;
+				  numCorrectClassified_global++;
+			  }
 		  }
-		  if (second.equalsIgnoreCase(class_relation)) numClassified++;
+		  if (second.equalsIgnoreCase(class_relation)) {
+			  numClassified++;
+			  numClassified_global++;
+		  }
 		  if (first.equalsIgnoreCase(second)) numCorrect++;
 	  }
+	  
 	  double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
 	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
 	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
+	  
 	  System.out.println("Results for class \t" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
 	  System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
 	  System.out.println("Number of test instances : " + numInstancesOfClass );
@@ -123,9 +139,12 @@ public class TestClassification {
 	  System.out.println("Precision : " + precision );
 	  System.out.println("Recall : " + recall );
 	  System.out.println("F1 : " + f1 );
+	  
 	  trainInstances += dataIndex.indexSize( class_relation );
 	  testInstances += numInstancesOfClass;
+	  
 	  double accuracy = numCorrect / (float) results.size(); 
+	  
 	  return new double[]{ accuracy, precision, recall, f1 };
   }
    
@@ -321,8 +340,7 @@ public class TestClassification {
     		  							"successor(e1,e2)","successor(e2,e1)",
     		  							"keyPerson(e1,e2)","keyPerson(e2,e1)",
     		  							"parent(e1,e2)","parent(e2,e1)",
-    		  							"influencedBy(e1,e2)","influencedBy(e2,e1)",
-    		  							"partner","other"};
+    		  							"influencedBy(e1,e2)","influencedBy(e2,e1)"};
       
       String[] classes = classes_asymmetrical;
       
@@ -340,8 +358,16 @@ public class TestClassification {
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1]);
   	  System.out.println("Recall : " + results[2]);
-  	  System.out.println("F1 : " + results[3]);
   	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
+  	  System.out.println();
+  	  double precision_micro = numClassified_global == 0 ? 1.0 : (numCorrectClassified_global / numClassified_global);
+	  double recall_micro = numInstancesOfClass_global == 0 ? 1.0 : (numCorrectClassified_global / numInstancesOfClass_global);
+	  double f1_micro = precision_micro == 0 && recall_micro == 0 ? 0.0 : (2.0*((precision_micro*recall_micro)/(precision_micro+recall_micro)));
+  	  System.out.println("Micro-Average results for all classes...");	
+	  System.out.println("Precision : " + precision_micro);
+	  System.out.println("Recall : " + recall_micro );
+	  System.out.println("F1 (corrected) : " + f1_micro);
+	  
   }
   
   public static void main ( String args[] ) throws Exception {
