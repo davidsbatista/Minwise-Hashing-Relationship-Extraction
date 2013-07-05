@@ -340,7 +340,8 @@ public class TestClassification {
     		  							"successor(e1,e2)","successor(e2,e1)",
     		  							"keyPerson(e1,e2)","keyPerson(e2,e1)",
     		  							"parent(e1,e2)","parent(e2,e1)",
-    		  							"influencedBy(e1,e2)","influencedBy(e2,e1)"};
+    		  							"influencedBy(e1,e2)","influencedBy(e2,e1)",
+    		  							"partner","other"};
       
       String[] classes = classes_asymmetrical;
       
