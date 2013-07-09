@@ -30,9 +30,9 @@ public class TestClassification {
   private static LocalitySentitiveHashing directionIndex;
   
   /* to calculte the micro-averages */
-  static double numCorrectClassified_global = 0;
-  static double numClassified_global = 0;
-  static double numInstancesOfClass_global = 0;
+  static double TP = 0;
+  static double FP = 0;
+  static double FN = 0;
    
   public static void readTrainData ( String file ) throws Exception {
     readTrainData(file,-1);
@@ -115,30 +115,31 @@ public class TestClassification {
 	  double numClassified = 0;	  
 	  double numCorrect = 0;
 	  
+	  //pair.getFirst()  = true label
+	  //pair.getSecond() = classification label
+	  
 	  for (Pair<String, String> pair : results) {		  
 		  if (pair.getSecond() == null) pair.setSecond("UNKNOWN");	
 		  String first = pair.getFirst();
 		  String second = pair.getSecond();
 		  if (first.equalsIgnoreCase(class_relation)) {
 			  numInstancesOfClass++;
-			  if (first.equalsIgnoreCase(second) ) {
+			  if (first.equalsIgnoreCase(second)) {
 				  numCorrectClassified++;
+				  TP++;
 			  }
 		  }
-		  if (second.equalsIgnoreCase(class_relation)) {
-			  numClassified++;
-		  }
+		  if (second.equalsIgnoreCase(class_relation) && !first.equalsIgnoreCase(class_relation)) FP++;
+		  if (first.equalsIgnoreCase(class_relation) && !second.equalsIgnoreCase(class_relation)) FN++;
+		  if (second.equalsIgnoreCase(class_relation)) numClassified++;		  		  
 		  if (first.equalsIgnoreCase(second)) numCorrect++;
 	  }
-	  
-	  numInstancesOfClass_global += numInstancesOfClass;
-	  numCorrectClassified_global += numCorrectClassified;
-	  numClassified_global += numClassified;
 	  
 	  double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
 	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
 	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
 	  
+	  System.out.println();
 	  System.out.println("Results for class \t" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
 	  System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
 	  System.out.println("Number of test instances : " + numInstancesOfClass );
@@ -217,7 +218,6 @@ public class TestClassification {
   	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
   
-
   public static void testWikiEN() throws Exception{
 
   	  System.out.println();
@@ -257,7 +257,6 @@ public class TestClassification {
   	  System.out.println("F1 (corrected) : " + (2.0*((resultsWiki[1]*resultsWiki[2])/(resultsWiki[1]+resultsWiki[2]))) );	  
   }
   
-
   public static void testAIMED() throws Exception{
 	  System.out.println();
 	  System.out.println("Test classification on AIMED...");
@@ -284,7 +283,6 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3] );
   	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
-
 
   public static void testDrugBank() throws Exception{
 	  System.out.println();
@@ -318,8 +316,7 @@ public class TestClassification {
   	  System.out.println("F1 : " + results[3]);
   	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   }
-  
-  
+   
   public static void classifyPublico() throws Exception {
 	  System.out.println();
 	  System.out.println("Reading train data WikiPT...");
@@ -332,7 +329,6 @@ public class TestClassification {
       }
       results.close();
   }
-  
   
   public static void testWikiPT() throws Exception{
 	  System.out.println();
@@ -357,11 +353,7 @@ public class TestClassification {
       
       String[] classes = classes_asymmetrical;
       
-      for ( String c : classes  ) {
-    	  System.out.println();
-    	  System.out.println("correct classified: " + numCorrectClassified_global);
-    	  System.out.println("classified: " + numClassified_global);
-    	  System.out.println("instances: " + numInstancesOfClass_global);
+      for ( String c : classes  ) {    	  
     	  double[] results_aux = evaluateResults(all_results,c);		  
     	  for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
     	  results[0] = results_aux[0];
@@ -378,19 +370,19 @@ public class TestClassification {
   	  System.out.println("Recall : " + results[2]);
   	  System.out.println("F1 (corrected) : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))) );
   	  System.out.println();
-  	    	  
-	  System.out.println("numCorrectClassified_global: " + numCorrectClassified_global);
-	  System.out.println("numClassified_global: " + numClassified_global);
-	  System.out.println("numInstancesOfClass_global: " + numInstancesOfClass_global);
-	  
-	  double precision_micro = (numCorrectClassified_global / numClassified_global);
-	  double recall_micro = (numCorrectClassified_global / numInstancesOfClass_global);
-	  double f1_micro = (2.0*((precision_micro*recall_micro)/(precision_micro+recall_micro)));
+  	  
+  	  System.out.println("TP: " + TP);
+  	  System.out.println("FP: " + FP);
+  	  System.out.println("FN: " + FN);
+  	  
+	  double micro_precision = (TP / (TP+FP));
+	  double micro_recall = (TP / (TP+FN));
+	  double micro_f1 = (2.0*((micro_precision*micro_recall)/(micro_precision+micro_recall)));
 	  
 	  System.out.println("Micro-Average results for all classes...");	
-	  System.out.println("Precision : " + precision_micro);
-	  System.out.println("Recall : " + recall_micro );
-	  System.out.println("F1 (corrected) : " + f1_micro);	  
+	  System.out.println("Precision : " + micro_precision);
+	  System.out.println("Recall : " + micro_recall );
+	  System.out.println("F1 (corrected) : " + micro_f1);	  
   }
   
   public static void main ( String args[] ) throws Exception {
