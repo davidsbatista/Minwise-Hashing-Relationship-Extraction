@@ -351,7 +351,8 @@ public class TestClassification {
     		  							"influencedBy(e1,e2)","influencedBy(e2,e1)",
     		  							"partner","other"};
       
-      String[] classes = classes_asymmetrical;
+      //String[] classes = classes_asymmetrical;
+      String[] classes = classes_simmetrycal;
       
       for ( String c : classes  ) {    	  
     	  double[] results_aux = evaluateResults(all_results,c);		  
