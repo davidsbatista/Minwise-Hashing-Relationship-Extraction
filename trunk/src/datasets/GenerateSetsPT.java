@@ -167,8 +167,8 @@ public class GenerateSetsPT {
 				  //adiconar verbo normalizado + palavra à frente
 				  set.add(verb + "_" + ( i < sourceTokens.length - 1 ? sourceTokens[i+1].toLowerCase() + "_" : "" ) +  prefix);
 				 
-				  //verbo verbo normalizado 
-				  set.add(verb + "_" + prefix);
+				  //verbo 
+				  set.add(verb + "_VERB_" + prefix);
 				  
 				  //se o verbo está no PP adicionar nessa forma
 				  if ( sourcePOS[i].startsWith("pp")  ) set.add(sourceTokens[i].toLowerCase() + "_PP_" + prefix);
