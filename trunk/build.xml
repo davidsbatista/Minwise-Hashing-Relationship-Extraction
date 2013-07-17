@@ -6,9 +6,9 @@
         <jar destfile="/home/dsbatista/relations-minhash.jar">
             <manifest>
                 <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-            	<attribute name="Rsrc-Main-Class" value="datasets.TestClassification"/>            	
+            	<attribute name="Rsrc-Main-Class" value="bin.Main"/>            	            	
             	<!--
-            	<attribute name="Rsrc-Main-Class" value="bin.DBpediaToN3"/>            	
+            	<attribute name="Rsrc-Main-Class" value="datasets.TestClassification"/>            	
             	<attribute name="Rsrc-Main-Class" value="bin.Inference"/>            	
             	<attribute name="Rsrc-Main-Class" value="datasets.TestClassificationNBTree"/>
             	<attribute name="Rsrc-Main-Class" value="utils.misc.PMI"/>
