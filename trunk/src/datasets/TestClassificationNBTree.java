@@ -12,99 +12,99 @@ import nbtree.NBTree;
 import utils.misc.Pair;
 
 public class TestClassificationNBTree {
-
-  private static int knn = 5;
-  private static int trainInstances = 0;
-  private static int testInstances = 0;
+	
+	private static int knn = 5;
+	private static int trainInstances = 0;
+	private static int testInstances = 0;
   
-  public static boolean SemEvalAsymmetrical = true;
-  
-  private static NBTree dataIndex;  
-
-  public static void readTrainData ( String file ) throws Exception {
-    readTrainData(file,-1);
-  }
-  		
-  public static void readTrainData ( String file, int number ) throws Exception {
-	File dbfile = new File("mapdb-relations-index-nbtree");
-	dbfile.deleteOnExit();
-    dataIndex = new NBTree( dbfile, 0 );
-    BufferedReader input = new BufferedReader( new FileReader(file) );
-    String aux = null;
-	int num=0;
-    while ( ( aux = input.readLine() ) != null ) {
-      List<Double> set = new ArrayList<Double>();
-      for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(new Double(element));
-      String cl = aux.substring(0,aux.indexOf(" "));
-      dataIndex.index(dataIndex.indexSize(), set.toArray(new Double[0]), cl);      
-      if ( number > 0 && num++ > number) break;
-    }
-    input.close();
-  }
-  
-  public static LinkedList<Pair<String, String>> evaluateTestData ( String file ) throws Exception { 
-    return evaluateTestData(file,-1); 
-  }
-  		
-  public static LinkedList<Pair<String,String>> evaluateTestData ( String file, int number) throws Exception {
-	if ( number > 0 ) readTrainData(file,number);
-    BufferedReader input = new BufferedReader( new FileReader(file) );
-    String aux = null;    
-	LinkedList<Pair<String,String>> results = new LinkedList<Pair<String,String>>();
-    while ( ( aux = input.readLine() ) != null ) {
-	  if ( number-- > 0) continue;
-      List<Double> set = new ArrayList<Double>();
-      for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(new Double(element));
-      String cl = aux.substring(0,aux.indexOf(" "));      
-      String clResult = dataIndex.queryNearest(set.toArray(new Double[0]),knn).mostFrequent();
-      Pair<String,String> p = new Pair<String, String>(cl, clResult);
-      results.add(p);      
-    }
-    input.close();
-	return results;
-  }
-
-  public static double[] evaluateResults(LinkedList<Pair<String,String>> results, String class_relation){
-	  double numInstancesOfClass = 0;
-	  double numCorrectClassified = 0;
-	  double numClassified = 0;	  
-	  double numCorrect = 0;
-	  for (Pair<String, String> pair : results) {		  
-		  if (pair.getSecond() == null) pair.setSecond("UNKNOWN");	
-		  String first = pair.getFirst();
-		  String second = pair.getSecond();
-		  if (first.equalsIgnoreCase(class_relation)) {
-			  numInstancesOfClass++;
-			  if (first.equalsIgnoreCase(second) ) numCorrectClassified++;
-		  }
-		  if (second.equalsIgnoreCase(class_relation)) numClassified++;
-		  if (first.equalsIgnoreCase(second)) numCorrect++;
+	public static boolean SemEvalAsymmetrical = true;
+	  
+	private static NBTree dataIndex;  
+	
+	public static void readTrainData ( String file ) throws Exception {
+	    readTrainData(file,-1);
 	  }
-	  double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
-	  double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
-	  double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
-	  System.out.println("Results for class \t" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
-	  System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
-	  System.out.println("Number of test instances : " + numInstancesOfClass );
-	  System.out.println("Number of classifications : " + numClassified );
-	  System.out.println("Precision : " + precision );
-	  System.out.println("Recall : " + recall );
-	  System.out.println("F1 : " + f1 );
-	  trainInstances += dataIndex.indexSize( class_relation );
-	  testInstances += numInstancesOfClass;
-	  double accuracy = numCorrect / (float) results.size(); 
-	  return new double[]{ accuracy, precision, recall, f1 };
-  }
+  		
+	public static void readTrainData ( String file, int number ) throws Exception {
+		File dbfile = new File("mapdb-relations-index-nbtree");
+		dbfile.deleteOnExit();
+		dataIndex = new NBTree( dbfile, 0 );
+		BufferedReader input = new BufferedReader( new FileReader(file) );
+		String aux = null;
+		int num=0;
+		while ( ( aux = input.readLine() ) != null ) {
+			List<Double> set = new ArrayList<Double>();
+			for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(new Double(element));
+			String cl = aux.substring(0,aux.indexOf(" "));
+			dataIndex.index(dataIndex.indexSize(), set.toArray(new Double[0]), cl);      
+			if ( number > 0 && num++ > number) break;
+		}
+		input.close();
+	}
+  
+	public static LinkedList<Pair<String, String>> evaluateTestData ( String file ) throws Exception { 
+		return evaluateTestData(file,-1); 
+	}
+  		
+	public static LinkedList<Pair<String,String>> evaluateTestData ( String file, int number) throws Exception {
+		if ( number > 0 ) readTrainData(file,number);
+	    BufferedReader input = new BufferedReader( new FileReader(file) );
+	    String aux = null;    
+		LinkedList<Pair<String,String>> results = new LinkedList<Pair<String,String>>();
+	    while ( ( aux = input.readLine() ) != null ) {
+	    	if ( number-- > 0) continue;
+	    	List<Double> set = new ArrayList<Double>();
+	    	for ( String element : aux.substring(aux.indexOf(" ")+1).trim().split(" ") ) set.add(new Double(element));
+	    	String cl = aux.substring(0,aux.indexOf(" "));      
+	    	String clResult = dataIndex.queryNearest(set.toArray(new Double[0]),knn).mostFrequent();
+	    	Pair<String,String> p = new Pair<String, String>(cl, clResult);
+	    	results.add(p);      
+	    }
+	    input.close();
+	    return results;
+	}
+
+	public static double[] evaluateResults(LinkedList<Pair<String,String>> results, String class_relation){
+		double numInstancesOfClass = 0;
+		double numCorrectClassified = 0;
+		double numClassified = 0;	  
+		double numCorrect = 0;
+		for (Pair<String, String> pair : results) {		  
+			if (pair.getSecond() == null) pair.setSecond("UNKNOWN");	
+			String first = pair.getFirst();
+			String second = pair.getSecond();
+			if (first.equalsIgnoreCase(class_relation)) {
+				numInstancesOfClass++;
+				if (first.equalsIgnoreCase(second) ) numCorrectClassified++;
+			}
+			if (second.equalsIgnoreCase(class_relation)) numClassified++;
+			if (first.equalsIgnoreCase(second)) numCorrect++;
+		}
+		double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
+		double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
+		double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0*((precision*recall)/(precision+recall)));	  
+		System.out.println("Results for class \t" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
+		System.out.println("Number of training instances : " + dataIndex.indexSize( class_relation ) );
+		System.out.println("Number of test instances : " + numInstancesOfClass );
+		System.out.println("Number of classifications : " + numClassified );
+		System.out.println("Precision : " + precision );
+		System.out.println("Recall : " + recall );
+		System.out.println("F1 : " + f1 );
+		trainInstances += dataIndex.indexSize( class_relation );
+		testInstances += numInstancesOfClass;
+		double accuracy = numCorrect / (float) results.size(); 
+		return new double[]{ accuracy, precision, recall, f1 };
+	}
    
-  public static void testSemEval() throws Exception{
-	  System.out.println();
-	  System.out.println("Test classification on SemEval...");
-	  System.out.println("Reading train data SemEval...");
-      readTrainData("train-data-semeval.txt");
-      System.out.println("Reading test data SemEval...");
-      LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt");	      
-      double[] results = { 0.0, 0.0, 0.0, 0.0 };
-      String[] classes_asymmetrical = {"Cause-Effect(e1,e2)","Cause-Effect(e2,e1)",
+	public static void testSemEval() throws Exception{
+		System.out.println();
+		System.out.println("Test classification on SemEval...");
+		System.out.println("Reading train data SemEval...");
+		readTrainData("train-data-semeval.txt");
+		System.out.println("Reading test data SemEval...");
+		LinkedList<Pair<String,String>> all_results = evaluateTestData("test-data-semeval.txt");	      
+		double[] results = { 0.0, 0.0, 0.0, 0.0 };
+		String[] classes_asymmetrical = {"Cause-Effect(e1,e2)","Cause-Effect(e2,e1)",
     		  "Component-Whole(e1,e2)","Component-Whole(e2,e1)",
     		  "Content-Container(e1,e2)","Content-Container(e2,e1)",
     		  "Entity-Destination(e1,e2)","Entity-Destination(e2,e1)",
@@ -114,7 +114,7 @@ public class TestClassificationNBTree {
     		  "Message-Topic(e1,e2)","Message-Topic(e2,e1)",
     		  "Product-Producer(e1,e2)","Product-Producer(e2,e1)"};	  
       
-      String[] classes_symmetrical = {"Cause-Effect",
+		String[] classes_symmetrical = {"Cause-Effect",
     		  "Component-Whole",
     		  "Content-Container",
     		  "Entity-Destination",
@@ -124,16 +124,16 @@ public class TestClassificationNBTree {
     		  "Message-Topic",
     		  "Product-Producer"};
             
-      String[] classes = null;
+		String[] classes = null;
 
-      if (SemEvalAsymmetrical) classes = classes_asymmetrical; else classes = classes_symmetrical;
+		if (SemEvalAsymmetrical) classes = classes_asymmetrical; else classes = classes_symmetrical;
       
-      for ( String c : classes  ) {		  
-    	  System.out.println();		  		  
-    	  double[] results_aux = evaluateResults(all_results,c);		  
-    	  for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
-    	  results[0] = results_aux[0];
-      }    
+		for ( String c : classes  ) {		  
+			System.out.println();		  		  
+			double[] results_aux = evaluateResults(all_results,c);		  
+			for ( int j = 1; j < results_aux.length; j++) results[j] = results[j] + results_aux[j];
+			results[0] = results_aux[0];
+		}    
       for (int i = 1; i < results.length; i++) results[i] = results[i] / classes.length;
       System.out.println();
       System.out.println("Total train instances : " + trainInstances);
@@ -141,9 +141,8 @@ public class TestClassificationNBTree {
       System.out.println("Macro-Average results for all classes...");	
       System.out.println("Accuracy : " + results[0] );
   	  System.out.println("Precision : " + results[1]);
-  	  System.out.println("Recall : " + results[2]);
-  	  System.out.println("F1 : " + results[3]);	  
-  	  System.out.println("*F1 : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))));
+  	  System.out.println("Recall : " + results[2]);	  
+  	  System.out.println("F1 : " + (2.0*((results[1]*results[2])/(results[1]+results[2]))));
   }
   
   public static void testWikiEN() throws Exception{

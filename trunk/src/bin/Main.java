@@ -14,10 +14,10 @@ import datasets.WikiPT.Relations;
 
 public class Main {
 	
+	/* default values */
 	private static int knn = 5;
 	private static int signature = 400;	
 	private static int bands = 50;
-	private static boolean separateDirection = false;
 	public static boolean SemEvalAsymmetrical = true;
 		
 	public static void main(String[] args) throws Exception {
@@ -35,27 +35,7 @@ public class Main {
 			  
 			  System.out.println("signature: " + signature);
 			  System.out.println("bands: " + bands);
-			  System.out.println("knn: " + knn);		  
-			  
-			  if (args[0].equals("drugbank")) {
-				  if (args[1].equals("true")) GenerateSetsEN.generateDataDrugBank();
-				  TestClassification.testDrugBank();
-			  }
-			  		  
-			  if (args[0].equals("publico") && args[1].equalsIgnoreCase("true")) {
-				  GenerateSetsPT.generatePublico();
-				  TestClassification.classifyPublico();
-			  }
-			  
-			  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {
-				  GenerateSetsPT.generateWikiPT();
-				  TestClassification.testWikiPT();
-				  
-			  }
-			  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) {
-					System.out.println("Testing WikiPT data...");
-					TestClassification.testWikiPT();
-			  }		  
+			  System.out.println("knn: " + knn);
 			  
 			  if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) TestClassification.testSemEval();
 			  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
@@ -66,7 +46,7 @@ public class Main {
 			  if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) TestClassification.testAIMED();
 			  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("true")) {
 				  GenerateSetsEN.generateDataAIMED();
-				  TestClassification.testAIMED();			  		  
+				  TestClassification.testAIMED();			  		  			  
 			  }
 			  
 			  if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("false")) TestClassification.testWikiEN();		  
@@ -74,16 +54,38 @@ public class Main {
 				  GenerateSetsEN.generateDataWikiEn();
 				  TestClassification.testWikiEN();
 			  }
-			 }
+			  
+			  if (args[0].equals("publico")) {
+				  GenerateSetsPT.generatePublico();
+				  TestClassification.classifyPublico();
+			  }			  
+			  
+			  if ((args[0].equals("drugbank")) && args[1].equalsIgnoreCase("false")) TestClassification.testDrugBank();
+			  else if (args[0].equals("drugbank") && (args[1].equals("true"))) {
+				  GenerateSetsEN.generateDataDrugBank();
+				  TestClassification.testDrugBank();				  
+			  }
+			  
+			  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) TestClassification.testWikiPT();
+			  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {				  
+				  GenerateSetsPT.generateWikiPT();
+				  TestClassification.testWikiPT();
+			  }
+			  
+			  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) {
+					System.out.println("Testing WikiPT data...");
+					TestClassification.testWikiPT();
+			  }		  			  
+			  
+		}
 		System.exit(0);
-	  	}
+	}
 
 	
 	/*
 	 * code used to generate file with the aggregated relations from DBpedia
 	 * available at: http://dmir.inesc-id.pt/project/DBpediaRelations-PT_01_in_English	 
-	 */
-	
+	 */	
 	public static void writeRelationsFile(String inputFile) throws IOException{
 		Relations.initialize();
 		PrintWriter out = new PrintWriter(new FileWriter("data-wikipt.txt"));
