@@ -3,8 +3,6 @@ package minhash;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import com.davidsoergel.conja.Parallel;
-import com.davidsoergel.conja.Function;
 
 // This class implements the min-wise hashing scheme
 public class MinHash {
@@ -37,15 +35,13 @@ public class MinHash {
 	public static int[] minHashFromSet ( final String[] documentTokens, final HashFunction[] hashFunction ) {
 		final int[] minHashValues = new int[hashFunction.length];
 	    for (int i = 0; i < hashFunction.length; i++) minHashValues[i] = Integer.MAX_VALUE;
- // 	    Parallel.forEach(hashFunction.length, new Function<Integer, Void>() { public Void apply(Integer i) {
 	    for (int i = 0; i < hashFunction.length; i++) {
 			for(String token : documentTokens ) {
 				byte[] bytesToHash = token.getBytes();
 				int hashIndex = hashFunction[i].hash(bytesToHash);
 				if (minHashValues[i] > hashIndex) minHashValues[i] = hashIndex;
 			}
-//			 return null;
-		}// });	
+		}	
 		return minHashValues;
 	}
 	

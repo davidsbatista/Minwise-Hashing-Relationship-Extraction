@@ -14,7 +14,6 @@ import utils.misc.Pair;
 public class TestClassificationNBTree {
 
   private static int knn = 5;
-
   private static int trainInstances = 0;
   private static int testInstances = 0;
   

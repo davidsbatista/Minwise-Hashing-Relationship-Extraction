@@ -7,13 +7,82 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
+import datasets.GenerateSetsEN;
+import datasets.GenerateSetsPT;
+import datasets.TestClassification;
 import datasets.WikiPT.Relations;
 
 public class Main {
 	
+	private static int knn = 5;
+	private static int signature = 400;	
+	private static int bands = 50;
+	private static boolean separateDirection = false;
+	public static boolean SemEvalAsymmetrical = true;
+		
 	public static void main(String[] args) throws Exception {
-		writeRelationsFile(args[0]);			
-	}
+	
+		if (args.length != 5) {
+		  System.out.println("usage is: dataset true|false knn signature bands");
+		  System.out.println("dataset: semeval wiki aimed drugbank wikipt publico");
+		  System.out.println("generate examples: true|false");
+	      System.exit(0);
+	  }
+		else {
+			  signature = Integer.parseInt(args[2]);
+			  bands = Integer.parseInt(args[3]);
+			  knn = Integer.parseInt(args[4]);
+			  
+			  System.out.println("signature: " + signature);
+			  System.out.println("bands: " + bands);
+			  System.out.println("knn: " + knn);		  
+			  
+			  if (args[0].equals("drugbank")) {
+				  if (args[1].equals("true")) GenerateSetsEN.generateDataDrugBank();
+				  TestClassification.testDrugBank();
+			  }
+			  		  
+			  if (args[0].equals("publico") && args[1].equalsIgnoreCase("true")) {
+				  GenerateSetsPT.generatePublico();
+				  TestClassification.classifyPublico();
+			  }
+			  
+			  if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("true")) {
+				  GenerateSetsPT.generateWikiPT();
+				  TestClassification.testWikiPT();
+				  
+			  }
+			  else if (args[0].equals("wikipt") && args[1].equalsIgnoreCase("false")) {
+					System.out.println("Testing WikiPT data...");
+					TestClassification.testWikiPT();
+			  }		  
+			  
+			  if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) TestClassification.testSemEval();
+			  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
+				  GenerateSetsEN.generateDataSemEval();
+				  TestClassification.testSemEval();
+			  }
+			  
+			  if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) TestClassification.testAIMED();
+			  else if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("true")) {
+				  GenerateSetsEN.generateDataAIMED();
+				  TestClassification.testAIMED();			  		  
+			  }
+			  
+			  if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("false")) TestClassification.testWikiEN();		  
+			  else if (args[0].equalsIgnoreCase("wiki") && args[1].equalsIgnoreCase("true")) {
+				  GenerateSetsEN.generateDataWikiEn();
+				  TestClassification.testWikiEN();
+			  }
+			 }
+		System.exit(0);
+	  	}
+
+	
+	/*
+	 * code used to generate file with the aggregated relations from DBpedia
+	 * available at: http://dmir.inesc-id.pt/project/DBpediaRelations-PT_01_in_English	 
+	 */
 	
 	public static void writeRelationsFile(String inputFile) throws IOException{
 		Relations.initialize();

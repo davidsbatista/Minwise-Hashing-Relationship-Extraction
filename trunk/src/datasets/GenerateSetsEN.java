@@ -1,15 +1,25 @@
 package datasets;
-import java.io.*;
-import java.util.*;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import utils.nlp.EnglishNLP;
-
-import com.davidsoergel.conja.Function;
-import com.davidsoergel.conja.Parallel;
-
-
 import edu.northwestern.at.utils.corpuslinguistics.sentencesplitter.ICU4JBreakIteratorSentenceSplitter;
 
 public class GenerateSetsEN {
@@ -355,7 +365,6 @@ public class GenerateSetsEN {
    	 input.close();
    	 final double minmaxEntropy[] = { Double.MAX_VALUE, Double.MIN_VALUE };
 	 for( String shingle : shingles.keySet() ) {			
-    // Parallel.forEach(shingles.keySet().iterator(), new Function<String, Void>() { public Void apply(String shingle) {
     	 Map<String,Double> classProb = new HashMap<String,Double>(); //distribution of probabilities of a shingle over classes
    		 String[] aux = shingles.get(shingle);
    		 for ( String cl : classes ) {
@@ -369,16 +378,15 @@ public class GenerateSetsEN {
    		 if ( entropy < minmaxEntropy[0]) minmaxEntropy[0] = entropy;
    		 if ( entropy > minmaxEntropy[1]) minmaxEntropy[1] = entropy;
    	     entropyMap.put(shingle,entropy);
-   	    // return null;
-   	 } // });
+
+   	 } 
    	 // normalization and give a weight to each single according to entropy value 
 	 for( String shingle : entropyMap.keySet() ) {			
-	 //Parallel.forEach(entropyMap.keySet().iterator(), new Function<String, Void>() { public Void apply(String shingle) {
    		 double entropy = entropyMap.get(shingle);
    		 entropy = 1.0 - (( entropy - minmaxEntropy[0] ) / ( minmaxEntropy[1] - minmaxEntropy[0] ));
    		 result.put(shingle, (int)Math.round(entropy * 2));
-   		 // return null;
-   	 } //});
+
+   	 }
    	 return result;	 
  }
  
