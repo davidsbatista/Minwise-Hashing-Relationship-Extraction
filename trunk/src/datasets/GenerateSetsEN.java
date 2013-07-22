@@ -111,12 +111,7 @@ public class GenerateSetsEN {
 	   String entity1 = null;
 	   String type = null;
 	   List<String> avoidClasses = Arrays.asList("descendant","discovered","gpe_competition","grandmother","inventor","supported_person","uncle");
-	   //top15
-	   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place");   
-	   //top 25 classes
-	   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation");
-	   //List<String> classesWikiEn = Arrays.asList("job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation","friend","founder","daughter","husband","religion","influence","underling","sister","grandfather","ancestor","grandson","cousin","role","nephew","granddaughter","owns","great_grandson","aunt","supported_idea","great_grandfather","brother_in_law");     
-	
+   	
 	     while ( ( aux = input.readLine() ) != null ) {	   
 		   if ( aux.startsWith("url=") ) entity1 = aux.substring(aux.lastIndexOf("/")+1).replace("_"," "); else if ( aux.trim().length() != 0) {
 			   aux = aux.replaceAll("</?i>","").replaceAll("&amp;","&").replaceAll("</?b>","").replaceAll("<br[^>]+>","").replaceAll("<a +href *= *\"[^\"]+\"( +class *= *\"[^\"]+\")?( +title *= *\"[^\"]+\")?","<a");
@@ -407,7 +402,7 @@ public class GenerateSetsEN {
 				  if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);			  
 	
 				  
-				  //passive voice
+				  //passive voice detection
 				  if (i < aux.length - 4) {
 					  if ((normalized[i].equals("have") && normalized[i+1].equals("be") && auxPOS[i+2].equals("vvn") && (auxPOS[i+3].startsWith("pp") || auxPOS[i+3].equals("p-acp") || auxPOS[i+3].startsWith("pf") || auxPOS[i+3].startsWith("pc-acp") || auxPOS[i+3].startsWith("acp")))) {
 						  set.add(normalized[i] + "_" + normalized[i+1] + "_" + normalized[i+2] +  "_" + normalized[i+3] + "_PASSIVE" + prefix);
@@ -422,7 +417,7 @@ public class GenerateSetsEN {
 					  }
 				  }
 				  
-		  	      //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+		  	      //ReVerb inspired pattern: a verb, followed by:  nouns, adjectives or adverbs, ending in a proposition
 		  		  if (i < aux.length - 2) {
 		  			String pattern = normalized[i];
 		  			int j = i + 1;
@@ -445,6 +440,8 @@ public class GenerateSetsEN {
 					}
 		  			set.add(pattern + "_RVB_" + prefix);
 		  			set.add("_RVB_" + prefix);
+		  			
+		  			// negation detection
 		  			if ( (i - 1 > 0) && ( normalized[i-1].equals("not") ||
 	 	  					              normalized[i-1].equals("neither") ||
 	 	  					              normalized[i-1].equals("nobody") ||
@@ -456,13 +453,13 @@ public class GenerateSetsEN {
 		  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_RVB_" + prefix);
 		  		  }
 		  		  
-				//preposições normalizadas 
+				//normalized propositions 
 				} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
 		  		  set.add(normalized[i] + "_PREP_" + prefix);
 			    }
 			}
 		}
-		// Gerar trigramas com base na string original
+		//generate quadgrams based on the original string
 	    for ( int j = 0; j < source.length() + 3; j++ ) {
 		   String tok = "";
 	       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }

@@ -13,12 +13,6 @@ import datasets.TestClassification;
 import datasets.WikiPT.Relations;
 
 public class Main {
-	
-	/* default values */
-	private static int knn = 5;
-	private static int signature = 400;	
-	private static int bands = 50;
-	public static boolean SemEvalAsymmetrical = true;
 		
 	public static void main(String[] args) throws Exception {
 	
@@ -29,13 +23,14 @@ public class Main {
 	      System.exit(0);
 	  }
 		else {
-			  signature = Integer.parseInt(args[2]);
-			  bands = Integer.parseInt(args[3]);
-			  knn = Integer.parseInt(args[4]);
+			
+			TestClassification.signature = Integer.parseInt(args[2]);
+			TestClassification.bands = Integer.parseInt(args[3]);
+			TestClassification.knn = Integer.parseInt(args[4]);
 			  
-			  System.out.println("signature: " + signature);
-			  System.out.println("bands: " + bands);
-			  System.out.println("knn: " + knn);
+			  System.out.println("signature: " + TestClassification.signature);
+			  System.out.println("bands: " + TestClassification.bands);
+			  System.out.println("knn: " + TestClassification.knn);
 			  
 			  if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) TestClassification.testSemEval();
 			  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {
@@ -83,7 +78,7 @@ public class Main {
 
 	
 	/*
-	 * code used to generate file with the aggregated relations from DBpedia
+	 * code used to generate file with the aggregated relations from the Portuguese DBpedia
 	 * available at: http://dmir.inesc-id.pt/project/DBpediaRelations-PT_01_in_English	 
 	 */	
 	public static void writeRelationsFile(String inputFile) throws IOException{

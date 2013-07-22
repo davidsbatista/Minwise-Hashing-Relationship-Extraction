@@ -17,9 +17,9 @@ import utils.misc.Pair;
 
 public class TestClassification {
 
-	private static int knn = 5;
-	private static int signature = 400;
-	private static int bands = 50;
+	public static int knn = 5;
+	public static int signature = 400;
+	public static int bands = 50;
 	private static boolean separateDirection = false;
 	public static boolean SemEvalAsymmetrical = true;
 
@@ -45,8 +45,7 @@ public class TestClassification {
 		dbfile2.deleteOnExit();
 		dataIndex = new LocalitySentitiveHashing(dbfile, signature, bands);
 		directionIndex = new LocalitySentitiveHashing(dbfile2, signature, bands);
-		LineNumberReader lnr = new LineNumberReader(new FileReader(new File(
-				file)));
+		LineNumberReader lnr = new LineNumberReader(new FileReader(new File(file)));
 		lnr.skip(Long.MAX_VALUE);
 		int num_lines = lnr.getLineNumber();
 		BufferedReader input = new BufferedReader(new FileReader(file));
@@ -54,32 +53,23 @@ public class TestClassification {
 		int num = 0;
 		long startTime = System.nanoTime();
 		while ((aux = input.readLine()) != null) {
-			if (num % 1000 == 0)
-				System.out.println(String.valueOf(num) + "/"
-						+ String.valueOf(num_lines));
+			if (num % 1000 == 0) System.out.println(String.valueOf(num) + "/" + String.valueOf(num_lines));
 			HashSet<String> set = new HashSet<String>();
-			for (String element : aux.substring(aux.indexOf(" ") + 1).trim()
-					.split(" "))
-				set.add(element);
+			for (String element : aux.substring(aux.indexOf(" ") + 1).trim().split(" ")) set.add(element);
 			String cl = aux.substring(0, aux.indexOf(" "));
 			if (cl.indexOf("(") != -1 && separateDirection) {
 				String dr = cl.substring(cl.indexOf("("));
 				cl = cl.substring(0, cl.indexOf("("));
-				directionIndex.index(directionIndex.indexSize(),
-						set.toArray(new String[0]), dr);
+				directionIndex.index(directionIndex.indexSize(),set.toArray(new String[0]), dr);
 			}
-			dataIndex.index(dataIndex.indexSize(), set.toArray(new String[0]),
-					cl);
+			dataIndex.index(dataIndex.indexSize(), set.toArray(new String[0]),cl);
 			num++;
-			if (number > 0 && num > number)
-				break;
-			if (num % 10000 == 0)
-				dataIndex.commitChanges();
+			if (number > 0 && num > number) break;
+			if (num % 10000 == 0) dataIndex.commitChanges();
 		}
 		long stopTime = System.nanoTime();
 		long elapsedTime = stopTime - startTime;
-		System.out.println("Indexing time: "
-				+ TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
+		System.out.println("Indexing time: " + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
 		dataIndex.commitChanges();
 		// dataIndex.computeValidity(knn);
 		input.close();
@@ -91,10 +81,8 @@ public class TestClassification {
 	}
 
 	public static LinkedList<Pair<String, String>> evaluateTestData( String file, int number) throws Exception {
-		if (number > 0)
-			readTrainData(file, number);
-		LineNumberReader lnr = new LineNumberReader(new FileReader(new File(
-				file)));
+		if (number > 0) readTrainData(file, number);
+		LineNumberReader lnr = new LineNumberReader(new FileReader(new File(file)));
 		lnr.skip(Long.MAX_VALUE);
 		int num_lines = lnr.getLineNumber();
 		int num = 0;
@@ -104,20 +92,14 @@ public class TestClassification {
 		long startTime = System.nanoTime();
 		while ((aux = input.readLine()) != null) {
 			if (num % 1000 == 0)
-				System.out.println(String.valueOf(num) + "/"
-						+ String.valueOf(num_lines));
-			if (number-- > 0)
-				continue;
+				System.out.println(String.valueOf(num) + "/" + String.valueOf(num_lines));
+			if (number-- > 0) continue;
 			HashSet<String> set = new HashSet<String>();
-			for (String element : aux.substring(aux.indexOf(" ") + 1).trim()
-					.split(" "))
-				set.add(element);
+			for (String element : aux.substring(aux.indexOf(" ") + 1).trim().split(" ")) set.add(element);
 			String cl = aux.substring(0, aux.indexOf(" "));
-			String clResult = dataIndex.queryNearest(
-					set.toArray(new String[0]), knn, null).mostFrequent();
+			String clResult = dataIndex.queryNearest(set.toArray(new String[0]), knn, null).mostFrequent();
 			if (clResult != null && separateDirection)
-				clResult += directionIndex.queryNearest(
-						set.toArray(new String[0]), knn).mostFrequent();
+				clResult += directionIndex.queryNearest(set.toArray(new String[0]), knn).mostFrequent();
 			Pair<String, String> p = new Pair<String, String>(cl, clResult);
 			results.add(p);
 			num++;
@@ -152,32 +134,19 @@ public class TestClassification {
 					TP++;
 				}
 			}
-			if (second.equalsIgnoreCase(class_relation)
-					&& !first.equalsIgnoreCase(class_relation))
-				FP++;
-			if (first.equalsIgnoreCase(class_relation)
-					&& !second.equalsIgnoreCase(class_relation))
-				FN++;
-			if (second.equalsIgnoreCase(class_relation))
-				numClassified++;
-			if (first.equalsIgnoreCase(second))
-				numCorrect++;
+			if (second.equalsIgnoreCase(class_relation) && !first.equalsIgnoreCase(class_relation)) FP++;
+			if (first.equalsIgnoreCase(class_relation) && !second.equalsIgnoreCase(class_relation)) FN++;
+			if (second.equalsIgnoreCase(class_relation)) numClassified++;
+			if (first.equalsIgnoreCase(second)) numCorrect++;
 		}
 
-		double precision = numClassified == 0 ? 1.0
-				: (numCorrectClassified / numClassified);
-		double recall = numInstancesOfClass == 0 ? 1.0
-				: (numCorrectClassified / numInstancesOfClass);
-		double f1 = precision == 0 && recall == 0 ? 0.0
-				: (2.0 * ((precision * recall) / (precision + recall)));
+		double precision = numClassified == 0 ? 1.0 : (numCorrectClassified / numClassified);
+		double recall = numInstancesOfClass == 0 ? 1.0 : (numCorrectClassified / numInstancesOfClass);
+		double f1 = precision == 0 && recall == 0 ? 0.0 : (2.0 * ((precision * recall) / (precision + recall)));
 
 		System.out.println();
-		System.out.println("Results for class \t"
-						+ class_relation
-						+ "\t"
-						+ (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
-		System.out.println("Number of training instances : "
-				+ dataIndex.indexSize(class_relation));
+		System.out.println("Results for class \t" + class_relation + "\t" + (dataIndex.indexSize(class_relation) + (int) numInstancesOfClass));
+		System.out.println("Number of training instances : " + dataIndex.indexSize(class_relation));
 		System.out.println("Number of test instances : " + numInstancesOfClass);
 		System.out.println("Number of classifications : " + numClassified);
 		System.out.println("Precision : " + precision);
@@ -260,13 +229,6 @@ public class TestClassification {
 		LinkedList<Pair<String, String>> aux = evaluateTestData("test-data-wikien.txt");
 		double[] resultsWiki = { 0.0, 0.0, 0.0, 0.0 };
 
-		// top 15 classes
-		// String[] classesWikiEn =
-		// {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place"};
-		// top 25 classes
-		// String[] classesWikiEn =
-		// {"job_title","visited","birth_place","associate","birth_year","member_of","birth_day","opus","death_year","death_day","education","nationality","executive","employer","death_place","award","father","participant","brother","son","associate_competition","wife","superior","mother","political_affiliation"};
-
 		// All except classes with no test instances
 		String[] classesWikiEn = { "job_title", "visited", "birth_place",
 				"associate", "birth_year", "member_of", "birth_day", "opus",
@@ -297,9 +259,7 @@ public class TestClassification {
 		System.out.println("Accuracy : " + resultsWiki[0]);
 		System.out.println("Precision : " + resultsWiki[1]);
 		System.out.println("Recall : " + resultsWiki[2]);
-		System.out
-				.println("F1 : "
-						+ (2.0 * ((resultsWiki[1] * resultsWiki[2]) / (resultsWiki[1] + resultsWiki[2]))));
+		System.out.println("F1 : " + (2.0 * ((resultsWiki[1] * resultsWiki[2]) / (resultsWiki[1] + resultsWiki[2]))));
 	}
 
 	public static void testAIMED() throws Exception {
@@ -312,8 +272,7 @@ public class TestClassification {
 			System.out.println("Reading train data ...");
 			readTrainData("train-data-aimed.txt." + i);
 			System.out.println("Reading test data ...");
-			LinkedList<Pair<String, String>> aux = evaluateTestData("test-data-aimed.txt."
-					+ i);
+			LinkedList<Pair<String, String>> aux = evaluateTestData("test-data-aimed.txt." + i);
 			double[] results_aux = evaluateResults(aux, "related");
 			System.out.println("Accuracy : " + results_aux[0]);
 			for (int j = 0; j < results_aux.length; j++) {
@@ -327,9 +286,7 @@ public class TestClassification {
 		System.out.println("Accuracy : " + results[0]);
 		System.out.println("Precision : " + results[1]);
 		System.out.println("Recall : " + results[2]);
-		System.out
-				.println("F1 : "
-						+ (2.0 * ((results[1] * results[2]) / (results[1] + results[2]))));
+		System.out.println("F1 : " + (2.0 * ((results[1] * results[2]) / (results[1] + results[2]))));
 	}
 
 	public static void testDrugBank() throws Exception {
@@ -369,9 +326,7 @@ public class TestClassification {
 		readTrainData("train-data-wikipt.txt");
 		System.out.println("Classifying publico.pt relations");
 		LinkedList<Pair<String, String>> all_results = evaluateTestData("publico-relations.txt");
-		Writer results = new BufferedWriter(new OutputStreamWriter(
-				new FileOutputStream("publico-relations-classifications.txt"),
-				"UTF8"));
+		Writer results = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("publico-relations-classifications.txt"),"UTF8"));
 		for (Pair<String, String> pair : all_results) {
 			results.write(pair.getFirst() + '\t' + pair.getSecond() + '\n');
 		}
@@ -422,10 +377,6 @@ public class TestClassification {
 		System.out.println("F1 : " + (2.0 * ((results[1] * results[2]) / (results[1] + results[2]))));
 		System.out.println();
 
-		System.out.println("TP: " + TP);
-		System.out.println("FP: " + FP);
-		System.out.println("FN: " + FN);
-
 		double micro_precision = (TP / (TP + FP));
 		double micro_recall = (TP / (TP + FN));
 		double micro_f1 = (2.0 * ((micro_precision * micro_recall) / (micro_precision + micro_recall)));
@@ -433,7 +384,7 @@ public class TestClassification {
 		System.out.println("Micro-Average results for all classes...");
 		System.out.println("Precision : " + micro_precision);
 		System.out.println("Recall : " + micro_recall);
-		System.out.println("F1 () : " + micro_f1);
+		System.out.println("F1: " + micro_f1);
 	}
 
 }
