@@ -520,17 +520,19 @@ public class GenerateSetsEN {
 		 
 	}
 
-	 public static void generateDataSemEval() throws Exception, IOException {
+	 public static void generateDataSemEval(String train, String test) throws Exception, IOException {
 		 System.out.println("Generating SemEval data...");
 		 System.out.println("\nGenerating train data...");
-		 long startTime = System.nanoTime();	 
-		 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT", new PrintWriter(new FileWriter("train-data-semeval.txt")));	 
+		 long startTime = System.nanoTime();
+		 if (train == null) train = "Datasets/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT";
+		 processSemEval(train, new PrintWriter(new FileWriter("train-data-semeval.txt")));	 
 		 long stopTime = System.nanoTime();	 
 		 long elapsedTime = stopTime - startTime;	 
 		 System.out.println(TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));	 
 		 System.out.println("\nGenerating test data...");
 		 startTime = System.nanoTime();
-		 processSemEval("Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT", new PrintWriter(new FileWriter("test-data-semeval.txt")));
+		 if (test == null) test = "Datasets/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT"; 
+		 processSemEval(test, new PrintWriter(new FileWriter("test-data-semeval.txt")));
 		 stopTime = System.nanoTime();
 		 elapsedTime = stopTime - startTime;	 
 		 System.out.println(TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));

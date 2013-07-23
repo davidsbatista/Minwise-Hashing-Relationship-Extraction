@@ -106,8 +106,7 @@ public class TestClassification {
 		}
 		long stopTime = System.nanoTime();
 		long elapsedTime = stopTime - startTime;
-		System.out.println("Classification time: "
-				+ TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
+		System.out.println("Classification time: " + TimeUnit.SECONDS.convert(elapsedTime, TimeUnit.NANOSECONDS));
 		input.close();
 		return results;
 	}
@@ -333,19 +332,20 @@ public class TestClassification {
 		results.close();
 	}
 
-	public static void testWikiPT() throws Exception {
+	public static void testWikiPT(String train, String test) throws Exception {
 		System.out.println();
 		System.out.println("Test classification on WikiPT...");
 		System.out.println("Reading train data WikiPT...");
-		readTrainData("train-data-wikipt.txt");
-		System.out.println("Reading test data WikiPT...");
-		LinkedList<Pair<String, String>> all_results = evaluateTestData("test-data-wikipt.txt");
+		System.out.println(train);
+		if (train == null) train = "train-data-wikipt.txt"; 		
+		readTrainData(train);
+		System.out.println("Reading test data WikiPT...");		
+		if (test == null) test = "test-data-wikipt.txt";
+		LinkedList<Pair<String, String>> all_results = evaluateTestData(test);
 		double[] results = { 0.0, 0.0, 0.0, 0.0 };
-
 		String[] classes_simmetrycal = { "locatedInArea", "origin", "partOf",
 				"deathOrBurialPlace", "successor", "keyPerson", "parent",
 				"influencedBy", "partner", "other" };
-
 		String[] classes_asymmetrical = { "locatedInArea(e1,e2)",
 				"locatedInArea(e2,e1)", "origin(e1,e2)", "origin(e2,e1)",
 				"partOf(e1,e2)", "partOf(e2,e1)", "deathOrBurialPlace(e1,e2)",
