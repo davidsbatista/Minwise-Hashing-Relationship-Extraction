@@ -21,7 +21,7 @@ public class TestClassification {
 	public static int signature = 400;
 	public static int bands = 50;
 	private static boolean separateDirection = false;
-	public static boolean SemEvalAsymmetrical = true;
+	public static boolean SemEvalAsymmetrical = true;;
 
 	private static int trainInstances = 0;
 	private static int testInstances = 0;
@@ -160,13 +160,15 @@ public class TestClassification {
 		return new double[] { accuracy, precision, recall, f1 };
 	}
 
-	public static void testSemEval() throws Exception {
+	public static void testSemEval(String train_data, String test_data) throws Exception {
 		System.out.println();
 		System.out.println("Test classification on SemEval...");
 		System.out.println("Reading train data SemEval...");
-		readTrainData("train-data-semeval.txt");
+		if (train_data==null) train_data="train-data-semeval.txt";
+		readTrainData(train_data);
 		System.out.println("Reading test data SemEval...");
-
+		if (test_data==null) test_data="test-data-semeval.txt";
+		
 		/*
 		 * Map<String, Set<String>> patterns =
 		 * PMI.readScores("class_reverb_patterns_pmi.txt",5); for (String t :
@@ -174,7 +176,7 @@ public class TestClassification {
 		 * patterns.get(t)) { System.out.println(p); } }
 		 */
 
-		LinkedList<Pair<String, String>> all_results = evaluateTestData("test-data-semeval.txt");
+		LinkedList<Pair<String, String>> all_results = evaluateTestData(test_data);
 		double[] results = { 0.0, 0.0, 0.0, 0.0 };
 		String[] classes_asymmetrical = { "Cause-Effect(e1,e2)",
 				"Cause-Effect(e2,e1)", "Component-Whole(e1,e2)",

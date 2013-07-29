@@ -441,6 +441,7 @@ public class GenerateSetsEN {
 		  			set.add(pattern + "_RVB_" + prefix);
 		  			set.add("_RVB_" + prefix);
 		  			
+		  			/*
 		  			// negation detection
 		  			if ( (i - 1 > 0) && ( normalized[i-1].equals("not") ||
 	 	  					              normalized[i-1].equals("neither") ||
@@ -451,6 +452,7 @@ public class GenerateSetsEN {
 	 	  					              normalized[i-1].equals("nothing") ||
 	 	  					              normalized[i-1].equals("nowhere") ||
 		  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_RVB_" + prefix);
+		  			*/
 		  		  }
 		  		  
 				//normalized propositions 

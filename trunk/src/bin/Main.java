@@ -35,10 +35,18 @@ public class Main {
 			  System.out.println("bands: " + TestClassification.bands);
 			  System.out.println("knn: " + TestClassification.knn);
 			  
-			  if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) TestClassification.testSemEval();
+			  String train_file = null;
+			  String test_file = null;
+			  
+			  if (args.length==7) {
+				  train_file = args[5];
+				  test_file = args[6];
+			  }
+			  
+			  if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) TestClassification.testSemEval(train_file,test_file);
 			  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {				  
-				  GenerateSetsEN.generateDataSemEval(args[5],args[6]);
-				  TestClassification.testSemEval();
+				  GenerateSetsEN.generateDataSemEval(null,null);
+				  TestClassification.testSemEval(train_file,test_file);
 			  }
 			  
 			  if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) TestClassification.testAIMED();
