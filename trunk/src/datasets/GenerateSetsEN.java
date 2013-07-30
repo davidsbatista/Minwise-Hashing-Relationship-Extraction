@@ -27,6 +27,56 @@ public class GenerateSetsEN {
 	 public static Map<String,Integer> entropyMap;
 	 public static Map<String,Integer> frequencyMap;
 	 public static int minFreqThreshold = 2;
+	 
+	 
+	 public static String generateNGramsOld(String source, String prefix2, int betweenLenght , int window ) {
+		    String prefix = ( prefix2.equals("BEF") || prefix2.equals("AFT") ) ? prefix2 + "_" + window : prefix2;
+		        String auxPOS[] = EnglishNLP.adornText(source,1).split(" +");
+		        String normalized[] = EnglishNLP.adornText(source,3).split(" +");
+		    String aux[] = EnglishNLP.adornText(source,0).split(" +");
+		    List<String> set = new ArrayList<String>();
+		    for ( int i = 0 ; i < aux.length; i++ ) {
+		                if ( prefix.startsWith("BEF") && aux.length - i > betweenLenght + window ) continue;
+		                if ( prefix.startsWith("AFT") && i > betweenLenght + window ) continue;
+		                source = (i == 0) ? aux[i] : source + " " + aux[i];             
+		                if ( auxPOS.length == normalized.length && auxPOS.length == aux.length ) {              
+		                        if ( auxPOS[i].startsWith("v") ) { 
+		                          set.add(normalized[i] + "_" + ( i < aux.length - 1 ? normalized[i+1] + "_" : "" ) + prefix);
+		                          if ( !normalized[i].equals("be") && !normalized[i].equals("have") && auxPOS[i].equals("vvn") ) set.add(normalized[i] + "_VVN_" + prefix);
+		                          if ( !normalized[i].equals("be") && !normalized[i].equals("have") ) set.add(normalized[i] + "_" + prefix);                      
+		                          
+		                      //ReVerb inspired: um verbo, seguido de vários nomes, adjectivos ou adverbios, terminando numa preposição.
+		                          if (i < aux.length - 2) {
+		                                String pattern = normalized[i];
+		                                int j = i+1;                            		                                
+		                                while ( ((j < aux.length - 2)) && ((auxPOS[j].startsWith("av") || auxPOS[j].startsWith("j")) || auxPOS[j].startsWith("n"))) {                                   
+		                                	pattern += "_" + normalized[j];
+		                                    j++;                            
+		                                }
+		                                if (auxPOS[j].startsWith("pp") || auxPOS[j].equals("p-acp") || auxPOS[j].startsWith("pf")) {
+		                                	pattern += "_" + normalized[j];
+		                                	set.add(pattern + "_RVB_" + prefix);
+		                                }
+		                          }
+		                          
+		                        //preposições normalizadas 
+		                        } else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
+		                          set.add(normalized[i] + "_PREP_" + prefix);
+		                    }
+		                }
+		        }
+		        // Gerar trigramas com base na string original
+		    for ( int j = 0; j < source.length() + 3; j++ ) {
+		           String tok = "";
+		       for ( int i = -3 ; i <= 0 ; i++ ) { char ch = (j + i) < 0 || (j + i) >= source.length()  ? '_' : source.charAt(j + i); tok += ch == ' ' ? '_' : ch; }
+		       if ( frequencyMap != null && ( frequencyMap.get(tok+ "_" + prefix) == null || frequencyMap.get(tok+ "_" + prefix) < minFreqThreshold ) ) continue;
+		           if ( entropyMap != null && entropyMap.get(tok+ "_" + prefix) != null) for ( int i = 1; i <= 1 + entropyMap.get(tok+ "_" + prefix); i++) set.add(tok + "_" + prefix + "_" + i);
+		           else if ( entropyMap == null || entropyMap.size() == 0 ) set.add(tok + "_" + prefix);
+		        }
+		        String result = "";
+		    for ( String tok : set ) result += " " + tok;
+		    return result.trim();
+		 }
  
 	 public static void processSemEval ( String file, PrintWriter out ) throws Exception {
 	   BufferedReader input = new BufferedReader( new FileReader(file) );
@@ -253,8 +303,8 @@ public class GenerateSetsEN {
 	   input.close();
 	 }
  
-	 public static void processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
-		 
+	 public static long processAIMED ( String directory, String fold, PrintWriter out ) throws Exception {
+		 long accu = 0;
 		 Set<String> dataFiles = new HashSet<String>();
 		 BufferedReader inputAux = new BufferedReader( new FileReader(fold) );
 		 String aux = null;
@@ -306,19 +356,28 @@ public class GenerateSetsEN {
 		       String relation = before + "\t" + between + "\t" + after;
 			   if (type.equals("related")) positiveExamples.add(relation); else negativeExamples.add(relation);
 			  }
-		     }
+		     }		     
 		     for ( String auxStr : positiveExamples) {
 		    	  String auxStr2[] = auxStr.split("\t");
+		    	  long startTime = System.nanoTime();				
 		    	  processExample(auxStr2[0],auxStr2[1],auxStr2[2],"related",out);
+		    	  long stopTime = System.nanoTime();
+		    	  long elapsedTime = stopTime - startTime;
+		    	  accu += elapsedTime;
 		     }
 		     for ( String auxStr : negativeExamples) if ( !positiveExamples.contains(auxStr) ) {
 		    	  String auxStr2[] = auxStr.split("\t");
+		    	  long startTime = System.nanoTime();
 		    	  processExample(auxStr2[0],auxStr2[1],auxStr2[2],"not-related",out);
+		    	  long stopTime = System.nanoTime();
+		    	  long elapsedTime = stopTime - startTime;
+		    	  accu += elapsedTime;
 		     }
 		    }
 		    input.close();
 		   }
 		   out.flush();
+		   return accu;		   
 	 }
 
 	 public static Map<String,Integer> getFrequencyMap ( String file ) throws Exception {
@@ -441,7 +500,6 @@ public class GenerateSetsEN {
 		  			set.add(pattern + "_RVB_" + prefix);
 		  			set.add("_RVB_" + prefix);
 		  			
-		  			/*
 		  			// negation detection
 		  			if ( (i - 1 > 0) && ( normalized[i-1].equals("not") ||
 	 	  					              normalized[i-1].equals("neither") ||
@@ -451,9 +509,8 @@ public class GenerateSetsEN {
 	 	  					              normalized[i-1].equals("nor") ||
 	 	  					              normalized[i-1].equals("nothing") ||
 	 	  					              normalized[i-1].equals("nowhere") ||
-		  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_RVB_" + prefix);
-		  			*/
-		  		  }
+		  					              normalized[i-1].equals("never"))) set.add(normalized[i-1] + "_" + pattern + "_RVB_" + prefix);		              
+		  		  	}		  		  	
 		  		  
 				//normalized propositions 
 				} else if ( auxPOS[i].startsWith("pp") || auxPOS[i].equals("p-acp") || auxPOS[i].startsWith("pf") ) {
@@ -503,20 +560,9 @@ public class GenerateSetsEN {
 		 long accu_test = 0;
 		 for ( int f = 1 ; f <= 10; f++) {
 			System.out.println("Generating AIMED data fold " + f );
-			
-			long startTime = System.nanoTime();
-			processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
-			long stopTime = System.nanoTime();
-			long elapsedTime = stopTime - startTime;
-			accu_train += elapsedTime;
-			
-			startTime = System.nanoTime();
-			processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));
-			stopTime = System.nanoTime();
-			elapsedTime = stopTime - startTime;
-			accu_test += elapsedTime;
-		 }
-		 
+			accu_train += processAIMED("Datasets/aimed", "Datasets/aimed/splits/train-203-" + f, new PrintWriter(new FileWriter("train-data-aimed.txt." + f)));
+			accu_test += processAIMED("Datasets/aimed", "Datasets/aimed/splits/test-203-" + f, new PrintWriter(new FileWriter("test-data-aimed.txt." + f)));			
+		 }		 
 		 System.out.println("Avg. Generate train data time: " + TimeUnit.SECONDS.convert(accu_train, TimeUnit.NANOSECONDS) / (float) 10 );
 		 System.out.println("Avg. Generate test data time: " + TimeUnit.SECONDS.convert(accu_test, TimeUnit.NANOSECONDS) / (float) 10);
 		 

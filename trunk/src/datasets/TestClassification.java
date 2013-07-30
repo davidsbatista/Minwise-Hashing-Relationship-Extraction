@@ -28,12 +28,7 @@ public class TestClassification {
 
 	private static LocalitySentitiveHashing dataIndex;
 	private static LocalitySentitiveHashing directionIndex;
-
-	/* to calculte the micro-averages */
-	static double TP = 0;
-	static double FP = 0;
-	static double FN = 0;
-
+	
 	public static void readTrainData(String file) throws Exception {
 		readTrainData(file, -1);
 	}
@@ -128,13 +123,8 @@ public class TestClassification {
 			String second = pair.getSecond();
 			if (first.equalsIgnoreCase(class_relation)) {
 				numInstancesOfClass++;
-				if (first.equalsIgnoreCase(second)) {
-					numCorrectClassified++;
-					TP++;
-				}
-			}
-			if (second.equalsIgnoreCase(class_relation) && !first.equalsIgnoreCase(class_relation)) FP++;
-			if (first.equalsIgnoreCase(class_relation) && !second.equalsIgnoreCase(class_relation)) FN++;
+				if (first.equalsIgnoreCase(second)) numCorrectClassified++;
+			}			
 			if (second.equalsIgnoreCase(class_relation)) numClassified++;
 			if (first.equalsIgnoreCase(second)) numCorrect++;
 		}
@@ -348,6 +338,7 @@ public class TestClassification {
 		String[] classes_simmetrycal = { "locatedInArea", "origin", "partOf",
 				"deathOrBurialPlace", "successor", "keyPerson", "parent",
 				"influencedBy", "partner", "other" };
+		
 		String[] classes_asymmetrical = { "locatedInArea(e1,e2)",
 				"locatedInArea(e2,e1)", "origin(e1,e2)", "origin(e2,e1)",
 				"partOf(e1,e2)", "partOf(e2,e1)", "deathOrBurialPlace(e1,e2)",
@@ -356,7 +347,7 @@ public class TestClassification {
 				"parent(e1,e2)", "parent(e2,e1)", "influencedBy(e1,e2)",
 				"influencedBy(e2,e1)", "partner", "other" };
 
-		// String[] classes = classes_asymmetrical;
+		//String[] classes = classes_asymmetrical;
 		String[] classes = classes_simmetrycal;
 
 		for (String c : classes) {
@@ -378,15 +369,6 @@ public class TestClassification {
 		System.out.println("Recall : " + results[2]);
 		System.out.println("F1 : " + (2.0 * ((results[1] * results[2]) / (results[1] + results[2]))));
 		System.out.println();
-
-		double micro_precision = (TP / (TP + FP));
-		double micro_recall = (TP / (TP + FN));
-		double micro_f1 = (2.0 * ((micro_precision * micro_recall) / (micro_precision + micro_recall)));
-
-		System.out.println("Micro-Average results for all classes...");
-		System.out.println("Precision : " + micro_precision);
-		System.out.println("Recall : " + micro_recall);
-		System.out.println("F1: " + micro_f1);
 	}
 
 }

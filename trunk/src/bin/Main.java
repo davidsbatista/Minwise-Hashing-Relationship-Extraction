@@ -45,8 +45,8 @@ public class Main {
 			  
 			  if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("false")) TestClassification.testSemEval(train_file,test_file);
 			  else if (args[0].equalsIgnoreCase("semeval") && args[1].equalsIgnoreCase("true")) {				  
-				  GenerateSetsEN.generateDataSemEval(null,null);
-				  TestClassification.testSemEval(train_file,test_file);
+				  GenerateSetsEN.generateDataSemEval(train_file,test_file);
+				  TestClassification.testSemEval(null,null);
 			  }
 			  
 			  if (args[0].equalsIgnoreCase("aimed") && args[1].equalsIgnoreCase("false")) TestClassification.testAIMED();
