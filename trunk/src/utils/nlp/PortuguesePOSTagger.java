@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import opennlp.tools.cmdline.postag.POSModelLoader;
 import opennlp.tools.postag.POSModel;
@@ -25,7 +27,6 @@ public class PortuguesePOSTagger {
 	static TokenizerME token = null;
 	static SentenceDetector sent = null;
 	static String RESOURCES = "/home/dsbatista/relations-minhash/resources/";
-	//static String RESOURCES = "/home/dsbatista/workspace/relations-minhash/resources/";
 	
 	public static void initialize() throws InvalidFormatException, FileNotFoundException, IOException {
 		
@@ -48,13 +49,39 @@ public class PortuguesePOSTagger {
 	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		initialize();		
+		/*
 		String[] tags = posTags("A decisão foi anunciada por Jeroen Dijsselbloem, ministro da finanças da Holanda que preside às reuniões do Eurogrupo e refere-se aos 26 mil milhões de euros dos empréstimos do Fundo Europeu de Estabilidade Financeira (FEEF) garantidos pelos países do euro");
 		System.out.println("A decisão foi anunciada por Jeroen Dijsselbloem, ministro da finanças da Holanda que preside às reuniões do Eurogrupo e refere-se aos 26 mil milhões de euros dos empréstimos do Fundo Europeu de Estabilidade Financeira (FEEF) garantidos pelos países do euro");
 		for (int i = 0; i < tags.length; i++) {
 			System.out.print(tags[i] + '\t');
 		}
-		
+		*/
+		String s = "Vídeo: Números do PIB \"são muito negativos\"";
+		tag(s);
 	}
+	
+	public static List<String> tag(String text) {
+		
+		List<String> tagged_sentences = new LinkedList<String>();		
+		
+		//split the text into sentences
+		for (String s : sent.sentDetect(text)) {
+			
+			//tokenize the sentence and attribute a pos-tag 
+			String tokens[] = null;
+			tokens = token.tokenize(s);
+			String[] postTags = tagger.tag(tokens);
+			
+			//build string: token1_postag1 token2_postag2 .... tokenN_postagN
+			POSSample tokensTagged = new POSSample(tokens, postTags);			
+			String sentenceTagged = tokensTagged.toString();
+			String t = sentenceTagged.replaceAll("\\_","\\/");			
+			tagged_sentences.add(t);
+		}		
+		return tagged_sentences;
+	}
+	
+	
 	
 	public static String[] tokenize(String text){
 		String whitespaceTokenizerLine[] = token.tokenize(text);

@@ -15,13 +15,11 @@ public class ReadXML{
 	
 	public static LinkedList<Article> parse(String xml) {
 			
-		try {
-			
+		try {			
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			SAXParser saxParser = factory.newSAXParser();
- 
-			DefaultHandler handler = new DefaultHandler() {
- 
+			
+			DefaultHandler handler = new DefaultHandler() { 
 				boolean category_to_extract = false;
 				boolean extract = false;				
 				boolean extractEntities = false;				
@@ -86,8 +84,7 @@ public class ReadXML{
 					if (extractDate) {
 						String text = new String(ch, start, length);
 						date = text;
-					}
-				
+					}				
 				}
 			};
 			
