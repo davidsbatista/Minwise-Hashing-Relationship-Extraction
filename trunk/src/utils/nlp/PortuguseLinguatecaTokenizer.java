@@ -7,7 +7,7 @@ public class PortuguseLinguatecaTokenizer extends com.aliasi.tokenizer.RegExToke
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private static String regex =   "(\\d+((/\\d+)+))" + "|" + 			/** dates or similar, e.g. 12/21/1 */
+	private static String regex =   "(\\d+((/\\d+)+))" + "|" + 				/** dates or similar, e.g. 12/21/1 */
 	                                 "(\\d+\\:\\d+(\\:\\d+)?)" + "|" + 		/** the time, e.g. 12:12:2 */
 	                                 "(\\d+(([.]?[oaºª°])+))" + "|" + 		/** ordinal numbers, e.g. 12.o */
 	                                 "(\\d+(([.,]\\d+)*\\%?)?)" + "|" + 	/** numbers */
